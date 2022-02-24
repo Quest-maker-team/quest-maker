@@ -3,7 +3,7 @@ Quest maker project, SPbPU 2022.
 
 Consist of 2 parts:
 + Telegram bot to play quests.
-+ Service for quest creating including back-end and front end.
++ Service for quest creating including back-end and front-end.
 
 ## Staff
 + Baev Daniil

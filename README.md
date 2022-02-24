@@ -17,6 +17,7 @@ Consist of 2 parts:
 To send updates make own branch and make commits to it.
 One branch is one issue (there can be agreed exceptions). One commit is one logical action.
 After all necessary commits push changes and open pull request.
+Pull request name contains issue number in the end.
 
 ### Commit rules
 Commit description structure:

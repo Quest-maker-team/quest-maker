@@ -2,15 +2,15 @@
 Quest maker project, SPbPU 2022.
 
 Consist of 2 parts:
-    + Telegram bot to play quests.
-    + Service for quest creating including back-end and front end.
++ Telegram bot to play quests.
++ Service for quest creating including back-end and front end.
 
 ## Staff
-    + Baev Daniil
-    + Vorotnikov Andrey
-    + Pavlov Ilya
-    + Chevykalov Grigory
-    + Schvartz Aleksandr
++ Baev Daniil
++ Vorotnikov Andrey
++ Pavlov Ilya
++ Chevykalov Grigory
++ Schvartz Aleksandr
 
 ## Rules for git workflow
 'main' branch is a main project branch. Contains current project version.

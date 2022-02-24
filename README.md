@@ -15,10 +15,13 @@ Consist of 2 parts:
 ## Rules for git workflow
 'main' branch is a main project branch. Contains current project version.
 To send updates make own branch and make commits to it.
+
 One branch is one issue (there can be agreed exceptions). One commit is one logical action.
+
 After all necessary commits push changes and open pull request.
 Pull request name contains issue number in the end.
 
 ### Commit rules
 Commit description structure:
+
 `<Verb infinitive> {grammatical modifiers for subject} <subject> #<ZenHub issue number>`

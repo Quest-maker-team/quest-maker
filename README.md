@@ -27,9 +27,9 @@ Commit description structure:
 `<Verb infinitive> {grammatical modifiers for subject} <subject> #<ZenHub issue number>`
 
 ## Development tools
-+ <b>Python</b> 3.8 and later for bot and website backend
-+ <b>Flask</b> framework for website backend
-+ <b>aiogram</b> framework for telegram bot
++ <a href="https://www.python.org"><b>Python</b></a> 3.8 and later for bot and website backend
++ <a href="https://flask.palletsprojects.com/en/2.0.x"><b>Flask</b></a> framework for website backend
++ <a href="https://docs.aiogram.dev/en/latest"><b>aiogram</b></a> framework for telegram bot
 
 ## Code style
 ### Python backend

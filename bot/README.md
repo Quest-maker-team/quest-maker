@@ -2,7 +2,7 @@
 Telegram bot to play quests created by QuestMaker.
 
 ## "aiogram" installing
-Installin "aiogram" library.
+Installing "aiogram" library.
 
 Run virtual environment:
 ```
@@ -14,3 +14,6 @@ Inside `venv` virtual environment:
 pip install -r requirements.txt
 deactivate
 ```
+
+## Telegram bot token
+For correct work telegram token must be written to `TG_BOT_TOKEN` environment variable.

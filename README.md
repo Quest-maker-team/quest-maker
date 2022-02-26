@@ -21,10 +21,19 @@ One branch is one issue (there can be agreed exceptions). One commit is one logi
 After all necessary commits push changes and open pull request.
 Pull request name contains issue number in the end.
 
+After pull request opening connect it with ZenHub issue. Use [ZenHub extension](https://www.zenhub.com/extension) for GitHub in browser.
+
+### Branch naming rules
+Branch name consist of lowercase letters words separated by `_`.
+
 ### Commit rules
 Commit description structure:
+```
+<Verb infinitive> {grammatical modifiers for subject} <subject> #<ZenHub issue number>
+```
 
-`<Verb infinitive> {grammatical modifiers for subject} <subject> #<ZenHub issue number>`
+### Pull request naming rules
+In the end of pull request name must be `#<ZenHub isssue number>`.
 
 ## Development tools
 + <a href="https://www.python.org"><b>Python</b></a> 3.8 and later for bot and website backend

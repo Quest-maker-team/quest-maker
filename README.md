@@ -41,7 +41,7 @@ In the end of pull request name must be `#<ZenHub isssue number>`.
 + <a href="https://docs.aiogram.dev/en/latest"><b>aiogram</b></a> framework for telegram bot
 + <a href="https://devdocs.io/html/"><b>HTML</b></a> for website markup
 + <a href="https://devdocs.io/css/"><b>CSS</b></a> for styling website
-+ <a href="https://devdocs.io/javascript/"><b><JavaScript></b> for webside frontend scripts
++ <a href="https://devdocs.io/javascript/"><b>JavaScript</b></a> for webside frontend scripts
 
 ## Code style
 ### Python backend
@@ -56,7 +56,7 @@ PEP 8</a> with small changes and additions:
 ### HTML, CSS
 We use <a href="https://google.github.io/styleguide/htmlcssguide.html#HTML">
 Google HTML/CSS Style Guide</a> with small changes and addition:
-+ Use 4 spaces for <b>every</b> child element, which starts on a new line (addit to <a href="https://google.github.io/styleguide/htmlcssguide.html#:~:text=HTML%20Formatting%20Rules-,General%20Formatting,-Use%20a%20new">3.2.1</a>)
++ Use <b>4</b> spaces for <b>every</b> child element, which starts on a new line (addit to <a href="https://google.github.io/styleguide/htmlcssguide.html#:~:text=HTML%20Formatting%20Rules-,General%20Formatting,-Use%20a%20new">3.2.1</a>)
 + When line-wrapping, each continuation line should be indented at least <b>8</b> additional spaces from the original line to distinguish wrapped attributes from child elements. (change in <a href="https://google.github.io/styleguide/htmlcssguide.html#:~:text=td%3E%24%204.50%0A%3C/table%3E-,HTML%20Line%2DWrapping,-Break%20long%20lines">3.2.2</a>)
 
 ### JavaScript

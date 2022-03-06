@@ -10,7 +10,7 @@ Consist of 2 parts:
 + Vorotnikov Andrey
 + Pavlov Ilya
 + Chevykalov Grigory
-+ Schvartz Aleksandr
++ Shvarts Aleksandr
 
 ## Rules for git workflow
 'main' branch is a main project branch. Contains current project version.

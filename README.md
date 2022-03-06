@@ -5,6 +5,13 @@ Consist of 2 parts:
 + Telegram bot to play quests.
 + Service for quest creating including back-end and front-end.
 
+To play quests user must use telegram bot. In bot player need to choose quest and then quest session starts.
+
+Quests are creating with web service. Creators make quests with sequence of stations.
+After creating quest become unpublic and only chosen users can play.
+To make quest public and visible in global list admin review is required.
+After moderation all user can choose quest to play.
+
 ## Staff
 + Baev Daniil
 + Vorotnikov Andrey

@@ -7,10 +7,10 @@ Consist of 2 parts:
 
 To play quests user must use telegram bot. In bot player need to choose quest and then quest session starts.
 
-Quests are creating with web service. Creators make quests with sequence of stations.
-After creating quest become unpublic and only chosen users can play.
+Quests are created with web service. Creators make quests with sequence of stations.
+After creation quest become unpublic and only selected users can play it.
 To make quest public and visible in global list admin review is required.
-After moderation all user can choose quest to play.
+After moderation all users can choose quest to play.
 
 ## Staff
 + Baev Daniil

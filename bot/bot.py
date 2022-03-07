@@ -17,5 +17,10 @@ async def cmd_test1(message: types.Message):
     await message.reply("Test 1")
 
 
+@dp.message_handler()
+async def echo(message: types.Message):
+    await message.answer(message.text)
+
+
 if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True)

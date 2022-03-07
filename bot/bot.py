@@ -3,24 +3,14 @@
 Main bot python file.
 """
 
-import os
-import logging
-from aiogram import Bot, Dispatcher, executor, types
+from aiogram import executor
+from create_bot import dp
+from handlers import client
 
-bot = Bot(token=os.environ['TG_BOT_TOKEN'])
-dp = Dispatcher(bot)
-logging.basicConfig(level=logging.INFO)
-
-
-@dp.message_handler(commands="test1")
-async def cmd_test1(message: types.Message):
-    await message.reply("Test 1")
-
-
-@dp.message_handler()
-async def echo(message: types.Message):
-    await message.answer(message.text)
+async def on_startup(_):
+    print("Bot is online")
 
 
 if __name__ == "__main__":
-    executor.start_polling(dp, skip_updates=True)
+    client.register_client_handlers(dp)
+    executor.start_polling(dp, skip_updates=True, on_startup=on_startup)

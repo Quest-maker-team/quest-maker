@@ -1,5 +1,6 @@
 # Database description
 Description of the database structure for the Quest maker project, SPbPU 2022.
+
 You can also get acquainted with the scheme of the database in the form of an [image](https://github.com/Quest-maker-team/quest-maker/blob/main/docs/image/db.png).
 
 ## Tables in the database

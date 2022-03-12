@@ -5,23 +5,26 @@
     <h3>Вход</h3>
     <div>
         <form method="POST" action="/login">
+           {{ form.hidden_tag() }}
             <div>
-                <div>
-                    <input type="email" name="email" placeholder="Email" autofocus="">
-                </div>
+                {{ form.email() }}
+                {% if form.email.errors %}
+                    <span class = "invalid">
+                    {% for e in form.email.errors %}
+                        {{ e }}
+                    {% endfor %}
+                    </span>
+                {% endif %}
             </div>
             <div>
-                <div>
-                    <input type="password" name="password" placeholder="Пароль">
-                </div>
+                {{ form.psw() }}
             </div>
             <div>
-                <label>
-                    <input type="checkbox">
-                    Запомнить меня
-                </label>
+                {{ form.remember.label() }} {{ form.remember() }}
             </div>
-            <button>Вход</button>
+            <div>
+                {{ form.submit() }}
+            </div>
         </form>
     </div>
 </div>

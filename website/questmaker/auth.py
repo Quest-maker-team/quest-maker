@@ -1,16 +1,31 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, request, render_template, flash
+from .forms import LoginForm, SignupFrom
+from werkzeug.security import generate_password_hash, check_password_hash
 
 auth = Blueprint('auth', __name__)
 
 
-@auth.route('/signup')
+@auth.route('/signup', methods=['POST', 'GET'])
 def signup():
-    return render_template('signup.html', title='Регистрация | QM')
+    form = SignupFrom()
+    if form.validate_on_submit():
+        name = form.name.data
+        email = form.email.data
+        psw = form.psw.data
+    return render_template('signup.html', title='Регистрация | QM', form=form)
 
 
-@auth.route('/login')
+@auth.route('/login', methods=['POST', 'GET'])
 def login():
-    return render_template('login.html', title='Вход | QM')
+    if False: # if current_user.authorized -> redirect to profile
+        pass
+    form = LoginForm()
+    if form.validate_on_submit():
+        email = form.email.data
+        psw = form.psw.data
+        # check password
+        flash('Неверный пароль', 'error')
+    return render_template('login.html', title='Вход | QM', form=form)
 
 
 @auth.route('/logout')

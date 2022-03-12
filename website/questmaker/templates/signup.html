@@ -4,28 +4,20 @@
 <div>
     <h3>Регистрация</h3>
     <div>
-        <form method="POST" action="/login">
-             <div>
-                <div>
-                    <input type="text" name="name" placeholder="Имя" autofocus="">
+        <form method="POST" action="/signup">
+            {{ form.hidden_tag() }}
+            {% for field in form if field.name != 'csrf-token' %}
+                 <div>
+                    {{ field() }}
+                    {% if field.errors %}
+                        <span class = "invalid">
+                        {% for e in field.errors %}
+                            {{ e }}
+                        {% endfor %}
+                        </span>
+                    {% endif %}
                 </div>
-            </div>
-            <div>
-                <div>
-                    <input type="email" name="email" placeholder="Email" autofocus="">
-                </div>
-            </div>
-            <div>
-                <div>
-                    <input type="password" name="password" placeholder="Пароль">
-                </div>
-            </div>
-            <div>
-                <div>
-                    <input type="password" name="confirm_password" placeholder="Повторите пароль">
-                </div>
-            </div>
-            <button>Вход</button>
+            {% endfor %}
         </form>
     </div>
 </div>

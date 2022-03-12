@@ -1,3 +1,7 @@
 h1 {
     color: #abc;
 }
+
+.invalid {
+    color: red;
+}

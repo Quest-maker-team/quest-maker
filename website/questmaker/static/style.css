@@ -5,3 +5,16 @@ h1 {
 .invalid {
     color: red;
 }
+
+.flush {
+    padding: 10px;
+    border: 1px solid black;
+}
+
+.flash.success {
+    background: green;
+}
+
+.flash.error {
+    background: red;
+}

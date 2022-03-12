@@ -10,6 +10,11 @@
 </head>
 
 <body>
+{% for type, msg in get_flashed_messages(True) %}
+    <div class = "flash {{ type }}">
+        {{ msg }}
+    </div>
+{% endfor %}
 {% block content %}
 {% endblock %}
 </body>

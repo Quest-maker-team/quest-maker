@@ -1,6 +1,7 @@
 from flask import Blueprint, request, render_template, flash, redirect
 from .forms import LoginForm, SignupFrom
 from werkzeug.security import generate_password_hash, check_password_hash
+from . import db
 
 auth = Blueprint('auth', __name__)
 
@@ -12,11 +13,13 @@ def signup():
         name = form.name.data
         email = form.email.data
         psw = form.psw.data
-        if True:
+        hash_psw = generate_password_hash(psw)
+        success = db.add_user(name, hash_psw, email)
+        if success:
             flash('Вы зарегестрированы', 'success')
             return redirect('login')
         else:
-            flash('Ошибка', 'error')
+            flash('Вы уже зарегестрированы', 'error')
     return render_template('signup.html', title='Регистрация | QM', form=form)
 
 

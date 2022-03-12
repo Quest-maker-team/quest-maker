@@ -59,3 +59,14 @@ def init_app(app):
     """
     app.teardown_appcontext(close_db)
     app.cli.add_command(init_db_command)
+
+
+def add_user(name, hash_psw, email):
+    with get_db(), get_db().cursor() as cursor:
+        cursor.execute('SELECT * from authors WHERE email = %s', (email, ))
+        if cursor.fetchone():
+            return False
+        else:
+            print(hash_psw)
+            cursor.execute('INSERT INTO authors(login, hash_password, email) VALUES(%s, %s, %s)', (name, hash_psw, email))
+    return True

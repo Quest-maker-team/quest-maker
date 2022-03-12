@@ -5,7 +5,7 @@ auth = Blueprint('auth', __name__)
 
 @auth.route('/signup')
 def signup():
-    return 'signup'
+    return render_template('signup.html', title='Регистрация | QM')
 
 
 @auth.route('/login')

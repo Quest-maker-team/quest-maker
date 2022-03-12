@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div>
+    <h3>Вход</h3>
+    <div>
+        <form method="POST" action="/login">
+             <div>
+                <div>
+                    <input type="text" name="name" placeholder="Имя" autofocus="">
+                </div>
+            </div>
+            <div>
+                <div>
+                    <input type="email" name="email" placeholder="Email" autofocus="">
+                </div>
+            </div>
+            <div>
+                <div>
+                    <input type="password" name="password" placeholder="Пароль">
+                </div>
+            </div>
+            <div>
+                <div>
+                    <input type="password" name="confirm_password" placeholder="Повторите пароль">
+                </div>
+            </div>
+            <button>Вход</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

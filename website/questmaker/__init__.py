@@ -25,6 +25,9 @@ def create_app(test_config=None):
     from .auth import auth
     app.register_blueprint(auth)
 
+    from .profile import prof
+    app.register_blueprint(prof)
+
     @app.route('/')
     def index():
         return render_template('index.html')

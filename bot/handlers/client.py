@@ -27,8 +27,19 @@ class QuestPoint:
 def get_quest_info(name):
     start_msg = 'Привет. Это нулевой квест проекта QuestMaker.'
     end_msg = 'До свидания от нулевого квеста.'
+    
+    point_cormen = QuestPoint("Осуждаем.")
+    point_dijkstra = QuestPoint("Одобряем.")
+    point_novikov = QuestPoint("Гиперодобряем.")
 
-    return (start_msg, None, end_msg)
+    point_dm_question = QuestPoint("Ваш любимый исследователь дискретной математики из"
+        "Эдсрега А. Дейкстры, Томаса Г. Кормена и Фёдора А. Новикова?")
+    point_dm_question.load_next_points({'Кормен': point_cormen, 'Дейкстра': point_dijkstra, 'Новиков': point_novikov})
+
+    point_arithmetic = QuestPoint("2+2?")
+    point_arithmetic.load_next_points({"4": point_dm_question})
+
+    return (start_msg, point_arithmetic, end_msg)
 
 
 class Quest:

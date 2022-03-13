@@ -32,7 +32,7 @@ def get_quest_info(name):
     point_dijkstra = QuestPoint("Одобряем.")
     point_novikov = QuestPoint("Гиперодобряем.")
 
-    point_dm_question = QuestPoint("Ваш любимый исследователь дискретной математики из"
+    point_dm_question = QuestPoint("Ваш любимый исследователь дискретной математики из "
         "Эдсрега А. Дейкстры, Томаса Г. Кормена и Фёдора А. Новикова?")
     point_dm_question.load_next_points({'Кормен': point_cormen, 'Дейкстра': point_dijkstra, 'Новиков': point_novikov})
 

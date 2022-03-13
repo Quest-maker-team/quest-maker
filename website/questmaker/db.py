@@ -3,6 +3,7 @@ Contains scripts to initialize db from cli, get access and close db connection
 """
 
 import psycopg2
+from psycopg2.extras import DictCursor
 import click
 from flask import current_app, g
 from flask.cli import with_appcontext
@@ -68,5 +69,26 @@ def add_user(name, hash_psw, email):
             return False
         else:
             print(hash_psw)
-            cursor.execute('INSERT INTO authors(login, hash_password, email) VALUES(%s, %s, %s)', (name, hash_psw, email))
+            cursor.execute('INSERT INTO authors(name, hash_password, email) VALUES(%s, %s, %s)',
+                           (name, hash_psw, email))
     return True
+
+
+def get_user_by_id(user_id):
+    with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+        cursor.execute('SELECT * from authors WHERE id= %s', (user_id, ))
+        res = cursor.fetchone()
+        if not res:
+            return False
+
+    return res
+
+
+def get_user_by_email(email):
+    with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+        cursor.execute('SELECT * from authors WHERE email= %s', (email, ))
+        res = cursor.fetchone()
+        if not res:
+            return False
+
+    return res

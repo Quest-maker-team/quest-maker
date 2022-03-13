@@ -1,3 +1,7 @@
+"""
+Contains functions for signup, login and logout functionality
+"""
+
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 from .forms import LoginForm, SignupFrom
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -15,14 +19,23 @@ login_manager.login_message_category = 'error'
 
 @login_manager.user_loader
 def load_user(user_id):
+    """
+    Callback function for flask-login
+    :param user_id: user id
+    :return: object of UserLogin class inited with data from db
+    """
     user = db.get_user_by_id(user_id)
     return UserLogin(user) if user else None
 
 
 @auth.route('/signup', methods=['POST', 'GET'])
 def signup():
-    form = SignupFrom()
-    if form.validate_on_submit():
+    """
+    Contains signup functionality
+    :return: signup page or redirect to login
+    """
+    form = SignupFrom()  # WT from
+    if form.validate_on_submit():  # check if all field are correct
         name = form.name.data
         email = form.email.data
         psw = form.psw.data
@@ -38,10 +51,14 @@ def signup():
 
 @auth.route('/login', methods=['POST', 'GET'])
 def login():
+    """
+    Contains login functionality
+    :return: login page or redirect to next page that required login
+    """
     if current_user.is_authenticated:
         return redirect(url_for('profile.profile'))
-    form = LoginForm()
-    if form.validate_on_submit():
+    form = LoginForm()  # WT form
+    if form.validate_on_submit():  # check if all field are correct
         email = form.email.data
         psw = form.psw.data
         user = db.get_user_by_email(email)
@@ -61,5 +78,9 @@ def login():
 @auth.route('/logout')
 @login_required
 def logout():
+    """
+    Contains logout functionality
+    :return: redirect user to login page
+    """
     logout_user()
     return redirect(url_for('auth.login'))

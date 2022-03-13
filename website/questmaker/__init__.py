@@ -31,6 +31,10 @@ def create_app(test_config=None):
 
     @app.route('/')
     def index():
+        """
+        Main questmaker page
+        :return: main questmaker page
+        """
         return render_template('index.html')
 
     return app

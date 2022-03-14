@@ -23,4 +23,4 @@ There is their own application to play.
 ## Advantages
 QuestMaker doesn't need special application to play quests due to telegram bot.
 
-There is ability to create private quests.
+There is ability to create both private and public quests.

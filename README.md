@@ -22,7 +22,7 @@ To see project advanteges and comparison see [doc](docs/analogues.md).
 + Shvarts Aleksandr
 
 ## Rules for git workflow
-'main' branch is a main project branch. Contains current project version.
+`main` branch is a main project branch. Contains current project version.
 To send updates make own branch and make commits to it.
 
 One branch is one issue (there can be agreed exceptions). One commit is one logical action.
@@ -41,7 +41,10 @@ Commit description structure:
 <Verb infinitive> {grammatical modifiers for subject} <subject> #<ZenHub issue number>
 ```
 
-### Pull request naming rules
+### Pull request rules
+
+
+#### Naming
 In the end of pull request name must be `#<ZenHub isssue number>`.
 
 ## Development tools

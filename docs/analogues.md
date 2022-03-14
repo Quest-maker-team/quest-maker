@@ -5,17 +5,16 @@ There are comparison with analogues and project advantages.
 ### [Surprise Me](https://surprizeme.ru/event)
 It is service to provide quest creating.
 
-There is no place for all created and safe quests.
+There is all public quest list to choose quest.
 
 There is option to request quest creating.
 
 There is their own application to play.
 
-### [Urban quest](https://surprizeme.ru/event)
-
+### [Urban quest](https://www.quest.team/)
 It is service to provide quest creating.
 
-There is no ability to create quest "for friends".
+There is no ability to create private quests.
 
 There is option to request quest creating.
 

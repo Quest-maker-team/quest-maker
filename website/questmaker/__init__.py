@@ -22,8 +22,19 @@ def create_app(test_config=None):
     from . import db
     db.init_app(app)
 
+    from .auth import auth, login_manager
+    app.register_blueprint(auth)
+    login_manager.init_app(app)
+
+    from .profile import prof
+    app.register_blueprint(prof)
+
     @app.route('/')
     def index():
+        """
+        Main questmaker page
+        :return: main questmaker page
+        """
         return render_template('index.html')
 
     return app

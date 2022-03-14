@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div>
+    <h3>Вход</h3>
+    <div>
+        <form method="POST" action="">
+           {{ form.hidden_tag() }}
+            <div>
+                {{ form.email() }}
+                {% if form.email.errors %}
+                    <span class = "invalid">
+                    {% for e in form.email.errors %}
+                        {{ e }}
+                    {% endfor %}
+                    </span>
+                {% endif %}
+            </div>
+            <div>
+                {{ form.psw() }}
+            </div>
+            <div>
+                {{ form.remember.label() }} {{ form.remember() }}
+            </div>
+            <div>
+                {{ form.submit() }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

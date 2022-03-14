@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div>
+    <h3>Регистрация</h3>
+    <div>
+        <form method="POST" action="/signup">
+            {{ form.hidden_tag() }}
+            {% for field in form if field.name != 'csrf-token' %}
+                 <div>
+                    {{ field() }}
+                    {% if field.errors %}
+                        <span class = "invalid">
+                        {% for e in field.errors %}
+                            {{ e }}
+                        {% endfor %}
+                        </span>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </form>
+    </div>
+</div>
+{% endblock %}

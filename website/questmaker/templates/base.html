@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <title>{{ title }}</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+{% for cat, msg in get_flashed_messages(True) %}
+    <div class = "flash {{ cat }}">
+        {{ msg }}
+    </div>
+{% endfor %}
+{% block content %}
+{% endblock %}
+</body>
+
+</html>

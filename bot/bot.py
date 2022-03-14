@@ -8,6 +8,8 @@ from create_bot import dp
 from handlers import client
 
 async def on_startup(_):
+    """Function when bot starts up
+    """
     print("Bot is online")
 
 

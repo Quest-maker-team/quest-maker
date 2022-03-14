@@ -2,7 +2,7 @@
 
 ### Creating database
 Enter the following commands (bash for example, 
-you may use CMD or PowerShell analogs):
+you may use CMD or PowerShell analogs, guide for windows<a href="https://www.microfocus.com/documentation/idol/IDOL_12_0/MediaServer/Guides/html/English/Content/Getting_Started/Configure/_TRN_Set_up_PostgreSQL.htm"> here</a>):
 * Run PostgreSQL server: 
 `$ sudo service postgresql start`.
 * Check if it runs: `$ service postgresql status`. If it's ok, 
@@ -30,7 +30,7 @@ something like this: `14/main (port 5432): online`.
 
 ### Launch init script
 * Enter `QuestMaker/website`. Then set `FLASK_APP` (see `README.md` for website).
-* Enter command `flash init-db`.
+* Enter command `flask init-db`.
 
 Congratulations! You've created local PostgreSQL 
 database and initialize it with tables

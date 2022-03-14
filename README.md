@@ -42,7 +42,11 @@ Commit description structure:
 ```
 
 ### Pull request rules
+Web service part must be reviewed by Pavlov Ilya, bot part by Vorotnikov Andrey.
+Pavlov Ilya and Vorotnikov Andrey add theyself as reviewers on document tasks.
+Other reviewers are optional.
 
+All reviewers must approve changes. After that last reviewer or pull request author can complete it.
 
 #### Naming
 In the end of pull request name must be `#<ZenHub isssue number>`.

@@ -22,7 +22,7 @@ To see project advanteges and comparison see [doc](docs/analogues.md).
 + Shvarts Aleksandr
 
 ## Rules for git workflow
-'main' branch is a main project branch. Contains current project version.
+`main` branch is a main project branch. Contains current project version.
 To send updates make own branch and make commits to it.
 
 One branch is one issue (there can be agreed exceptions). One commit is one logical action.
@@ -41,7 +41,14 @@ Commit description structure:
 <Verb infinitive> {grammatical modifiers for subject} <subject> #<ZenHub issue number>
 ```
 
-### Pull request naming rules
+### Pull request rules
+Web service part must be reviewed by Pavlov Ilya, bot part by Vorotnikov Andrey.
+Pavlov Ilya and Vorotnikov Andrey add theyself as reviewers on document tasks.
+Other reviewers are optional.
+
+All reviewers must approve changes. After that last reviewer or pull request author can complete it.
+
+#### Naming
 In the end of pull request name must be `#<ZenHub isssue number>`.
 
 ## Development tools

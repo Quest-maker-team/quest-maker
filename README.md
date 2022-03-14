@@ -1,4 +1,4 @@
-# QuestMaker 
+# QuestMaker
 Quest maker project, SPbPU 2022.
 
 Consist of 2 parts:
@@ -11,6 +11,8 @@ Quests are created with web service. Creators make quests with sequence of stati
 After creation quest become unpublic and only selected users can play it.
 To make quest public and visible in global list admin review is required.
 After moderation all users can choose quest to play.
+
+To see project advanteges and comparison see [doc](docs/analogues.md).
 
 ## Staff
 + Baev Daniil

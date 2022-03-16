@@ -1,4 +1,4 @@
--- PostgreSQL database questmaker initialization
+/*PostgreSQL database questmaker initialization */
 
 DROP TABLE IF EXISTS author_statuses;
 CREATE TABLE author_statuses (
@@ -77,7 +77,7 @@ DROP TABLE IF EXISTS questions;
 CREATE TABLE questions (
     question_id SERIAL PRIMARY KEY,
     place_id INTEGER NOT NULL FOREIGN KEY REFERENCES places (place_id) ON DELETE CASCADE,
-    question_TEXT TEXT NOT NULL,
+    question_text TEXT NOT NULL,
     points REAL NOT NULL,
     fine REAL NOT NULL,
     type_id INTEGER NOT NULL FOREIGN KEY REFERENCES questions_type (questions_type_id) ON DELETE CASCADE
@@ -87,14 +87,14 @@ DROP TABLE IF EXISTS possible_answers;
 CREATE TABLE possible_answers (
     possible_ans_id SERIAL PRIMARY KEY,
     question_id INTEGER NOT NULL FOREIGN KEY REFERENCES questions (question_id) ON DELETE CASCADE,
-    possible_ans_TEXT TEXT NOT NULL
+    possible_ans_text TEXT NOT NULL
 );
 
 DROP TABLE IF EXISTS hints;
 CREATE TABLE hints (
     hint_id SERIAL PRIMARY KEY,
     question_id INTEGER NOT NULL FOREIGN KEY REFERENCES questions (question_id) ON DELETE CASCADE,
-    hint_TEXT TEXT NOT NULL,
+    hint_text TEXT NOT NULL,
     fine REAL NOT NULL
 );
 
@@ -108,7 +108,7 @@ DROP TABLE IF EXISTS history;
 CREATE TABLE history (
     record_id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL FOREIGN KEY REFERENCES users (user_id) ON DELETE CASCADE,
-    quest_id INTEGER NOT NULL FOREIGN KEY REFERENCES quests(quest_id) ON DELETE CASCADE,
+    quest_id INTEGER NOT NULL FOREIGN KEY REFERENCES quests (quest_id) ON DELETE CASCADE,
     is_finished BOOLEAN NOT NULL,
     last_place_id INTEGER FOREIGN KEY REFERENCES places (place_id) ON DELETE CASCADE,
     final_score REAL NOT NULL
@@ -118,7 +118,7 @@ DROP TABLE IF EXISTS answers;
 CREATE TABLE answers (
     answer_id SERIAL PRIMARY KEY,
     question_id INTEGER NOT NULL FOREIGN KEY REFERENCES questions (question_id) ON DELETE CASCADE,
-    answer_TEXT TEXT NOT NULL,
+    answer_text TEXT NOT NULL,
 );
 
 

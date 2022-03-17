@@ -140,4 +140,14 @@ CREATE TABLE ratings (
 	five_star_amount INTEGER NOT NULL DEFAULT 0
 );
 
+DROP TABLE IF EXISTS question_files CASCADE;
 
+CREATE TABLE question_files (
+
+    entry_id SERIAL PRIMARY KEY,
+
+    question_id INTEGER NOT NULL REFERENCES questions (question_id) ON DELETE CASCADE,
+
+    f_id INTEGER NOT NULL REFERENCES files (f_id) ON DELETE CASCADE
+
+);

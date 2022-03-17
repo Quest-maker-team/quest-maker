@@ -16,9 +16,8 @@ CREATE TABLE authors (
     email CHARACTER VARYING(100)UNIQUE NOT NULL,
     name CHARACTER VARYING(100)  NOT NULL,
     password BYTEA NOT NULL,
-    status_id INTEGER NOT NULL,
-    avatar_url TEXT,
-    FOREIGN KEY (status_id) REFERENCES statuses (status_id) ON DELETE CASCADE	
+    status_id INTEGER NOT NULL REFERENCES statuses (status_id) ON DELETE CASCADE,
+    avatar_url TEXT
 );
 
 DROP TABLE IF EXISTS quests CASCADE; 
@@ -109,7 +108,6 @@ CREATE TABLE answer_options(
 	next_question_id INTEGER REFERENCES questions (question_id)ON DELETE CASCADE
 );
 
-
 DROP TABLE IF EXISTS movements CASCADE; 
 CREATE TABLE movements (
     movement_id SERIAL PRIMARY KEY,
@@ -117,7 +115,6 @@ CREATE TABLE movements (
     question_id INTEGER NOT NULL REFERENCES questions (question_id) ON DELETE CASCADE,
 	next_question_id INTEGER REFERENCES questions (question_id)ON DELETE CASCADE
 );
-
 
 DROP TABLE IF EXISTS histories CASCADE;
 CREATE TABLE histories (
@@ -141,13 +138,8 @@ CREATE TABLE ratings (
 );
 
 DROP TABLE IF EXISTS question_files CASCADE;
-
 CREATE TABLE question_files (
-
     entry_id SERIAL PRIMARY KEY,
-
     question_id INTEGER NOT NULL REFERENCES questions (question_id) ON DELETE CASCADE,
-
     f_id INTEGER NOT NULL REFERENCES files (f_id) ON DELETE CASCADE
-
 );

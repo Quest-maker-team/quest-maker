@@ -1,124 +1,143 @@
-/*PostgreSQL database questmaker initialization */
+-- PostgreSQL database questmaker initialization
 
-DROP TABLE IF EXISTS author_statuses;
-CREATE TABLE author_statuses (
+
+--CREATE DATABASE questmaker;
+--\connect questmaker;
+
+DROP  TABLE IF EXISTS statuses CASCADE;
+CREATE TABLE statuses (
     status_id SERIAL PRIMARY KEY,
-    status CHARACTER VARYING(100) NOT NULL
+    status CHARACTER VARYING(100) UNIQUE NOT NULL
 );
 
-DROP TABLE IF EXISTS authors;
+DROP TABLE IF EXISTS authors CASCADE;
 CREATE TABLE authors (
     author_id SERIAL PRIMARY KEY,
-    email CHARACTER VARYING(100),
-    login CHARACTER VARYING(100) NOT NULL,
-    hash_password BYTEA NOT NULL,
+    email CHARACTER VARYING(100)UNIQUE NOT NULL,
+    name CHARACTER VARYING(100)  NOT NULL,
+    password BYTEA NOT NULL,
     status_id INTEGER NOT NULL,
-    FOREIGN KEY (status_id) REFERENCES author_statuses (status_id) ON DELETE CASCADE	
+    avatar_url TEXT,
+    FOREIGN KEY (status_id) REFERENCES statuses (status_id) ON DELETE CASCADE	
 );
 
-DROP TABLE IF EXISTS quests; 
+DROP TABLE IF EXISTS quests CASCADE; 
 CREATE TABLE quests (
     quest_id SERIAL PRIMARY KEY,
     title CHARACTER VARYING NOT NULL,
-    author_id INTEGER NOT NULL FOREIGN KEY REFERENCES authors (author_id) ON DELETE CASCADE,
-    description TEXT NOT NULL,
-    key_word CHARACTER VARYING(100),
-    tags TEXT,
-    time_open TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    time_close TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-    lead_time INTERVAL NOT NULL
-);
-
-DROP TABLE IF EXISTS places; 
-CREATE TABLE places (
-    place_id SERIAL PRIMARY KEY,
-    place_name CHARACTER VARYING NOT NULL,
-    coord POINT,
-    quest_id INTEGER NOT NULL FOREIGN KEY REFERENCES quests (quest_id) ON DELETE CASCADE,
+    author_id INTEGER NOT NULL REFERENCES authors (author_id) ON DELETE CASCADE,
     description TEXT,
+    password CHARACTER VARYING(100),
+    cover_url TEXT,
     time_open TIMESTAMP WITHOUT TIME ZONE,
     time_close TIMESTAMP WITHOUT TIME ZONE,
-    points REAL NOT NULL,
-    fine REAL NOT NULL,
-    radius DOUBLE PRECISION
+    lead_time INTERVAL NOT NULL,
+    hidden BOOLEAN NOT NULL
 );
 
-DROP TABLE IF EXISTS directions; 
-CREATE TABLE directions (
-    direction_id SERIAL PRIMARY KEY,
-    cur_place_id INTEGER FOREIGN KEY REFERENCES places (place_id) ON DELETE CASCADE,
-    next_place_id INTEGER FOREIGN KEY REFERENCES places (place_id) ON DELETE CASCADE,
-    description TEXT,
+DROP TABLE IF EXISTS places CASCADE; 
+CREATE TABLE places (
+    place_id SERIAL PRIMARY KEY,
+    coords POINT NOT NULL,
+    time_open TIMESTAMP WITHOUT TIME ZONE,
+    time_close TIMESTAMP WITHOUT TIME ZONE,
+    radius DOUBLE PRECISION NOT NULL
 );
 
-DROP TABLE IF EXISTS object_types; 
-CREATE TABLE object_types (
-    object_type_id SERIAL PRIMARY KEY,
-    object_type CHARACTER VARYING NOT NULL
+DROP TABLE IF EXISTS tags CASCADE;
+CREATE TABLE tags (
+    tag_id SERIAL PRIMARY KEY,
+    quest_id INTEGER NOT NULL REFERENCES quests (quest_id) ON DELETE CASCADE,
+    tag_name CHARACTER VARYING(100) NOT NULL
 );
 
-DROP TABLE IF EXISTS files; 
+DROP TABLE IF EXISTS file_types CASCADE;
+CREATE TABLE file_types (
+    file_type_id SERIAL PRIMARY KEY,
+	q_type_name CHARACTER VARYING(100) UNIQUE NOT NULL
+);
+
+DROP TABLE IF EXISTS files CASCADE; 
 CREATE TABLE files (
-    file_id SERIAL PRIMARY KEY,
-    type_of_object_id INTEGER NOT NULL FOREIGN KEY REFERENCES object_types (object_type_id) ON DELETE CASCADE,
-    --an implicit link
-    object_id INTEGER NOT NULL, 
+    f_id SERIAL PRIMARY KEY, 
     url_for_file TEXT NOT NULL,
-    type_of_file CHARACTER VARYING NOT NULL
+    file_type_id INTEGER NOT NULL REFERENCES file_types (file_type_id) ON DELETE CASCADE
 );
 
-DROP TABLE IF EXISTS question_types; 
-CREATE TABLE question_types (
-    questions_type_id SERIAL PRIMARY KEY,
-    questions_type CHARACTER VARYING NOT NULL
+DROP TABLE IF EXISTS quest_files CASCADE;
+CREATE TABLE quest_files (
+    entry_id SERIAL PRIMARY KEY,
+    quest_id INTEGER NOT NULL REFERENCES quests (quest_id) ON DELETE CASCADE,
+    f_id INTEGER NOT NULL REFERENCES files (f_id) ON DELETE CASCADE
 );
 
-DROP TABLE IF EXISTS questions; 
+DROP TABLE IF EXISTS questions_types CASCADE;
+CREATE TABLE questions_types (
+    q_type_id SERIAL PRIMARY KEY,
+	q_type_name CHARACTER VARYING(100) UNIQUE NOT NULL
+);
+
+DROP TABLE IF EXISTS questions CASCADE; 
 CREATE TABLE questions (
     question_id SERIAL PRIMARY KEY,
-    place_id INTEGER NOT NULL FOREIGN KEY REFERENCES places (place_id) ON DELETE CASCADE,
-    question_text TEXT NOT NULL,
-    points REAL NOT NULL,
-    fine REAL NOT NULL,
-    type_id INTEGER NOT NULL FOREIGN KEY REFERENCES questions_type (questions_type_id) ON DELETE CASCADE
+    quest_id INTEGER NOT NULL REFERENCES quests (quest_id) ON DELETE CASCADE,
+    question_text TEXT,
+    q_type_id INTEGER NOT NULL REFERENCES questions_types (q_type_id) ON DELETE CASCADE
 );
 
-DROP TABLE IF EXISTS possible_answers; 
-CREATE TABLE possible_answers (
-    possible_ans_id SERIAL PRIMARY KEY,
-    question_id INTEGER NOT NULL FOREIGN KEY REFERENCES questions (question_id) ON DELETE CASCADE,
-    possible_ans_text TEXT NOT NULL
-);
-
-DROP TABLE IF EXISTS hints;
+DROP TABLE IF EXISTS hints CASCADE;
 CREATE TABLE hints (
     hint_id SERIAL PRIMARY KEY,
-    question_id INTEGER NOT NULL FOREIGN KEY REFERENCES questions (question_id) ON DELETE CASCADE,
+    question_id INTEGER NOT NULL  REFERENCES questions (question_id) ON DELETE CASCADE,
     hint_text TEXT NOT NULL,
-    fine REAL NOT NULL
+    fine REAL NOT NULL DEFAULT 0.0
 );
 
-DROP TABLE IF EXISTS users;
-CREATE TABLE users (
-    user_id SERIAL PRIMARY KEY,
-    telegram_id TEXT NOT NULL
+DROP TABLE IF EXISTS hint_files CASCADE;
+CREATE TABLE hint_files (
+    entry_id SERIAL PRIMARY KEY,
+    hint_id INTEGER NOT NULL REFERENCES hints (hint_id) ON DELETE CASCADE,
+    f_id INTEGER NOT NULL REFERENCES files (f_id) ON DELETE CASCADE
 );
 
-DROP TABLE IF EXISTS history;
-CREATE TABLE history (
-    record_id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL FOREIGN KEY REFERENCES users (user_id) ON DELETE CASCADE,
-    quest_id INTEGER NOT NULL FOREIGN KEY REFERENCES quests (quest_id) ON DELETE CASCADE,
+DROP TABLE IF EXISTS answer_options CASCADE; 
+CREATE TABLE answer_options(
+    option_id SERIAL PRIMARY KEY,
+    question_id INTEGER NOT NULL REFERENCES questions (question_id) ON DELETE CASCADE,
+    option_text TEXT NOT NULL,
+	points REAL NOT NULL DEFAULT 0.0,
+	next_question_id INTEGER REFERENCES questions (question_id)ON DELETE CASCADE
+);
+
+
+DROP TABLE IF EXISTS movements CASCADE; 
+CREATE TABLE movements (
+    movement_id SERIAL PRIMARY KEY,
+    place_id INTEGER REFERENCES places (place_id) ON DELETE CASCADE,
+    question_id INTEGER NOT NULL REFERENCES questions (question_id) ON DELETE CASCADE,
+	next_question_id INTEGER REFERENCES questions (question_id)ON DELETE CASCADE
+);
+
+
+DROP TABLE IF EXISTS histories CASCADE;
+CREATE TABLE histories (
+    history_id SERIAL PRIMARY KEY,
+    telegram_id INTEGER NOT NULL,
+    quest_id INTEGER NOT NULL REFERENCES quests(quest_id) ON DELETE CASCADE,
     is_finished BOOLEAN NOT NULL,
-    last_place_id INTEGER FOREIGN KEY REFERENCES places (place_id) ON DELETE CASCADE,
-    final_score REAL NOT NULL
+    last_question_id INTEGER REFERENCES questions (question_id) ON DELETE CASCADE,
+    final_score REAL NOT NULL DEFAULT 0.0
 );
 
-DROP TABLE IF EXISTS answers;
-CREATE TABLE answers (
-    answer_id SERIAL PRIMARY KEY,
-    question_id INTEGER NOT NULL FOREIGN KEY REFERENCES questions (question_id) ON DELETE CASCADE,
-    answer_text TEXT NOT NULL,
+DROP TABLE IF EXISTS ratings CASCADE;
+CREATE TABLE ratings (
+    rating_id SERIAL PRIMARY KEY,
+    quest_id INTEGER NOT NULL UNIQUE REFERENCES quests (quest_id) ON DELETE CASCADE,
+    one_star_amount INTEGER NOT NULL DEFAULT 0,
+	two_star_amount INTEGER NOT NULL DEFAULT 0,
+	three_star_amount INTEGER NOT NULL DEFAULT 0,
+	four_star_amount INTEGER NOT NULL DEFAULT 0,
+	five_star_amount INTEGER NOT NULL DEFAULT 0
 );
 
 

@@ -1,9 +1,6 @@
 -- PostgreSQL database questmaker initialization
 
 
---CREATE DATABASE questmaker;
---\connect questmaker;
-
 DROP  TABLE IF EXISTS statuses CASCADE;
 CREATE TABLE statuses (
     status_id SERIAL PRIMARY KEY,
@@ -105,7 +102,7 @@ CREATE TABLE answer_options(
     question_id INTEGER NOT NULL REFERENCES questions (question_id) ON DELETE CASCADE,
     option_text TEXT NOT NULL,
     points REAL NOT NULL DEFAULT 0.0,
-    next_question_id INTEGER NOT NULL REFERENCES questions (question_id) ON DELETE CASCADE
+    next_question_id INTEGER REFERENCES questions (question_id) ON DELETE CASCADE
 );
 
 DROP TABLE IF EXISTS movements CASCADE; 
@@ -113,7 +110,7 @@ CREATE TABLE movements (
     movement_id SERIAL PRIMARY KEY,
     place_id INTEGER NOT NULL REFERENCES places (place_id) ON DELETE CASCADE,
     question_id INTEGER NOT NULL REFERENCES questions (question_id) ON DELETE CASCADE,
-    next_question_id INTEGER REFERENCES questions (question_id) ON DELETE CASCADE
+    next_question_id INTEGER NOT NULL REFERENCES questions (question_id) ON DELETE CASCADE
 );
 
 DROP TABLE IF EXISTS histories CASCADE;

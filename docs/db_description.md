@@ -21,7 +21,8 @@ In the future, their content may be supplemented for the expansion of functional
 0. "open" - an open question with a text answer.
 1. "choice" - choosing one answer from the suggested ones.
 2. "movement" - an indication of the player's movement to a new location.
-3. "end" - a special type indicating the end of the quest branch.
+3. "start" - a special type defining the beginning of the quest was introduced due to the fact that when editing a question may be added to the beginning, and then ordering by id is not valid. <b>It is a fictitious question with one answer option leading to the real first question.</b>
+4. "end" - a special type indicating the end of the quest branch.
 
 ## Notes on other tables
 
@@ -41,3 +42,6 @@ The "open_time" and "close_time" fields represent the opening time of the place 
 + The question is also repeated if the user has entered an answer not provided by the author as an answer to an open question.
 + If among the possible answers to the question there is one in which the "option_text" field contains the string <b>"skip"</b>, then this question can be skipped.
 + If among the possible answers to an open question there is one in which the "option_text" field contains <b>an empty string</b>, then the actions assigned to it (changing the number of points, switching to another question) are triggered when entering any answer other than the suggested answers to this question.
+
+### Histories
+If the "is_finished" field has the value false, but the "last_question_id" field is empty, then the quest has been changed and its continuation is not possible.

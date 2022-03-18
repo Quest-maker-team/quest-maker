@@ -30,7 +30,7 @@ CREATE TABLE quests (
     cover_url TEXT,
     time_open TIMESTAMP WITHOUT TIME ZONE,
     time_close TIMESTAMP WITHOUT TIME ZONE,
-    lead_time INTERVAL NOT NULL,
+    lead_time INTERVAL,
     hidden BOOLEAN NOT NULL
 );
 
@@ -53,7 +53,7 @@ CREATE TABLE tags (
 DROP TABLE IF EXISTS file_types CASCADE;
 CREATE TABLE file_types (
     file_type_id SERIAL PRIMARY KEY,
-	q_type_name CHARACTER VARYING(100) UNIQUE NOT NULL
+    q_type_name CHARACTER VARYING(100) UNIQUE NOT NULL
 );
 
 DROP TABLE IF EXISTS files CASCADE; 
@@ -73,7 +73,7 @@ CREATE TABLE quest_files (
 DROP TABLE IF EXISTS questions_types CASCADE;
 CREATE TABLE questions_types (
     q_type_id SERIAL PRIMARY KEY,
-	q_type_name CHARACTER VARYING(100) UNIQUE NOT NULL
+    q_type_name CHARACTER VARYING(100) UNIQUE NOT NULL
 );
 
 DROP TABLE IF EXISTS questions CASCADE; 
@@ -87,7 +87,7 @@ CREATE TABLE questions (
 DROP TABLE IF EXISTS hints CASCADE;
 CREATE TABLE hints (
     hint_id SERIAL PRIMARY KEY,
-    question_id INTEGER NOT NULL  REFERENCES questions (question_id) ON DELETE CASCADE,
+    question_id INTEGER NOT NULL REFERENCES questions (question_id) ON DELETE CASCADE,
     hint_text TEXT NOT NULL,
     fine REAL NOT NULL DEFAULT 0.0
 );
@@ -104,16 +104,16 @@ CREATE TABLE answer_options(
     option_id SERIAL PRIMARY KEY,
     question_id INTEGER NOT NULL REFERENCES questions (question_id) ON DELETE CASCADE,
     option_text TEXT NOT NULL,
-	points REAL NOT NULL DEFAULT 0.0,
-	next_question_id INTEGER REFERENCES questions (question_id)ON DELETE CASCADE
+    points REAL NOT NULL DEFAULT 0.0,
+    next_question_id INTEGER NOT NULL REFERENCES questions (question_id) ON DELETE CASCADE
 );
 
 DROP TABLE IF EXISTS movements CASCADE; 
 CREATE TABLE movements (
     movement_id SERIAL PRIMARY KEY,
-    place_id INTEGER REFERENCES places (place_id) ON DELETE CASCADE,
+    place_id INTEGER NOT NULL REFERENCES places (place_id) ON DELETE CASCADE,
     question_id INTEGER NOT NULL REFERENCES questions (question_id) ON DELETE CASCADE,
-	next_question_id INTEGER REFERENCES questions (question_id)ON DELETE CASCADE
+    next_question_id INTEGER REFERENCES questions (question_id) ON DELETE CASCADE
 );
 
 DROP TABLE IF EXISTS histories CASCADE;
@@ -131,10 +131,10 @@ CREATE TABLE ratings (
     rating_id SERIAL PRIMARY KEY,
     quest_id INTEGER NOT NULL UNIQUE REFERENCES quests (quest_id) ON DELETE CASCADE,
     one_star_amount INTEGER NOT NULL DEFAULT 0,
-	two_star_amount INTEGER NOT NULL DEFAULT 0,
-	three_star_amount INTEGER NOT NULL DEFAULT 0,
-	four_star_amount INTEGER NOT NULL DEFAULT 0,
-	five_star_amount INTEGER NOT NULL DEFAULT 0
+    two_star_amount INTEGER NOT NULL DEFAULT 0,
+    three_star_amount INTEGER NOT NULL DEFAULT 0,
+    four_star_amount INTEGER NOT NULL DEFAULT 0,
+    five_star_amount INTEGER NOT NULL DEFAULT 0
 );
 
 DROP TABLE IF EXISTS question_files CASCADE;

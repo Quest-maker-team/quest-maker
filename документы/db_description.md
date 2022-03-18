@@ -6,7 +6,7 @@ You can get acquainted with the scheme of the database in the form of an [image]
 ## Contents of auxiliary tables with types
 The following tables are necessary for fixing the names of the types of objects used in the project.
 
-In the future, their content may be supplemented for the expansion of functionality, but <b>entries from these tables cannot be deleted or replased</b> without a separate agreement on this matter (since some functionality relies on them).
+In the future, their content may be supplemented for the expansion of functionality, but <b>entries from these tables cannot be deleted or replaced</b> without a separate agreement on this matter (since some functionality relies on them).
 
 ### Statuses
 0. "author" - an ordinary user of the site, the creator of quests. Has no special abilities and responsibilities.

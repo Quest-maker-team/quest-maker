@@ -1,6 +1,8 @@
 # QuestMaker telegram bot
 Telegram bot to play quests created by QuestMaker.
-
+## User guide
+Use telegram bot [@QuestMakerBot](https://t.me/QuestMakerBot) or another bot that used our project for responses.
+Bot is used to play quests. To choose quest use our [web service](../website/README.md).
 ## Installation
 Use `git clone https://github.com/Quest-maker-team/quest-maker` to load repo in your computer.
 ## Run application

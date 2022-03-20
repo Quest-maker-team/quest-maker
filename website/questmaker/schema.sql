@@ -57,7 +57,7 @@ DROP TABLE IF EXISTS files CASCADE;
 CREATE TABLE files (
     f_id SERIAL PRIMARY KEY, 
     url_for_file TEXT NOT NULL,
-    file_type_id INTEGER NOT NULL REFERENCES file_types (file_type_id) ON DELETE RESTRICT
+    type_id INTEGER NOT NULL REFERENCES file_types (f_type_id) ON DELETE RESTRICT
 );
 
 DROP TABLE IF EXISTS quest_files CASCADE;

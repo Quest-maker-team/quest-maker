@@ -2,8 +2,8 @@
 Quest maker project, SPbPU 2022.
 
 Consist of 2 parts:
-+ Telegram bot to play quests.
-+ Service for quest creating including back-end and front-end.
++ [Telegram bot to play quests.](bot/README.md)
++ [Service for quest creating including back-end and front-end.](website/README.md)
 
 To play quests user must use telegram bot. In bot player need to choose quest and then quest session starts.
 

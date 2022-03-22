@@ -32,7 +32,7 @@ class QuestPoint:
         """Get next point.
         :param self: instance
         :param point_name: answer for next point
-        :return next point if success
+        :return score to add and next point if success
         :return None if there is no such answer
         """
         if point_name in self.next_points:
@@ -54,10 +54,11 @@ def get_quest_info(name):
 
     point_dm_question = QuestPoint("Ваш любимый исследователь дискретной математики из "
         "Эдсрега А. Дейкстры, Томаса Г. Кормена и Фёдора А. Новикова?")
-    point_dm_question.load_next_points({'Кормен': point_cormen, 'Дейкстра': point_dijkstra, 'Новиков': point_novikov})
+    point_dm_question.load_next_points(
+        {'Кормен': (-5, point_cormen), 'Дейкстра': (5, point_dijkstra), 'Новиков': (10, point_novikov)})
 
     point_arithmetic = QuestPoint("2+2?")
-    point_arithmetic.load_next_points({"4": point_dm_question})
+    point_arithmetic.load_next_points({"4": (1, point_dm_question)})
 
     return (start_msg, point_arithmetic, end_msg)
 
@@ -71,6 +72,7 @@ class Quest:
         :param name: quest name
         """
         self.name = name
+        self.score = 0
         (self.start_msg, self.cur_point, self.end_msg) = get_quest_info(name)
 
 
@@ -81,7 +83,8 @@ class Quest:
         :return (False, <message to send>) if quest need continue
         :return (True, <message to send>) if quest is over
         """
-        point = self.cur_point.get_next(message)
+        (score_to_add, point) = self.cur_point.get_next(message)
+        self.score += score_to_add
         if point is None:
             return (False, "Неправильный ответ.")
         self.cur_point = point
@@ -128,7 +131,9 @@ async def name_quest(message: types.Message, state: FSMContext):
         async with state.proxy() as data:
             data['quest'] = Quest(message.text)
         await QuestStates.next()
-        await message.answer('Квест "' + message.text + '" начат. Чтобы закончить напишите /end')
+        await message.answer('Квест "' + message.text + '" начат. '
+            'Чтобы закончить напишите /end, '
+            'чтобы получить количество баллов - /score.')
         await message.answer(data['quest'].cur_point.msg)
     else:
         await message.reply('Квест "' + message.text + '" не найден')
@@ -146,6 +151,18 @@ async def cancel_handler(message: types.Message, state: FSMContext):
     await state.finish()
 
 
+async def score_handler(message: types.Message, state: FSMContext):
+    """Get score handler.
+    :param message: message from user
+    :param state: state machine context
+    """
+    async with state.proxy() as data:
+        if 'quest' in data:
+            await message.reply('Текущее количество баллов: ' + str(data['quest'].score) + '.')
+        else:
+            await message.answer('Выберите квест командой /quest.')
+
+
 async def quest_proc(message: types.Message, state: FSMContext):
     """Quest processing handler.
     :param message: message from user
@@ -157,7 +174,8 @@ async def quest_proc(message: types.Message, state: FSMContext):
         if quest_ends == True:
             await message.answer(data['quest'].end_msg)
             await state.finish()
-            await message.answer('Квест "' + data['quest'].name + '" закончен.')
+            await message.answer('Квест "' + data['quest'].name + '" закончен. '
+                'Количество баллов: ' + str(data['quest'].score) + ".")
 
 
 async def warning(message: types.Message):
@@ -174,6 +192,7 @@ def register_client_handlers(dp: Dispatcher):
     dp.register_message_handler(cmd_start, commands=['start', 'help'])
     dp.register_message_handler(cmd_quest, commands='quest')
     dp.register_message_handler(cancel_handler, state='*', commands="end")
+    dp.register_message_handler(score_handler, state='*', commands="score")
     dp.register_message_handler(name_quest, state=QuestStates.naming)
     dp.register_message_handler(quest_proc, state=QuestStates.session)
     dp.register_message_handler(warning)

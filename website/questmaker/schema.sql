@@ -140,3 +140,22 @@ CREATE TABLE question_files (
     question_id INTEGER NOT NULL REFERENCES questions (question_id) ON DELETE CASCADE,
     f_id INTEGER NOT NULL REFERENCES files (f_id) ON DELETE RESTRICT
 );
+
+INSERT INTO statuses(status_id, status_name)
+VALUES
+    (0, 'author'),
+    (1, 'moderator');
+
+INSERT INTO file_types(f_type_id, f_type_name)
+VALUES
+    (0, 'image'),
+    (1,'audio'),
+    (2, 'video');
+
+INSERT INTO question_types(q_type_id, q_type_name)
+VALUES
+    (0, 'open'),
+    (1, 'choice'),
+    (2, 'movement'),
+    (3, 'start'),
+    (4, 'end');

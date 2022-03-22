@@ -76,19 +76,21 @@ def add_user(name, hash_psw, email):
             return False
         else:
             print(hash_psw)
-            cursor.execute('INSERT INTO authors(name, hash_password, email) VALUES(%s, %s, %s)',
+            cursor.execute('INSERT INTO authors(name, password, email, status_id) '
+                           'VALUES(%s, %s, %s, '
+                           '(SELECT status_id FROM statuses WHERE status_name = \'author\'))',
                            (name, hash_psw, email))
     return True
 
 
-def get_user_by_id(user_id):
+def get_author_by_id(author_id):
     """
     Find user in table authors by id
-    :param user_id: user id
+    :param author_id: user id
     :return: dictionary view of line from table authors
     """
     with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-        cursor.execute('SELECT * from authors WHERE id= %s', (user_id, ))
+        cursor.execute('SELECT * from authors WHERE author_id= %s', (author_id, ))
         res = cursor.fetchone()
         if not res:
             return False
@@ -96,7 +98,7 @@ def get_user_by_id(user_id):
     return res
 
 
-def get_user_by_email(email):
+def get_author_by_email(email):
     """
         Find user in table authors by email
         :param email: user email

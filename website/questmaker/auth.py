@@ -6,7 +6,7 @@ from flask import Blueprint, render_template, request, flash, redirect, url_for
 from .forms import LoginForm, SignupFrom
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-from .UserLogin import UserLogin
+from .UserLogin import AuthorLogin
 from . import db
 
 auth = Blueprint('auth', __name__)
@@ -18,14 +18,14 @@ login_manager.login_message_category = 'error'
 
 
 @login_manager.user_loader
-def load_user(user_id):
+def load_user(author_id):
     """
     Callback function for flask-login
-    :param user_id: user id
+    :param author_id: user id
     :return: object of UserLogin class inited with data from db
     """
-    user = db.get_user_by_id(user_id)
-    return UserLogin(user) if user else None
+    author = db.get_author_by_id(author_id)
+    return AuthorLogin(author) if author else None
 
 
 @auth.route('/signup', methods=['POST', 'GET'])
@@ -61,11 +61,11 @@ def login():
     if form.validate_on_submit():  # check if all field are correct
         email = form.email.data
         psw = form.psw.data
-        user = db.get_user_by_email(email)
-        if user:
-            if check_password_hash(user['hash_password'], psw):
+        author = db.get_author_by_email(email)
+        if author:
+            if check_password_hash(author['password'], psw):
                 print(form.remember.data)
-                login_user(UserLogin(user), form.remember.data)
+                login_user(AuthorLogin(author), form.remember.data)
 
                 return redirect(request.args.get('next') or url_for('profile.profile'))
             else:

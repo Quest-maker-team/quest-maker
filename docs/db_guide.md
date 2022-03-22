@@ -22,6 +22,7 @@ something like this: `14/main (port 5432): online`.
   DB_PASSWORD = 'postgres'
   DB_HOST = 'localhost'
   DB_PORT = '5432'
+  SECRET_KEY = 'some_key_12345'
   ```
   DB_NAME is `questmaker` if you did previous step. 
   DB_USER, DN_HOST and DB_POST is default. You should only

@@ -4,7 +4,7 @@
 DROP TABLE IF EXISTS statuses CASCADE;
 CREATE TABLE statuses (
     status_id SERIAL PRIMARY KEY,
-    status CHARACTER VARYING(100) UNIQUE NOT NULL
+    status_name CHARACTER VARYING(100) UNIQUE NOT NULL
 );
 
 DROP TABLE IF EXISTS authors CASCADE;
@@ -12,7 +12,7 @@ CREATE TABLE authors (
     author_id SERIAL PRIMARY KEY,
     email CHARACTER VARYING(100) UNIQUE NOT NULL,
     name CHARACTER VARYING(100) NOT NULL,
-    password BYTEA NOT NULL,
+    password VARCHAR(200) NOT NULL,
     status_id INTEGER NOT NULL REFERENCES statuses (status_id) ON DELETE RESTRICT,
     avatar_url TEXT
 );
@@ -67,8 +67,8 @@ CREATE TABLE quest_files (
     f_id INTEGER NOT NULL REFERENCES files (f_id) ON DELETE RESTRICT
 );
 
-DROP TABLE IF EXISTS questions_types CASCADE;
-CREATE TABLE questions_types (
+DROP TABLE IF EXISTS question_types CASCADE;
+CREATE TABLE question_types (
     q_type_id SERIAL PRIMARY KEY,
     q_type_name CHARACTER VARYING(100) UNIQUE NOT NULL
 );
@@ -78,7 +78,7 @@ CREATE TABLE questions (
     question_id SERIAL PRIMARY KEY,
     quest_id INTEGER NOT NULL REFERENCES quests (quest_id) ON DELETE CASCADE,
     question_text TEXT,
-    q_type_id INTEGER NOT NULL REFERENCES questions_types (q_type_id) ON DELETE RESTRICT
+    q_type_id INTEGER NOT NULL REFERENCES question_types (q_type_id) ON DELETE RESTRICT
 );
 
 DROP TABLE IF EXISTS hints CASCADE;

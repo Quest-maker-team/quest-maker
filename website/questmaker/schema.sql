@@ -4,7 +4,7 @@
 DROP TABLE IF EXISTS statuses CASCADE;
 CREATE TABLE statuses (
     status_id SERIAL PRIMARY KEY,
-    status CHARACTER VARYING(100) UNIQUE NOT NULL
+    status_name CHARACTER VARYING(100) UNIQUE NOT NULL
 );
 
 DROP TABLE IF EXISTS authors CASCADE;
@@ -12,7 +12,7 @@ CREATE TABLE authors (
     author_id SERIAL PRIMARY KEY,
     email CHARACTER VARYING(100) UNIQUE NOT NULL,
     name CHARACTER VARYING(100) NOT NULL,
-    password BYTEA NOT NULL,
+    password VARCHAR(200) NOT NULL,
     status_id INTEGER NOT NULL REFERENCES statuses (status_id) ON DELETE RESTRICT,
     avatar_url TEXT
 );

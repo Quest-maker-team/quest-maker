@@ -1,0 +1,30 @@
+body, html {
+  height: 100%;
+  background: linear-gradient(to bottom right, #ccccff 0%, #3399ff 100%);
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+h2{
+    font-weight: 700;
+    font-size: 25px;
+    text-align: center;
+    position: relative;
+    padding: 3px 0 20px;
+    margin-bottom: 40px;
+}
+
+.form-heading::after {
+    background: #3786bd;
+    width: 50px;
+    height: 2px;
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+  -webkit-transform: translateX(-50%);
+}
+
+.error{
+    color: var(--bs-danger);
+}

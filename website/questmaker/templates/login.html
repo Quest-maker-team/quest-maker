@@ -1,31 +1,56 @@
 {% extends "base.html" %}
 
+{% block styles %}
+<link rel="stylesheet" href="{{url_for('static', filename='css/forms.css')}}">
+{% endblock %}
+
 {% block content %}
-<div>
-    <h3>Вход</h3>
-    <div>
-        <form method="POST" action="">
-           {{ form.hidden_tag() }}
-            <div>
-                {{ form.email() }}
-                {% if form.email.errors %}
-                    <span class = "invalid">
-                    {% for e in form.email.errors %}
-                        {{ e }}
-                    {% endfor %}
-                    </span>
-                {% endif %}
+<div class="mask d-flex align-items-center h-100">
+    <div class="container h-100">
+        <div class="row d-flex justify-content-center align-items-center h-100">
+            <div class="col-md-8 col-lg-7 col-xl-6">
+                <div class="card" style="border-radius: 15px">
+                    <div class="card-body p-4 row d-flex justify-content-center align-items-center">
+                        <form method="POST" action="" class="form col-sm-10 col-md-9">
+                            <h2 class="form-heading">Добро пожаловать</h2>
+                            {{ form.hidden_tag() }}
+                            <div class="form-floating mb-2">
+                                {% if get_flashed_messages(category_filter=["wrong_email"]) %}
+                                    {{ form.email(class_="form-control is-invalid", id="inputEmail") }}
+                                    {{ form.email.label(class_="form-label error", for="inputEmail",
+                                                        text="Пользователь не зарагастрирован") }}
+                                {% else %}
+                                    {{ form.email(class_="form-control", id="inputEmail") }}
+                                    {{ form.email.label(class_="form-label", for="inputEmail", text="Email") }}
+                                {% endif %}
+                            </div>
+                            <div class="form-floating mb-4">
+                                {% if get_flashed_messages(category_filter=["wrong_psw"]) %}
+                                    {{ form.psw(class_="form-control is-invalid", id="inputPassword") }}
+                                    {{ form.psw.label(class_="form-label error", for="inputPassword",
+                                                      text="Неверный пароль") }}
+                                {% else %}
+                                    {{ form.psw(class_="form-control", id="inputPassword") }}
+                                    {{ form.psw.label(class_="form-label", for="inputPassword", text="Пароль") }}
+                                {% endif %}
+                            </div>
+                            <div class="form-check d-flex justify-content-center mb-1">
+                                {{ form.remember(class_="form-check-input me-2") }}
+                                {{ form.remember.label(class_="form-check-label") }}
+                            </div>
+                            <div>
+                                <p class="text-center mb-4">Еще нет аккаунта?
+                                    <a href="{{ url_for('auth.signup') }}" class="fw-bold text-body"><u>Регистрация</u></a>
+                                </p>
+                            </div>
+                            <div class="d-flex justify-content-center">
+                                {{ form.submit(class_="btn btn-lg btn-primary btn-block") }}
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
-            <div>
-                {{ form.psw() }}
-            </div>
-            <div>
-                {{ form.remember.label() }} {{ form.remember() }}
-            </div>
-            <div>
-                {{ form.submit() }}
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 {% endblock %}

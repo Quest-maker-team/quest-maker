@@ -64,14 +64,13 @@ def login():
         author = db.get_author_by_email(email)
         if author:
             if check_password_hash(author['password'], psw):
-                print(form.remember.data)
                 login_user(AuthorLogin(author), form.remember.data)
 
                 return redirect(request.args.get('next') or url_for('profile.profile'))
             else:
-                flash('Неверный пароль', 'error')
+                flash('Неверный пароль', 'wrong_psw')
         else:
-            flash('Пользователь с таким email не зарагастрирован', 'error')
+            flash('Пользователь с таким email не зарагастрирован', 'wrong_email')
     return render_template('login.html', title='Вход | QM', form=form)
 
 

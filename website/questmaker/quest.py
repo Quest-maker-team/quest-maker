@@ -1,4 +1,5 @@
 from . import db
+from flask import g
 
 
 class File:
@@ -25,7 +26,12 @@ class Answer:
     def from_db(answer_id):
         answer_info = db.get_answer(answer_id)
         answer = Answer(answer_info['option_text'], answer_info['points'])
-        answer.next_question = Question.from_db(answer_info['next_question_id'])
+        next_question_id = answer_info['next_question_id']
+        if 'questions' in g and next_question_id in g.qustions.keys():
+            # question has already been created
+            answer.next_question = g.questions[next_question_id]
+        else:
+            answer.next_question = Question.from_db(next_question_id)
         return answer
 
     def __init__(self, text=None, points=0):
@@ -53,7 +59,12 @@ class Movement:
         move_info = db.get_movement(movement_id)
         move = Movement()
         move.place = Place.from_db(move_info['place_id'])
-        move.next_question = Question.from_db(move_info['next_question_id'])
+        next_question_id = move_info['next_question_id']
+        if 'questions' in g and next_question_id in g.qustions.keys():
+            # question has already been created
+            move.next_question = g.qustions[next_question_id]
+        else:
+            move.next_question = Question.from_db(next_question_id)
         return move
 
     def __init__(self):
@@ -76,6 +87,9 @@ class Question:
                                 for answer in db.get_question_answer_options_ids(question_id)]
             question.movements = [Movement().from_db(move['movement_id'])
                                   for move in db.get_question_movements_ids(question_id)]
+        if 'questions' not in g:
+            g.questions = {}  # save mapped questions to process loops
+        g.questions[question_id] = question  # save ref to question to avoid loop creating
         return question
 
     def __init__(self):
@@ -90,6 +104,7 @@ class Question:
 class Quest:
     @staticmethod
     def from_db(quest_id):
+        g.questions = {}  # save mapped questions to process loops
         quest_info = db.get_quest(quest_id)
         quest = Quest()
         quest.title = quest_info['title']

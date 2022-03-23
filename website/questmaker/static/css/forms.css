@@ -24,3 +24,7 @@ h2{
     left: 50%;
   -webkit-transform: translateX(-50%);
 }
+
+.error{
+    color: var(--bs-danger);
+}

@@ -15,17 +15,24 @@
                             <h2 class="form-heading">Добро пожаловать</h2>
                             {{ form.hidden_tag() }}
                             <div class="form-floating mb-2">
-                                {% if form.email.errors %}
+                                {% if get_flashed_messages(category_filter=["wrong_email"]) %}
                                     {{ form.email(class_="form-control is-invalid", id="inputEmail") }}
-                                    {{ form.email.label(class_="form-label", for="inputEmail") }}
+                                    {{ form.email.label(class_="form-label error", for="inputEmail",
+                                                        text="Пользователь не зарагастрирован") }}
                                 {% else %}
                                     {{ form.email(class_="form-control", id="inputEmail") }}
-                                    {{ form.email.label(class_="form-label", for="inputEmail") }}
+                                    {{ form.email.label(class_="form-label", for="inputEmail", text="Email") }}
                                 {% endif %}
                             </div>
                             <div class="form-floating mb-4">
-                                {{ form.psw(class_="form-control", id="inputPassword") }}
-                                {{ form.psw.label(class_="form-label", for="inputPassword") }}
+                                {% if get_flashed_messages(category_filter=["wrong_psw"]) %}
+                                    {{ form.psw(class_="form-control is-invalid", id="inputPassword") }}
+                                    {{ form.psw.label(class_="form-label error", for="inputPassword",
+                                                      text="Неверный пароль") }}
+                                {% else %}
+                                    {{ form.psw(class_="form-control", id="inputPassword") }}
+                                    {{ form.psw.label(class_="form-label", for="inputPassword", text="Пароль") }}
+                                {% endif %}
                             </div>
                             <div class="form-check d-flex justify-content-center mb-1">
                                 {{ form.remember(class_="form-check-input me-2") }}

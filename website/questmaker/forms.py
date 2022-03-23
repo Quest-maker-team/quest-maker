@@ -3,7 +3,7 @@ Contains WTForms that are used by application
 """
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField
+from wtforms import StringField, EmailField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import DataRequired, Email, Length, EqualTo
 
 
@@ -11,7 +11,7 @@ class LoginForm(FlaskForm):
     """
     Login WTForm with some validators
     """
-    email = StringField('Email', validators=[Email('Некорректный email'), DataRequired()],
+    email = EmailField('Email', validators=[Email('Некорректный email'), DataRequired()],
                         render_kw={'placeholder': 'Email'})
     psw = PasswordField('Пароль', validators=[DataRequired()], render_kw={'placeholder': 'Пароль'})
     remember = BooleanField('Запомнить меня', default=False)

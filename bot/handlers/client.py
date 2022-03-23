@@ -18,14 +18,36 @@ class QuestPoint:
         """
         self.msg = msg
         self.next_points = None
+        self.tips = []
 
 
     def load_next_points(self, points):
         """Load next points.
         :param self: instance
-        :param msg: next points dictionary
+        :param points: next points dictionary
         """
         self.next_points = points
+
+
+    def load_tips(self, tips):
+        """Load point tips.
+        :param self: instance
+        :param tips: list of tuples with fine and tip message
+        """
+        self.tips = tips
+
+
+    def get_tip(self):
+        """Get point tips.
+        :param self: instance
+        :return tuple with fine and tip message
+        :return (0, None) if there is no more tip
+        """
+        if len(self.tips) == 0:
+            return (0, None)
+        res = self.tips[0]
+        del self.tips[0]
+        return res
 
 
     def get_next(self, point_name):
@@ -37,7 +59,7 @@ class QuestPoint:
         """
         if point_name in self.next_points:
             return self.next_points[point_name]
-        return None
+        return (0, None)
 
 
 def get_quest_info(name):
@@ -56,9 +78,11 @@ def get_quest_info(name):
         "Эдсрега А. Дейкстры, Томаса Г. Кормена и Фёдора А. Новикова?")
     point_dm_question.load_next_points(
         {'Кормен': (-5, point_cormen), 'Дейкстра': (5, point_dijkstra), 'Новиков': (10, point_novikov)})
+    point_dm_question.load_tips([(-2, "Кормена мы осуждаем."), (-3, "Новикова надо выбирать.")])
 
     point_arithmetic = QuestPoint("2+2?")
-    point_arithmetic.load_next_points({"4": (1, point_dm_question)})
+    point_arithmetic.load_next_points({"4": (2, point_dm_question)})
+    point_arithmetic.load_tips([(-1, "Используйте калькулятор.")])
 
     return (start_msg, point_arithmetic, end_msg)
 
@@ -133,7 +157,8 @@ async def name_quest(message: types.Message, state: FSMContext):
         await QuestStates.next()
         await message.answer('Квест "' + message.text + '" начат. '
             'Чтобы закончить напишите /end, '
-            'чтобы получить количество баллов - /score.')
+            'чтобы получить количество баллов - /score, '
+            'чтобы получить подсказку - /tip.')
         await message.answer(data['quest'].cur_point.msg)
     else:
         await message.reply('Квест "' + message.text + '" не найден')
@@ -149,6 +174,24 @@ async def cancel_handler(message: types.Message, state: FSMContext):
     if currentState is None:
         return
     await state.finish()
+
+
+async def tip_handler(message: types.Message, state: FSMContext):
+    """Get tip handler.
+    :param message: message from user
+    :param state: state machine context
+    """
+    async with state.proxy() as data:
+        if 'quest' in data:
+            (fine, msg) = data['quest'].cur_point.get_tip()
+            if msg is None:
+                await message.reply('Больше подсказок нет.')
+            else:
+                await message.reply(msg)
+                await message.answer('Штраф за подсказку: ' + str(fine) + ' баллов.')
+                data['quest'].score += fine
+        else:
+            await message.answer('Выберите квест командой /quest.')
 
 
 async def score_handler(message: types.Message, state: FSMContext):
@@ -193,6 +236,7 @@ def register_client_handlers(dp: Dispatcher):
     dp.register_message_handler(cmd_quest, commands='quest')
     dp.register_message_handler(cancel_handler, state='*', commands="end")
     dp.register_message_handler(score_handler, state='*', commands="score")
+    dp.register_message_handler(tip_handler, state='*', commands="tip")
     dp.register_message_handler(name_quest, state=QuestStates.naming)
     dp.register_message_handler(quest_proc, state=QuestStates.session)
     dp.register_message_handler(warning)

@@ -18,7 +18,7 @@
                                 {% if get_flashed_messages(category_filter=["wrong_email"]) %}
                                     {{ form.email(class_="form-control is-invalid", id="inputEmail") }}
                                     {{ form.email.label(class_="form-label error", for="inputEmail",
-                                                           text="Пользователь не зарегистрирован") }}
+                                                        text="Пользователь не зарегистрирован") }}
                                 {% else %}
                                     {{ form.email(class_="form-control", id="inputEmail") }}
                                     {{ form.email.label(class_="form-label", for="inputEmail", text="Email") }}

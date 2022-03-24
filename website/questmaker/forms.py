@@ -11,8 +11,7 @@ class LoginForm(FlaskForm):
     """
     Login WTForm with some validators
     """
-    email = EmailField('Email', validators=[Email('Некорректный email'), DataRequired()],
-                        render_kw={'placeholder': 'Email'})
+    email = EmailField('Email', validators=[DataRequired()], render_kw={'placeholder': 'Email'})
     psw = PasswordField('Пароль', validators=[DataRequired()], render_kw={'placeholder': 'Пароль'})
     remember = BooleanField('Запомнить меня', default=False)
     submit = SubmitField('Войти')
@@ -23,8 +22,7 @@ class SignupFrom(FlaskForm):
     Signup WTForm with some validators
     """
     name = StringField('Имя', validators=[DataRequired()], render_kw={'placeholder': 'Имя'})
-    email = EmailField('Email', validators=[Email('Некорректный email'), DataRequired()],
-                        render_kw={'placeholder': 'Email'})
+    email = EmailField('Email', validators=[DataRequired()], render_kw={'placeholder': 'Email'})
 
     psw = PasswordField('Пароль',
                         validators=[DataRequired(),

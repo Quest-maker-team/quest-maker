@@ -18,7 +18,7 @@
                                 {% if get_flashed_messages(category_filter=["wrong_email"]) %}
                                     {{ form.email(class_="form-control is-invalid", id="inputEmail") }}
                                     {{ form.email.label(class_="form-label error", for="inputEmail",
-                                                        text="Пользователь не зарагастрирован") }}
+                                                           text="Пользователь не зарегистрирован") }}
                                 {% else %}
                                     {{ form.email(class_="form-control", id="inputEmail") }}
                                     {{ form.email.label(class_="form-label", for="inputEmail", text="Email") }}
@@ -28,7 +28,7 @@
                                 {% if get_flashed_messages(category_filter=["wrong_psw"]) %}
                                     {{ form.psw(class_="form-control is-invalid", id="inputPassword") }}
                                     {{ form.psw.label(class_="form-label error", for="inputPassword",
-                                                      text="Неверный пароль") }}
+                                                         text="Неверный пароль") }}
                                 {% else %}
                                     {{ form.psw(class_="form-control", id="inputPassword") }}
                                     {{ form.psw.label(class_="form-label", for="inputPassword", text="Пароль") }}
@@ -40,7 +40,9 @@
                             </div>
                             <div>
                                 <p class="text-center mb-4">Еще нет аккаунта?
-                                    <a href="{{ url_for('auth.signup') }}" class="fw-bold text-body"><u>Регистрация</u></a>
+                                    <a href="{{ url_for('auth.signup') }}" class="fw-bold text-body">
+                                        <u>Регистрация</u>
+                                    </a>
                                 </p>
                             </div>
                             <div class="d-flex justify-content-center">

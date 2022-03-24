@@ -23,7 +23,7 @@ class SignupFrom(FlaskForm):
     Signup WTForm with some validators
     """
     name = StringField('Имя', validators=[DataRequired()], render_kw={'placeholder': 'Имя'})
-    email = StringField('Email', validators=[Email('Некорректный email'), DataRequired()],
+    email = EmailField('Email', validators=[Email('Некорректный email'), DataRequired()],
                         render_kw={'placeholder': 'Email'})
 
     psw = PasswordField('Пароль',

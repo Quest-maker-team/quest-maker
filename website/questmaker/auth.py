@@ -42,10 +42,10 @@ def signup():
         hash_psw = generate_password_hash(psw)
         success = db.add_user(name, hash_psw, email)
         if success:
-            flash('Вы зарегестрированы', 'success')
+            flash('Вы зарегестрированы', 'success_reg')
             return redirect(url_for('auth.login'))
         else:
-            flash('Вы уже зарегестрированы', 'error')
+            flash('Вы уже зарегестрированы', 'wrong_email_reg')
     return render_template('signup.html', title='Регистрация | QM', form=form)
 
 

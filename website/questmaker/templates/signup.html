@@ -1,24 +1,60 @@
 {% extends "base.html" %}
 
+{% block styles %}
+<link rel="stylesheet" href="{{url_for('static', filename='css/forms.css')}}">
+{% endblock %}
+
 {% block content %}
-<div>
-    <h3>Регистрация</h3>
-    <div>
-        <form method="POST" action="/signup">
-            {{ form.hidden_tag() }}
-            {% for field in form if field.name != 'csrf-token' %}
-                 <div>
-                    {{ field() }}
-                    {% if field.errors %}
-                        <span class = "invalid">
-                        {% for e in field.errors %}
-                            {{ e }}
-                        {% endfor %}
-                        </span>
-                    {% endif %}
+<div class="mask d-flex align-items-center h-100">
+    <div class="container h-100">
+        <div class="row d-flex justify-content-center align-items-center h-100">
+            <div class="col-md-8 col-lg-7 col-xl-6">
+                <div class="card" style="border-radius: 15px">
+                    <div class="card-body p-4 row d-flex justify-content-center align-items-center">
+                        <form method="POST" action="/signup" class="form col-sm-10 col-md-9" autocomplete="off">
+                            <h2 class="form-heading">Регистрация</h2>
+                            {{ form.hidden_tag() }}
+                            <div class="form-floating mb-2">
+                                {{ form.name(class_="form-control", id="inputName", autocomplete="no") }}
+                                {{ form.name.label(class_="form-label", for="inputEmail",
+                                                   text="Имя") }}
+                            </div>
+                            <div class="form-floating mb-2">
+                                {% if get_flashed_messages(category_filter=["wrong_email_reg"]) %}
+                                    {{ form.email(class_="form-control is-invalid", id="inputEmail",
+                                                  autocomplete="off") }}
+                                    {{ form.email.label(class_="form-label error", for="inputEmail",
+                                                           text="Пользователь уже зарегистрирован") }}
+                                {% else %}
+                                    {{ form.email(class_="form-control", id="inputEmail", autocomplete="off") }}
+                                    {{ form.email.label(class_="form-label", for="inputEmail", text="Email") }}
+                                {% endif %}
+                            </div>
+                            <div class="form-floating mb-2">
+                                {{ form.psw(class_="form-control", id="inputPassword", autocomplete="new-password") }}
+                                {{ form.psw.label(class_="form-label", for="inputPassword", text="Пароль") }}
+                            </div>
+                            <div class="form-floating mb-4">
+                                {% if form.psw_confirm.errors %}
+                                    {{ form.psw_confirm(class_="form-control is-invalid", id="inputPassword",
+                                                        autocomplete="new-password") }}
+                                    {{ form.psw_confirm.label(class_="form-label error", for="inputPassword",
+                                                              text="Пароль не совпадает") }}
+                                {% else %}
+                                    {{ form.psw_confirm(class_="form-control", id="inputPassword",
+                                                        autocomplete="new-password") }}
+                                    {{ form.psw_confirm.label(class_="form-label", for="inputPassword",
+                                                              text="Повторите пароль") }}
+                                {% endif %}
+                            </div>
+                            <div class="d-flex justify-content-center">
+                                {{ form.submit(class_="btn btn-lg btn-primary btn-block") }}
+                            </div>
+                        </form>
+                    </div>
                 </div>
-            {% endfor %}
-        </form>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

@@ -25,9 +25,7 @@ class SignupFrom(FlaskForm):
     email = EmailField('Email', validators=[DataRequired()], render_kw={'placeholder': 'Email'})
 
     psw = PasswordField('Пароль',
-                        validators=[DataRequired(),
-                                    Length(min=8, max=20, message='Длина пароля должна быть от 8 до 20 символов')],
-                        render_kw={'placeholder': 'Пароль'})
+                        validators=[DataRequired()], render_kw={'placeholder': 'Пароль'})
 
     psw_confirm = PasswordField('Подтверждение пароля',
                                 validators=[DataRequired(), EqualTo('psw', message='Пароли не совпадают')],

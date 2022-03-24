@@ -31,15 +31,16 @@
                                 {% endif %}
                             </div>
                             <div class="form-floating mb-2">
-                                {{ form.psw(class_="form-control", id="inputPassword", autocomplete="new-password") }}
+                                {{ form.psw(class_="form-control", id="inputPassword", autocomplete="new-password",
+                                            minlength="4", maxlength="30") }}
                                 {{ form.psw.label(class_="form-label", for="inputPassword", text="Пароль") }}
                             </div>
                             <div class="form-floating mb-4">
                                 {% if form.psw_confirm.errors %}
                                     {{ form.psw_confirm(class_="form-control is-invalid", id="inputPassword",
-                                                        autocomplete="new-password") }}
+                                                        autocomplete="new-password", minlength="4", maxlength="30") }}
                                     {{ form.psw_confirm.label(class_="form-label error", for="inputPassword",
-                                                              text="Пароль не совпадает") }}
+                                                              text="Пароль не совпадает", minlength="4", maxlength="30") }}
                                 {% else %}
                                     {{ form.psw_confirm(class_="form-control", id="inputPassword",
                                                         autocomplete="new-password") }}

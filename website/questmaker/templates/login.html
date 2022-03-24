@@ -26,11 +26,13 @@
                             </div>
                             <div class="form-floating mb-4">
                                 {% if get_flashed_messages(category_filter=["wrong_psw"]) %}
-                                    {{ form.psw(class_="form-control is-invalid", id="inputPassword") }}
+                                    {{ form.psw(class_="form-control is-invalid", id="inputPassword",
+                                                minlength="4", maxlength="30") }}
                                     {{ form.psw.label(class_="form-label error", for="inputPassword",
-                                                         text="Неверный пароль") }}
+                                                      text="Неверный пароль") }}
                                 {% else %}
-                                    {{ form.psw(class_="form-control", id="inputPassword") }}
+                                    {{ form.psw(class_="form-control", id="inputPassword",
+                                                minlength="4", maxlength="30") }}
                                     {{ form.psw.label(class_="form-label", for="inputPassword", text="Пароль") }}
                                 {% endif %}
                             </div>

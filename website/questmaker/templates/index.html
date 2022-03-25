@@ -3,4 +3,12 @@
 {% block content %}
     {% set active_page = active_page|default('index') -%}
     {% include "header.html" %}
+
+    <div class="mask d-flex align-items-center min-vh-100">
+        <div class="container">
+
+        </div>
+    </div>
+
+    {% include "footer.html" %}
 {% endblock %}

@@ -27,7 +27,7 @@
                 </a>
                 <ul class="dropdown-menu text-small" aria-labelledby="dropdownUser1">
                     <li><a class="dropdown-item" href="#">Новый квест...</a></li>
-                    <li><a class="dropdown-item" href="#">Профиль...</a></li>
+                    <li><a class="dropdown-item" href="{{ url_for('profile.profile') }} }}">Профиль...</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Выйти</a></li>
                 </ul>
@@ -35,19 +35,3 @@
         </div>
     </div>
 </header>
-
-    {% set navigation_bar = [
-    ('/', 'index', 'Index'),
-    ('/downloads/', 'downloads', 'Downloads'),
-    ('/about/', 'about', 'About')
-] -%}
-
-{% set active_page = active_page|default('index') -%}
-...
-<ul id="navigation">
-    {% for href, id, caption in navigation_bar %}
-    <li{% if id == active_page %} class="active"{% endif
-    %}><a href="{{ href|e }}">{{ caption|e }}</a>
-    </li>
-{% endfor %}
-</ul>

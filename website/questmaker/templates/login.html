@@ -3,7 +3,8 @@
 {% block styles %}
 <link rel="stylesheet" href="{{url_for('static', filename='css/forms.css')}}">
 {% endblock %}
-
+{% block header %}
+{% endblock %}
 {% block content %}
 <div class="mask d-flex align-items-center h-100">
     <div class="container h-100">
@@ -57,4 +58,6 @@
         </div>
     </div>
 </div>
+{% endblock %}
+{% block footer %}
 {% endblock %}

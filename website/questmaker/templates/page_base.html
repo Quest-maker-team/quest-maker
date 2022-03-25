@@ -25,20 +25,24 @@
                     </div>
 
                     <div class="nav-item d-flex">
-                        <div class="nav-item dropdown">
-                            <a href="#" class="nav-link dropdown-toggle d-block link-dark text-decoration-none" id="dropdown1"
-                                               data-bs-toggle="dropdown" aria-expanded="false">
-                                <img src="{{ url_for('static', filename='img/profile_defolt.png') }}" alt="mdo"
-                                     width="32" height="32" class="rounded-circle">
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end text-small" aria-labelledby="dropdown1">
-                                <li><a class="dropdown-item" href="#">Новый квест...</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('profile.profile') }} }}">Профиль...</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Выйти</a></li>
-                            </ul>
-                        </div>
-
+                        {% if user.is_authenticated %}
+                            <div class="nav-item dropdown">
+                                <a href="#" class="nav-link dropdown-toggle d-block link-dark text-decoration-none" id="dropdown1"
+                                                   data-bs-toggle="dropdown" aria-expanded="false">
+                                    <img src="{{ url_for('static', filename='img/profile_defolt.png') }}" alt="mdo"
+                                         width="32" height="32" class="rounded-circle">
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end text-small" aria-labelledby="dropdown1">
+                                    <li><a class="dropdown-item" href="#">Новый квест...</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('profile.profile') }}">Профиль...</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Выйти</a></li>
+                                </ul>
+                            </div>
+                        {% else %}
+                            <button class="btn btn-outline-primary me-1" type="submit" onclick="window.location='{{ url_for('auth.login')}}';">Войти</button>
+                            <button class="btn btn-outline-success me-4" type="submit" onclick="window.location='{{ url_for('auth.signup')}}';">Регистрация</button>
+                        {% endif %}
                         <button class="navbar-toggler collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
                             <span class="navbar-toggler-icon"></span>
                         </button>

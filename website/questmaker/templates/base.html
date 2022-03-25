@@ -14,7 +14,11 @@
     {% endblock %}
 </head>
 <body>
+    {% block header %}
+    {% endblock %}
     {% block content %}
+    {% endblock %}
+    {% block footer %}
     {% endblock %}
     <script src="{{ url_for('static', filename='script/bootstrup/bootstrap.bundle.min.js') }}"></script>
 </body>

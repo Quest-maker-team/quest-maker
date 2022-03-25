@@ -1,0 +1,53 @@
+{% set navigation_bar = [('/', 'index', 'Главная'),
+                         ('#', 'downloads', 'Конструктор')] %}
+<header class="p-3 mb-3 border-bottom">
+    <div class="container">
+        <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
+            <a href="/" class="d-flex align-items-center mb-2 mb-lg-0 text-dark text-decoration-none">
+            <img src="{{ url_for('static', filename='img/favicon.ico') }}">
+            </a>
+
+            <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
+                {% for href, id, caption in navigation_bar %}
+                    <li>
+                        <a href="{{ href|e }}"
+                           class="nav-link px-2 {% if id == active_page %} link-secondary"
+                                                {% else %} link-dark" {% endif %}>
+                            {{ caption|e }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+
+            <div class="dropdown text-end">
+                <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle" id="dropdownUser1"
+                   data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="{{ url_for('static', filename='img/profile_defolt.png') }}" alt="mdo"
+                         width="32" height="32" class="rounded-circle">
+                </a>
+                <ul class="dropdown-menu text-small" aria-labelledby="dropdownUser1">
+                    <li><a class="dropdown-item" href="#">Новый квест...</a></li>
+                    <li><a class="dropdown-item" href="#">Профиль...</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Выйти</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</header>
+
+    {% set navigation_bar = [
+    ('/', 'index', 'Index'),
+    ('/downloads/', 'downloads', 'Downloads'),
+    ('/about/', 'about', 'About')
+] -%}
+
+{% set active_page = active_page|default('index') -%}
+...
+<ul id="navigation">
+    {% for href, id, caption in navigation_bar %}
+    <li{% if id == active_page %} class="active"{% endif
+    %}><a href="{{ href|e }}">{{ caption|e }}</a>
+    </li>
+{% endfor %}
+</ul>

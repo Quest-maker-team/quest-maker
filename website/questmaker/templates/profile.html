@@ -1,6 +1,8 @@
 {% extends 'base.html' %}
 
 {% block content %}
+    {% set active_page = active_page|default('profile') -%}
+{% include "header.html" %}
 <h1>Profile</h1>
 <p>You are authorized and this is your profile</p>
 <p>Your name: {{ user['name'] }}</p>

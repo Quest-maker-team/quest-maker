@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>QuestMaker</h1>
+    {% set active_page = active_page|default('index') -%}
+    {% include "header.html" %}
 {% endblock %}

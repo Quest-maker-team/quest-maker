@@ -18,11 +18,16 @@ entities
 (**but with values instead of values ids, e.g. `q_type` 
 instead of `q_type_id`**).
 
+If quest is public JSON has `password` field with empty string.
+
 `question`, `hint`, `answer` objects also contain `file_ids`
 key with ids of related files, described in array `files`.
 
-`question` objects contain arrays `hints_ids`, 
-`answer_option_ids`, `movements_ids`
+`question` objects contain arrays `hints`, 
+`answer_option_ids`, `movements_ids`.
+
+`hint` objects contain fields `hint_text`, `fine`
+and array `file_ids`
 
 `movement` objects contain array `places_ids`.
 
@@ -47,7 +52,8 @@ Returned JSON example:
       "q_type": "start",
       "answer_options_ids": [0],
       "movements_ids": [],
-      "files_ids": []
+      "files_ids": [],
+      "hints": []
     },
     {
       "question_id": 1,
@@ -55,7 +61,8 @@ Returned JSON example:
       "q_type": "end",
       "answer_option_ids": [],
       "movement_ids": [],
-      "file_ids": []
+      "file_ids": [],
+      "hints": []
     }
   ],
   "answer_options": [
@@ -68,7 +75,7 @@ Returned JSON example:
   ],
   "files": [
     {
-     "f_id": 1,
+      "f_id": 1, 
       "url_for_file": "www.files.com/files/228",
       "f_type": "image"
     }

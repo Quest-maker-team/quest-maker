@@ -76,7 +76,7 @@ Returned JSON example:
   "files": [
     {
       "f_id": 1, 
-      "url_for_file": "www.files.com/files/228",
+      "url_for_file": "www.files.com/files/228.jpg",
       "f_type": "image"
     }
   ]

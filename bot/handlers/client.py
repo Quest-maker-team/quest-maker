@@ -7,34 +7,51 @@ from aiogram import types, Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
+from db.db import *
+
 
 class QuestPoint:
     """Quest point representation type.
     """
-    def __init__(self, msg):
+    def __init__(self, id, msg):
         """Constructor.
         :param self: instance
+        :param id: point id
         :param msg: point message
         """
+        self.id = id
         self.msg = msg
         self.next_points = None
         self.tips = []
 
 
-    def load_next_points(self, points):
+    def load_next_points(self):
         """Load next points.
         :param self: instance
-        :param points: next points dictionary
         """
-        self.next_points = points
+        points_info = get_answer_options(self.id)
+        if points_info is None:
+            return
+        if len(points_info) == 0:
+            return
+
+        self.next_points = {}
+        for i in range(len(points_info)):
+            if points_info[i][2] is None:
+                point = None
+            else:
+                question_info = get_question_by_id(points_info[i][2])
+                point = QuestPoint(question_info[0], question_info[1])
+            self.next_points[points_info[i][0]] = (points_info[i][1], point)
 
 
-    def load_tips(self, tips):
+    def load_tips(self):
         """Load point tips.
         :param self: instance
-        :param tips: list of tuples with fine and tip message
         """
-        self.tips = tips
+        res = get_hints(self.id)
+        if res != None:
+            self.tips = res
 
 
     def get_tip(self):
@@ -58,46 +75,41 @@ class QuestPoint:
         :return None if there is no such answer
         """
         if point_name in self.next_points:
-            return self.next_points[point_name]
+            point_info = self.next_points[point_name]
+            if point_info[1] is None:
+                return (point_info[0], None)
+            else:
+                point_info[1].load_next_points()
+                point_info[1].load_tips()
+                return (point_info[0], point_info[1])
         return (0, None)
 
 
-def get_quest_info(name):
+def get_quest_info(quest_id):
     """Get quest info.
-    :param name: quest name
-    :return start message, first point and end message tuple
+    :param quest_id: quest id
+    :return first point
     """
-    start_msg = 'Привет. Это нулевой квест проекта QuestMaker.'
-    end_msg = 'До свидания от нулевого квеста.'
-    
-    point_cormen = QuestPoint("Осуждаем.")
-    point_dijkstra = QuestPoint("Одобряем.")
-    point_novikov = QuestPoint("Гиперодобряем.")
+    first_point_info = get_first_question(quest_id)
+    first_point = QuestPoint(first_point_info[0], first_point_info[1])
 
-    point_dm_question = QuestPoint("Ваш любимый исследователь дискретной математики из "
-        "Эдсрега А. Дейкстры, Томаса Г. Кормена и Фёдора А. Новикова?")
-    point_dm_question.load_next_points(
-        {'Кормен': (-5, point_cormen), 'Дейкстра': (5, point_dijkstra), 'Новиков': (10, point_novikov)})
-    point_dm_question.load_tips([(-2, "Кормена мы осуждаем."), (-3, "Новикова надо выбирать.")])
+    first_point.load_next_points()
+    first_point.load_tips()
 
-    point_arithmetic = QuestPoint("2+2?")
-    point_arithmetic.load_next_points({"4": (2, point_dm_question)})
-    point_arithmetic.load_tips([(-1, "Используйте калькулятор.")])
-
-    return (start_msg, point_arithmetic, end_msg)
+    return first_point
 
 
 class Quest:
     """Quest representation type.
     """
-    def __init__(self, name):
+    def __init__(self, quest_id):
         """Constructor.
         :param self: instance
-        :param name: quest name
+        :param quest_id: quest id
         """
-        self.name = name
+        self.quest_id = quest_id
         self.score = 0
-        (self.start_msg, self.cur_point, self.end_msg) = get_quest_info(name)
+        self.cur_point = get_quest_info(quest_id)
 
 
     def next_point(self, message):
@@ -131,11 +143,11 @@ async def cmd_start(message: types.Message):
     await message.answer('Это бот для игры в квесты, созданные при помощи сервиса QuestCreator.')
 
 
-def activate_quest(name):
+def activate_quest(quest_id):
     """Check if quest exists.
-    :param name: quest name
+    :param quest_id: quest id
     """
-    return name == "zero"
+    return get_quest_title(quest_id) != None
 
 
 async def cmd_quest(message: types.Message):
@@ -143,7 +155,7 @@ async def cmd_quest(message: types.Message):
     :param message: message from user
     """
     await QuestStates.naming.set()
-    await message.answer('Введите имя квеста.')
+    await message.answer('Введите идентификатор квеста.')
 
 
 async def name_quest(message: types.Message, state: FSMContext):
@@ -155,13 +167,13 @@ async def name_quest(message: types.Message, state: FSMContext):
         async with state.proxy() as data:
             data['quest'] = Quest(message.text)
         await QuestStates.next()
-        await message.answer('Квест "' + message.text + '" начат. '
+        await message.answer('Квест "' + get_quest_title(message.text) + '" начат. '
             'Чтобы закончить напишите /end, '
             'чтобы получить количество баллов - /score, '
             'чтобы получить подсказку - /tip.')
         await message.answer(data['quest'].cur_point.msg)
     else:
-        await message.reply('Квест "' + message.text + '" не найден')
+        await message.reply('Квест с идентификатором "' + message.text + '" не найден')
         await state.finish()
 
 
@@ -215,9 +227,8 @@ async def quest_proc(message: types.Message, state: FSMContext):
         (quest_ends, msg) = data['quest'].next_point(message.text)
         await message.answer(msg)
         if quest_ends == True:
-            await message.answer(data['quest'].end_msg)
             await state.finish()
-            await message.answer('Квест "' + data['quest'].name + '" закончен. '
+            await message.answer('Квест "' + get_quest_title(data['quest'].quest_id) + '" закончен. '
                 'Количество баллов: ' + str(data['quest'].score) + ".")
 
 

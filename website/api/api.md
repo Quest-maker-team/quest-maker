@@ -12,35 +12,41 @@ Return JSON with information about quest.
 JSON contains fields as same as table [quests](../../docs/image/db.png),
 but with 
 field `start_qustion_id` and array `tags`, array 
-and also arrays `questions`, `answer_options`, `hints`, 
-`files`, `places`, `movements` with info about related
-entities
+and also arrays `questions`, `answer_options`, `movements`
+and `files` with info about related entities
 (**but with values instead of values ids, e.g. `q_type` 
 instead of `q_type_id`**).
 
-If quest is public JSON has `password` field with empty string.
+If quest is public, JSON has `password` field with empty string.
 
-`question`, `hint`, `answer` objects also contain `file_ids`
-key with ids of related files, described in array `files`.
+`quest` `question`, `hint`, `answer` objects also contain array
+`files` of file objects.
 
 `question` objects contain arrays `hints`, 
 `answer_option_ids`, `movements_ids`.
 
 `hint` objects contain fields `hint_text`, `fine`
-and array `file_ids`
+and array `file` of file objects
 
-`movement` objects contain array `places_ids`.
+`movement` objects contain array `places` of place objects.
 
 Returned JSON example:
 ```json
 {
+  "quest_id": 0,
   "title": "Example",
   "author": "some author",
   "description": "This is example quest",
   "tags": ["example", "test"],
   "password": "12345abc",
   "hidden": true,
-  "file_ids": [1],
+  "files": [
+    {
+      "f_id": 1, 
+      "url_for_file": "www.files.com/files/228.jpg",
+      "f_type": "image"
+    }
+  ],
   "time_open": "2011-01-01 00:00:00",
   "time_close": "2022-01-01 00:00:00",
   "lead_time": "6 months",
@@ -52,16 +58,31 @@ Returned JSON example:
       "q_type": "start",
       "answer_options_ids": [0],
       "movements_ids": [],
-      "files_ids": [],
+      "files": [],
       "hints": []
     },
     {
       "question_id": 1,
+      "question_text": "first question",
+      "q_type": "choice",
+      "answer_options_ids": [1],
+      "movements_ids": [],
+      "files": [],
+      "hints": [
+        {
+          "hint_id": 1,
+          "hint_text": "hint",
+          "fine": 5
+        }
+      ]
+    },
+    {
+      "question_id": 2,
       "question_text": "",
       "q_type": "end",
       "answer_option_ids": [],
       "movement_ids": [],
-      "file_ids": [],
+      "files": [],
       "hints": []
     }
   ],
@@ -71,13 +92,12 @@ Returned JSON example:
       "option_text": "",
       "points": 0,
       "next_question_id": 1
-    }
-  ],
-  "files": [
+    },
     {
-      "f_id": 1, 
-      "url_for_file": "www.files.com/files/228.jpg",
-      "f_type": "image"
+      "option_id": 1,
+      "option_text": "right answer",
+      "points": 10,
+      "next_question_id": 2
     }
   ]
 }

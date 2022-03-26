@@ -2,9 +2,27 @@
 {% set active_page = active_page|default('index') -%}
 
 {% block content %}
-    <div class="mask d-flex align-items-center min-vh-100">
-        <div class="container">
+    <header class="mask d-flex flex-column align-items-center justify-content-center min-vh-100"
+             style="background-image: url({{ url_for('static', filename='img/telegram_scrin_on_phone.jpg') }});
+                     background-repeat: no-repeat;
+                     background-size:cover;
+                     background-position: center center;">
+            <div class="min-vh-100 w-75 position-relative">
+                <div class="position-absolute end-0 top-50 col-8">
+                    <div class="text-light">
+                        <h1 class="h1 text-center">Quest Maker</h1>
+                        <div class="text-center">Инструмент для создания telegram-квестов</div>
+                    </div>
+                </div>
+            </div>
+    </header>
+
+    <main>
+        <div>
 
         </div>
-    </div>
+        <div>
+
+        </div>
+    </main>
 {% endblock %}

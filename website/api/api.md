@@ -154,5 +154,5 @@ movements will be deleted.
 will be deleted.
 * If the entity is answer or movement, quest graph
 can become disconnected.
-*With deletion of quest, questions or hints related files 
+* With deletion of quest, questions or hints related files 
 will be deleted too.

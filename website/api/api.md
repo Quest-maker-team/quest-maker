@@ -146,3 +146,6 @@ will change option text in answer option with `id` = 7.
 Delete entity.
 
 General schema: `DELETE api/entity/{entity_id}`.
+
+If the entity was a graph node, the related nodes 
+will be deleted recursively.

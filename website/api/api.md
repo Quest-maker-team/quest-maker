@@ -147,5 +147,12 @@ Delete entity.
 
 General schema: `DELETE api/entity/{entity_id}`.
 
-If the entity was a graph node, the related nodes 
-will be deleted recursively.
+* If the entity is quest, all information will be deleted.
+* If the entity is question then related answers, hints and
+movements will be deleted.
+* If the entity is  movement then related place 
+will be deleted.
+* If the entity is answer or movement, quest graph
+can become disconnected.
+*With deletion of quest, questions or hints related files 
+will be deleted too.

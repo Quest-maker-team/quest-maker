@@ -81,8 +81,9 @@ Create new entity with params encountered in JSON.
 Return JSON with id of created entity.
 
 ###Quest is created especially:
-### Quest
-* `POST api/quest`
+
+`POST api/quest`
+
 Returned JSON also contains first answer id
 
 ### Other according to general schema: 
@@ -90,21 +91,21 @@ Returned JSON also contains first answer id
 
 (what_id if it has already been created, so without JSON body)
 
-### Question
+#### Question
 * `POST api/answer_option/{answer_option_id}/question/[?id={question_id}]`
 
 or
 
 * `POST api/movement/{movement_id}/question/[?id={question_id}]`
-### Hint
+#### Hint
 * `POST api/question/{question_id}/hint/[?id={hint_id}]`
-### File
+#### File
 * `POST api/quest|question|answer|hint/{id}/file/[?id={file_id}]`
-### Answer option
+#### Answer option
 * `POST api/question/{question_id}/answer_option/[?id={answer_option_id}]`
-### Movement
+#### Movement
 * `POST api/answer/{answer_id}/movement/[?id={movement_id}]`
-### Place
+#### Place
 * `POST api/movement/{movement_id}/place/[?id={place_id}]`
 
 Example:

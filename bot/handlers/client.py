@@ -7,19 +7,23 @@ from aiogram import types, Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
+from aiogram.types import ReplyKeyboardRemove
+from keyboards import *
+
 from db.db import *
 
 
 class QuestPoint:
     """Quest point representation type.
     """
-    def __init__(self, id, msg):
+    def __init__(self, id, type, msg):
         """Constructor.
         :param self: instance
         :param id: point id
         :param msg: point message
         """
         self.id = id
+        self.type = type
         self.msg = msg
         self.next_points = None
         self.tips = []
@@ -41,7 +45,7 @@ class QuestPoint:
                 point = None
             else:
                 question_info = get_question_by_id(points_info[i][2])
-                point = QuestPoint(question_info[0], question_info[1])
+                point = QuestPoint(question_info[0], question_info[2], question_info[1])
             self.next_points[points_info[i][0]] = (points_info[i][1], point)
 
 
@@ -74,15 +78,21 @@ class QuestPoint:
         :return score to add and next point if success
         :return None if there is no such answer
         """
-        if point_name in self.next_points:
-            point_info = self.next_points[point_name]
-            if point_info[1] is None:
-                return (point_info[0], None)
-            else:
-                point_info[1].load_next_points()
-                point_info[1].load_tips()
-                return (point_info[0], point_info[1])
-        return (0, None)
+        if self.type == "open" or self.type == "choice":
+            if point_name in self.next_points:
+                point_info = self.next_points[point_name]
+                if point_info[1] is None:
+                    return (point_info[0], None)
+                else:
+                    point_info[1].load_next_points()
+                    point_info[1].load_tips()
+                    return (point_info[0], point_info[1])
+            return (0, None)
+        # movement
+        point_info = list(self.next_points.items())[0][1]
+        point_info[1].load_next_points()
+        point_info[1].load_tips()
+        return (point_info[0], point_info[1])
 
 
 def get_quest_info(quest_id):
@@ -91,7 +101,7 @@ def get_quest_info(quest_id):
     :return first point
     """
     first_point_info = get_first_question(quest_id)
-    first_point = QuestPoint(first_point_info[0], first_point_info[1])
+    first_point = QuestPoint(first_point_info[0], first_point_info[2], first_point_info[1])
 
     first_point.load_next_points()
     first_point.load_tips()
@@ -140,7 +150,8 @@ async def cmd_start(message: types.Message):
     """Command start handler.
     :param message: message from user
     """
-    await message.answer('Это бот для игры в квесты, созданные при помощи сервиса QuestCreator.')
+    await message.answer('Это бот для игры в квесты, созданные при помощи сервиса QuestCreator.',
+        reply_markup=ReplyKeyboardRemove())
 
 
 def activate_quest(quest_id):
@@ -173,7 +184,8 @@ async def name_quest(message: types.Message, state: FSMContext):
             'чтобы получить подсказку - /tip.')
         await message.answer(data['quest'].cur_point.msg)
     else:
-        await message.reply('Квест с идентификатором "' + message.text + '" не найден')
+        await message.reply('Квест с идентификатором "' + message.text + '" не найден',
+            reply_markup=ReplyKeyboardRemove())
         await state.finish()
 
 
@@ -197,13 +209,14 @@ async def tip_handler(message: types.Message, state: FSMContext):
         if 'quest' in data:
             (fine, msg) = data['quest'].cur_point.get_tip()
             if msg is None:
-                await message.reply('Больше подсказок нет.')
+                await message.reply('Больше подсказок нет.',
+                    reply_markup=ReplyKeyboardRemove())
             else:
-                await message.reply(msg)
+                await message.reply(msg, reply_markup=ReplyKeyboardRemove())
                 await message.answer('Штраф за подсказку: ' + str(fine) + ' баллов.')
-                data['quest'].score += fine
+                data['quest'].score -= fine
         else:
-            await message.answer('Выберите квест командой /quest.')
+            await message.answer('Выберите квест командой /quest.', reply_markup=ReplyKeyboardRemove())
 
 
 async def score_handler(message: types.Message, state: FSMContext):
@@ -213,9 +226,10 @@ async def score_handler(message: types.Message, state: FSMContext):
     """
     async with state.proxy() as data:
         if 'quest' in data:
-            await message.reply('Текущее количество баллов: ' + str(data['quest'].score) + '.')
+            await message.reply('Текущее количество баллов: ' + str(data['quest'].score) + '.',
+                reply_markup=ReplyKeyboardRemove())
         else:
-            await message.answer('Выберите квест командой /quest.')
+            await message.answer('Выберите квест командой /quest.', reply_markup=ReplyKeyboardRemove())
 
 
 async def quest_proc(message: types.Message, state: FSMContext):
@@ -225,7 +239,13 @@ async def quest_proc(message: types.Message, state: FSMContext):
     """
     async with state.proxy() as data:
         (quest_ends, msg) = data['quest'].next_point(message.text)
-        await message.answer(msg)
+        if data['quest'].cur_point.type == "open":
+            await message.answer(msg, reply_markup=ReplyKeyboardRemove())
+        elif data['quest'].cur_point.type == "choice":
+            keyboard = create_keyboard(data['quest'].cur_point.next_points)
+            await message.answer(msg, reply_markup=keyboard)
+        else: # movement
+            await message.answer(msg, reply_markup=ReplyKeyboardRemove())
         if quest_ends == True:
             await state.finish()
             await message.answer('Квест "' + get_quest_title(data['quest'].quest_id) + '" закончен. '

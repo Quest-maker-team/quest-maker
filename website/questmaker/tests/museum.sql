@@ -41,7 +41,7 @@ INSERT INTO questions VALUES (7,0,'В какие годы строился Ма�
 INSERT INTO questions VALUES (8,0,'В какие годы строился Большой Эрмитаж? Укажите годы через дефис.',0);	
 INSERT INTO questions VALUES (9,0,'В какие годы строился Новый Эрмитаж? Укажите годы через дефис.',0);	
 INSERT INTO questions VALUES (10,0,'Двиньтесь к Эрмитажному театру',2);	
-INSERT INTO questions VALUES (11,0,'В каком году был основан Зимний дворец?',0);	
+INSERT INTO questions VALUES (11,0,'В каком году был основан Эрмитажный театр?',0);	
 INSERT INTO questions VALUES (12,0,'Понравился ли квест?',1);	
 INSERT INTO questions VALUES (13,0,'Квест закончен',4);
 
@@ -54,9 +54,9 @@ INSERT INTO answer_options VALUES (5,2,'Карл Росси',-5,3);
 INSERT INTO answer_options VALUES (6,3,'1',-1,4);
 INSERT INTO answer_options VALUES (7,3,'2',-1,5);
 INSERT INTO answer_options VALUES (8,3,'3',3,6);	
-INSERT INTO answer_options VALUES (9,7,'1764—1775',10,10);
-INSERT INTO answer_options VALUES (10,8,'1771—1787',10,10);
-INSERT INTO answer_options VALUES (11,9,'1842—1851',10,10);
+INSERT INTO answer_options VALUES (9,7,'1764-1775',10,10);
+INSERT INTO answer_options VALUES (10,8,'1771-1787',10,10);
+INSERT INTO answer_options VALUES (11,9,'1842-1851',10,10);
 INSERT INTO answer_options VALUES (12,4,'',3,7);
 INSERT INTO answer_options VALUES (13,5,'',3,8);
 INSERT INTO answer_options VALUES (14,6,'',3,9);

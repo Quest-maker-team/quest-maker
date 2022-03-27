@@ -8,8 +8,6 @@ import click
 from flask import current_app, g
 from flask.cli import with_appcontext
 
-from website.questmaker.quest import File, Quest, Author, Question, Place
-
 
 def get_db():
     """
@@ -54,6 +52,32 @@ def init_db_command():
     click.echo('Initialized the database.')
 
 
+@click.command('test-museum')
+@with_appcontext
+def load_test_db_command():
+    """
+    Allows to load test database from command line
+    """
+    with current_app.open_resource('tests/museum.sql') as f:
+        with get_db(), get_db().cursor() as cursor:
+            cursor.execute(f.read().decode('utf8'))
+    click.echo('Test database loaded')
+
+
+@click.command('test-loading')
+@with_appcontext
+def test_loading_to_and_from_db_command():
+    """
+    Allows to load data from classes and load it to
+    new quest from command line
+    """
+    from .quest import Quest, Author
+    quest = Quest.from_db(0)
+    author = Author("", "", "", "author", "")
+    quest.to_db(author)
+    click.echo('Test complited')
+
+
 def init_app(app):
     """
     Add the opportunity to close db connection automatically when cleaning up after returning the response
@@ -62,6 +86,8 @@ def init_app(app):
     """
     app.teardown_appcontext(close_db)
     app.cli.add_command(init_db_command)
+    app.cli.add_command(load_test_db_command)
+    app.cli.add_command(test_loading_to_and_from_db_command)
 
 
 def add_user(name, hash_psw, email):
@@ -234,7 +260,7 @@ def get_place(place_id):
         return cursor.fetchone()
 
 
-def set_file(file: File):
+def set_file(file):
     """
     Add rows to table files in database.
     """
@@ -257,7 +283,7 @@ def get_author_id_by_email(email: str):
         return author_id
 
 
-def set_author(author: Author):
+def set_author(author):
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('SELECT status_id FROM statuses WHERE status_name = %s', author.status)
         status_id = cursor.fetchone()['status_id']
@@ -270,7 +296,7 @@ def set_author(author: Author):
             return False
 
 
-def set_quest(quest: Quest, author_email):
+def set_quest(quest, author_email):
     """
     Add row to table quest in database
     """
@@ -299,7 +325,7 @@ def set_rating(quest_id, rating: dict):
     return cursor.fetchone()['rating_id']
 
 
-def set_tags(quest: Quest, quest_id: int):
+def set_tags(quest, quest_id: int):
     """
     Add rows to table tags
     """
@@ -334,7 +360,7 @@ def get_question_type_id(q_type_name: str):
         return cursor.fetchone()['q_type_id']
 
 
-def set_place(place: Place):
+def set_place(place):
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('INSERT INTO places (coords, time_open, time_close, radius)'
                        'VALUES (%s, %s, %s, %s) RETURNING place_id',
@@ -342,7 +368,7 @@ def set_place(place: Place):
         return cursor.fetchone()['place_id']
 
 
-def create_new_question(question: Question, quest_id):
+def create_new_question(question, quest_id):
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('INSERT INTO questions (quest_id, question_text, q_type_id)'
                        'VALUES (%s, %s, %s) RETURNING question_id',
@@ -350,7 +376,7 @@ def create_new_question(question: Question, quest_id):
         return cursor.fetchone()['question_id']
 
 
-def create_question_files(question: Question, question_id: int):
+def create_question_files(question, question_id: int):
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         ids = []
         for file in question.files:
@@ -361,7 +387,7 @@ def create_question_files(question: Question, question_id: int):
         return ids
 
 
-def create_hints(question: Question, question_id: int):
+def create_hints(question, question_id: int):
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         ids = []
         for hint in question.hints:
@@ -377,7 +403,8 @@ def create_hints(question: Question, question_id: int):
     return ids
 
 
-def set_questions(used_files: list, question: Question, quest_id: int, places: dict, question_id, questions: dict, answers: dict, movements: dict):
+def set_questions(used_files: list, question, quest_id: int, places: dict, question_id, questions: dict, answers: dict,
+                  movements: dict):
     """
     Add rows to questions table
     """
@@ -396,9 +423,11 @@ def set_questions(used_files: list, question: Question, quest_id: int, places: d
                     next_question_id = questions[movement.next_question]
                 if movement not in movements.keys():
                     cursor.execute('INSERT INTO movements (question_id, place_id, next_question_id)'
-                                   'VALUES (%s, %s, %s) RETURNING movement_id', (question_id, places[movement], next_question_id))
+                                   'VALUES (%s, %s, %s) RETURNING movement_id',
+                                   (question_id, places[movement], next_question_id))
                     movements[movement] = cursor.fetchone()['movement_id']
-                    set_questions(used_files, movement.next_question, quest_id, places, next_question_id, questions,answers,movements)
+                    set_questions(used_files, movement.next_question, quest_id, places, next_question_id, questions,
+                                  answers, movements)
         elif question.type != 'end':
             for answer in question.answers:
                 if answer.next_question not in questions.keys():
@@ -411,7 +440,8 @@ def set_questions(used_files: list, question: Question, quest_id: int, places: d
                                    'VALUES (%s, %s, %s, %s) RETURNING option_id',
                                    (question_id, answer.text, answer.points, next_question_id))
                     answers[answer] = cursor.fetchone()['option_id']
-                    set_questions(used_files, answer.next_question, quest_id, places, next_question_id, questions,answers,movements)
+                    set_questions(used_files, answer.next_question, quest_id, places, next_question_id, questions,
+                                  answers, movements)
 
         else:
             return True

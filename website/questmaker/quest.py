@@ -1,7 +1,7 @@
 from . import db
 from flask import g
 
-from .db import set_files, set_author, set_quest, set_rating, set_tags, set_quest_files, set_questions, \
+from .db import set_author, set_quest, set_rating, set_tags, set_quest_files, set_questions, \
     create_new_question, create_question_files, create_hints
 
 

@@ -61,6 +61,8 @@ def load_test_db_command():
     with current_app.open_resource('tests/museum.sql') as f:
         with get_db(), get_db().cursor() as cursor:
             cursor.execute(f.read().decode('utf8'))
+            cursor.execute('SELECT * FROM quests')
+            click.echo(cursor.fetchall())
     click.echo('Test database loaded')
 
 
@@ -72,8 +74,9 @@ def test_loading_to_and_from_db_command():
     new quest from command line
     """
     from .quest import Quest, Author
-    quest = Quest.from_db(0)
+    quest = Quest.from_db(1)
     author = Author("", "", "", "author", "")
+    author.to_db()
     quest.to_db(author)
     click.echo('Test complited')
 
@@ -222,7 +225,7 @@ def get_question_movements_ids(question_id):
         return cursor.fetchall()
 
 
-def get_answer(answer_id):
+def get_answer_option(answer_id):
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('SELECT option_text, points, next_question_id '
                        'FROM answer_options WHERE option_id = %s', (answer_id,))
@@ -278,14 +281,16 @@ def set_file(file):
 
 def get_author_id_by_email(email: str):
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-        cursor.execute('SELECT author_id FROM authors WHERE email = %s AND ', (email,))
-        author_id = cursor.fetchone()['author_id']
+        cursor.execute('SELECT author_id FROM authors WHERE email = %s ', (email,))
+        author_id = 1
+        if cursor.fetchone():
+            author_id = cursor.fetchone()['author_id']
         return author_id
 
 
 def set_author(author):
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-        cursor.execute('SELECT status_id FROM statuses WHERE status_name = %s', author.status)
+        cursor.execute('SELECT status_id FROM statuses WHERE status_name = %s', (author.status,))
         status_id = cursor.fetchone()['status_id']
         if status_id:
             cursor.execute('INSERT INTO authors (name, password, email, status_id, avatar_url)'
@@ -301,7 +306,7 @@ def set_quest(quest, author_email):
     Add row to table quest in database
     """
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-        cursor.execute('INSERT INTO quest (title, author_id, description, password,'
+        cursor.execute('INSERT INTO quests (title, author_id, description, password, '
                        'time_open, time_close, lead_time, cover_url, hidden) '
                        'VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING quest_id',
                        (quest.title, get_author_id_by_email(author_email), quest.description,
@@ -318,25 +323,23 @@ def set_rating(quest_id, rating: dict):
         cursor.execute('INSERT INTO ratings (quest_id, one_star_amount, two_star_amount,'
                        'three_star_amount, four_star_amount, five_star_amount)'
                        'VALUES (%s, %s, %s, %s, %s, %s) RETURNING rating_id',
-                       (quest_id, rating['one_star_amount'], rating['two_star_amount'],
-                        rating['three_star_amount'], rating['four_star_amount'],
-                        rating['five_star_amount']))
+                       (quest_id, rating['one'], rating['two'],
+                        rating['three'], rating['four'],
+                        rating['five']))
 
-    return cursor.fetchone()['rating_id']
+        return cursor.fetchone()['rating_id']
 
 
 def set_tags(quest, quest_id: int):
     """
     Add rows to table tags
     """
-    ids = []
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         for tag in quest.tags:
             cursor.execute('INSERT INTO tags (quest_id, tag_name) '
-                           'VALUES (%s, %s) RETURNING tag_id', (quest_id, tag))
-            ids.append(cursor.fetchone()['tag_id'])
+                           'VALUES (%s, %s)', (quest_id, tag))
 
-    return ids
+    return True
 
 
 def set_quest_files(files: list, quest_id: int):

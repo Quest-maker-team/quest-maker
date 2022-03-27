@@ -41,10 +41,10 @@ class Hint:
 class Answer:
     @staticmethod
     def from_db(answer_id):
-        answer_info = db.get_answer(answer_id)
+        answer_info = db.get_answer_option(answer_id)
         answer = Answer(answer_info['option_text'], answer_info['points'])
         next_question_id = answer_info['next_question_id']
-        if 'questions' in g and next_question_id in g.qustions.keys():
+        if 'questions' in g and next_question_id in g.questions.keys():
             # question has already been created
             answer.next_question = g.questions[next_question_id]
         else:
@@ -77,9 +77,9 @@ class Movement:
         move = Movement()
         move.place = Place.from_db(move_info['place_id'])
         next_question_id = move_info['next_question_id']
-        if 'questions' in g and next_question_id in g.qustions.keys():
+        if 'questions' in g and next_question_id in g.questions.keys():
             # question has already been created
-            move.next_question = g.qustions[next_question_id]
+            move.next_question = g.questions[next_question_id]
         else:
             move.next_question = Question.from_db(next_question_id)
         return move
@@ -157,7 +157,7 @@ class Quest:
     def to_db(self, author: Author):
         quest_id = set_quest(self, author.email)
         rating_id = set_rating(quest_id, self.rating)
-        tags_ids = set_tags(self, quest_id)
+        set_tags(self, quest_id)
         question_id = create_new_question(self.first_question, quest_id)
         questions = dict()
         questions[self.first_question] = question_id

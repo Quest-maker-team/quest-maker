@@ -72,7 +72,8 @@ Returned JSON example:
         {
           "hint_id": 1,
           "hint_text": "hint",
-          "fine": 5
+          "fine": 5,
+          "files": []
         }
       ]
     },

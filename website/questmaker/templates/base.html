@@ -10,6 +10,7 @@
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/roboto.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='script/jquery/jquery.min.js') }}"></script>
     {% block styles %}
     {% endblock %}
 </head>
@@ -20,7 +21,8 @@
     {% endblock %}
     {% block footer %}
     {% endblock %}
-    <script src="{{ url_for('static', filename='script/jquery/jquery.min.js') }}"></script>
+    {% block script %}
+    {% endblock %}
     <script src="{{ url_for('static', filename='script/bootstrup/bootstrap.bundle.min.js') }}"></script>
 </body>
 </html>

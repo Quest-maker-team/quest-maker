@@ -214,7 +214,7 @@ async def tip_handler(message: types.Message, state: FSMContext):
             else:
                 await message.reply(msg, reply_markup=ReplyKeyboardRemove())
                 await message.answer('Штраф за подсказку: ' + str(fine) + ' баллов.')
-                data['quest'].score += fine
+                data['quest'].score -= fine
         else:
             await message.answer('Выберите квест командой /quest.', reply_markup=ReplyKeyboardRemove())
 

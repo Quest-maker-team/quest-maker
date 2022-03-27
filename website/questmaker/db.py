@@ -114,6 +114,11 @@ def get_author_by_email(email):
 
 
 def get_quest(quest_id):
+    """
+    Load quest from table quests (with author name instead of author id)
+    :param quest_id: quest id in database
+    :return: dictionary with table attrs as keys and key author instead of author_id
+    """
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('SELECT title, authors.name AS author, description, quests.password AS password, '
                        'time_open, time_close, lead_time, cover_url, hidden '
@@ -124,12 +129,22 @@ def get_quest(quest_id):
 
 
 def get_quest_tags(quest_id):
+    """
+    Load tags related with quest
+    :param quest_id: quest id in database
+    :return: list of dictionaries with key tag_name
+    """
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('SELECT tag_name FROM tags WHERE quest_id = %s', (quest_id, ))
         return cursor.fetchall()
 
 
 def get_quest_files(quest_id):
+    """
+    Load files related with quest
+    :param quest_id: quest id in database
+    :return: list of dictionaries with keys url_for_file and f_type_name
+    """
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('SELECT url_for_file, f_type_name '
                        'FROM files '
@@ -140,6 +155,11 @@ def get_quest_files(quest_id):
 
 
 def get_quest_rating(quest_id):
+    """
+    Load quest rating
+    :param quest_id: quest id in database
+    :return: dictionary with keys one, two, free, four, five
+    """
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('SELECT one_star_amount AS one, '
                        'two_star_amount AS two, '
@@ -151,6 +171,11 @@ def get_quest_rating(quest_id):
 
 
 def get_start_question_id(quest_id):
+    """
+    Get id of fictive start question
+    :param quest_id: quest id in database
+    :return: start question id
+    """
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('SELECT question_id FROM questions '
                        'JOIN question_types USING (q_type_id) '
@@ -159,6 +184,11 @@ def get_start_question_id(quest_id):
 
 
 def get_question(question_id):
+    """
+    Load question from database by id with type name instead of type id
+    :param question_id: question id in database
+    :return: dictionary with q_type_name instead of q_type_id
+    """
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('SELECT question_text, q_type_name FROM questions '
                        'JOIN question_types USING (q_type_id) '
@@ -167,6 +197,11 @@ def get_question(question_id):
 
 
 def get_question_files(question_id):
+    """
+    Load files related with quest
+    :param question_id: question id in database
+    :return: list of dictionaries with keys url_for_file and f_type_name
+    """
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('SELECT url_for_file, f_type_name '
                        'FROM files '
@@ -177,31 +212,56 @@ def get_question_files(question_id):
 
 
 def get_question_hints_ids(question_id):
+    """
+    Get hint ids related with question
+    :param question_id: question id in database
+    :return: list of dictionaries with key hint_id
+    """
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('SELECT hint_id FROM hints WHERE question_id = %s', (question_id, ))
         return cursor.fetchall()
 
 
 def get_question_answer_options_ids(question_id):
+    """
+    Get answer option ids related with question
+    :param question_id: question id in database
+    :return: list of dictionaries with key option_id
+    """
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('SELECT option_id FROM answer_options WHERE question_id = %s', (question_id, ))
         return cursor.fetchall()
 
 
 def get_question_movements_ids(question_id):
+    """
+    Get movement ids related with question
+    :param question_id: question id in database
+    :return: list of dictionaries with key movement_id
+    """
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('SELECT movement_id FROM movements WHERE question_id = %s', (question_id, ))
         return cursor.fetchall()
 
 
-def get_answer(answer_id):
+def get_answer_option(answer_option_id):
+    """
+   Load answer option from database
+   :param answer_option_id: answer option id in database
+   :return: dictionary with keys as same as in table answer_options
+   """
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('SELECT option_text, points, next_question_id '
-                       'FROM answer_options WHERE option_id = %s', (answer_id, ))
+                       'FROM answer_options WHERE option_id = %s', (answer_option_id, ))
         return cursor.fetchone()
 
 
 def get_movement(movement_id):
+    """
+   Load movement from database
+   :param movement_id: movement id in database
+   :return: dictionary with keys as same as in table movements
+   """
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('SELECT place_id, next_question_id '
                        'FROM movements WHERE movement_id = %s', (movement_id, ))
@@ -209,6 +269,11 @@ def get_movement(movement_id):
 
 
 def get_hint(hint_id):
+    """
+   Load hint from database
+   :param hint_id: hint id in database
+   :return: dictionary with keys as same as in table hints
+   """
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('SELECT hint_text, fine '
                        'FROM hints WHERE hint_id = %s', (hint_id,))
@@ -216,6 +281,11 @@ def get_hint(hint_id):
 
 
 def get_hint_files(hint_id):
+    """
+    Load files related with quest
+    :param hint_id: hint id in database
+    :return: list of dictionaries with keys url_for_file and f_type_name
+    """
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('SELECT url_for_file, f_type_name '
                        'FROM files '
@@ -226,6 +296,11 @@ def get_hint_files(hint_id):
 
 
 def get_place(place_id):
+    """
+    Load place from database
+    :param place_id: place id in database
+    :return: dictionary with keys as same as in table places
+    """
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('SELECT coords, time_open, time_close, radius '
                        'FROM places WHERE place_id = %s', (place_id,))

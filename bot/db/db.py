@@ -163,15 +163,45 @@ def get_hints(question_id):
     """
     Find all hints related to the question
     :param question_id: question id
-    :return: a list of tuples with values fine, hint_text
+    :return: a list of tuples with values hint_id, fine, hint_text
     :return: None in case of failure
     """
     try:
-        return select_all('SELECT fine, hint_text FROM hints WHERE question_id= %s', (question_id, ))
+        return select_all('SELECT hint_id, fine, hint_text FROM hints WHERE question_id= %s', (question_id, ))
+    except:
+        return None
+
+
+def get_hint_files(hint_id):
+    """
+    Find all files related to the hint
+    :param hint_id: hint id
+    :return: list of tuples with values url_for_file, f_type_name
+    :return: None in case of failure
+    """
+    try:
+        return select_all('SELECT url_for_file, f_type_name FROM hint_files INNER JOIN files '
+                          'ON hint_files.f_id= files.f_id INNER JOIN file_types '
+                          'ON files.f_type_id= file_types.f_type_id WHERE hint_id= %s', (hint_id, ))
+    except:
+        return None
+
+
+def get_question_files(question_id):
+    """
+    Find all files related to the question
+    :param question_id: question id
+    :return: list of tuples with values url_for_file, f_type_name
+    :return: None in case of failure
+    """
+    try:
+        return select_all('SELECT url_for_file, f_type_name FROM question_files INNER JOIN files '
+                          'ON question_files.f_id= files.f_id INNER JOIN file_types '
+                          'ON files.f_type_id= file_types.f_type_id WHERE question_id= %s', (question_id, ))
     except:
         return None
 
 
 if __name__ == '__main__':
-    info = get_first_question('0')
+    info = get_question_files(6)
     print(info)

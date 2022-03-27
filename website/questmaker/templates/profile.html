@@ -1,9 +1,10 @@
-{% extends 'base.html' %}
+{% extends "page_base.html" %}
+{% set active_page = active_page|default('profile') -%}
 
 {% block content %}
-<h1>Profile</h1>
-<p>You are authorized and this is your profile</p>
-<p>Your name: {{ user['name'] }}</p>
-<p>Your email: {{ user['email'] }}</p>
-<p><a href="{{ url_for('auth.logout') }}">Выйти из профиля</a></p>
+    <h1>Profile</h1>
+    <p>You are authorized and this is your profile</p>
+    <p>Your name: {{ user.author['name'] }}</p>
+    <p>Your email: {{ user.author['email'] }}</p>
+    <p><a href="{{ url_for('auth.logout') }}">Выйти из профиля</a></p>
 {% endblock %}

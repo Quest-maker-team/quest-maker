@@ -15,4 +15,4 @@ def profile():
     Main profile page
     :return: main profile page
     """
-    return render_template('profile.html', user=current_user.author)
+    return render_template('profile.html', user=current_user)

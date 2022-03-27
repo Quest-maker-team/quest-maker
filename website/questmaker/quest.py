@@ -60,7 +60,7 @@ class Answer:
         answer_info = db.get_answer_option(answer_id)
         answer = Answer(answer_info['option_text'], answer_info['points'])
         next_question_id = answer_info['next_question_id']
-        if 'questions' in g and next_question_id in g.qustions.keys():
+        if 'questions' in g and next_question_id in g.questions.keys():
             # question has already been created
             answer.next_question = g.questions[next_question_id]
         else:
@@ -121,9 +121,9 @@ class Movement:
         move = Movement()
         move.place = Place.from_db(move_info['place_id'])
         next_question_id = move_info['next_question_id']
-        if 'questions' in g and next_question_id in g.qustions.keys():
+        if 'questions' in g and next_question_id in g.questions.keys():
             # question has already been created
-            move.next_question = g.qustions[next_question_id]
+            move.next_question = g.questions[next_question_id]
         else:
             move.next_question = Question.from_db(next_question_id)
         return move

@@ -181,7 +181,8 @@ async def name_quest(message: types.Message, state: FSMContext):
         await message.answer('Квест "' + get_quest_title(message.text) + '" начат. '
             'Чтобы закончить напишите /end, '
             'чтобы получить количество баллов - /score, '
-            'чтобы получить подсказку - /tip.')
+            'чтобы получить подсказку - /tip, '
+            'чтобы попытаться пропустить точку - /skip.')
         await message.answer(data['quest'].cur_point.msg)
     else:
         await message.reply('Квест с идентификатором "' + message.text + '" не найден',
@@ -209,10 +210,9 @@ async def tip_handler(message: types.Message, state: FSMContext):
         if 'quest' in data:
             (fine, msg) = data['quest'].cur_point.get_tip()
             if msg is None:
-                await message.reply('Больше подсказок нет.',
-                    reply_markup=ReplyKeyboardRemove())
+                await message.reply('Больше подсказок нет.')
             else:
-                await message.reply(msg, reply_markup=ReplyKeyboardRemove())
+                await message.reply(msg)
                 await message.answer('Штраф за подсказку: ' + str(fine) + ' баллов.')
                 data['quest'].score -= fine
         else:
@@ -228,6 +228,26 @@ async def score_handler(message: types.Message, state: FSMContext):
         if 'quest' in data:
             await message.reply('Текущее количество баллов: ' + str(data['quest'].score) + '.',
                 reply_markup=ReplyKeyboardRemove())
+        else:
+            await message.answer('Выберите квест командой /quest.', reply_markup=ReplyKeyboardRemove())
+
+
+async def skip_handler(message: types.Message, state: FSMContext):
+    """Skip pointer handler.
+    :param message: message from user
+    :param state: state machine context
+    """
+    async with state.proxy() as data:
+        if 'quest' in data:
+            if 'skip' in data['quest'].cur_point.next_points:
+                (quest_ends, msg) = data['quest'].next_point('skip')
+                if data['quest'].cur_point.type == "open":
+                    await message.answer(msg, reply_markup=ReplyKeyboardRemove())
+                elif data['quest'].cur_point.type == "choice":
+                    keyboard = create_keyboard(data['quest'].cur_point.next_points)
+                    await message.answer(msg, reply_markup=keyboard)
+            else:
+                await message.answer('Точка не поддерживает пропуск.')
         else:
             await message.answer('Выберите квест командой /quest.', reply_markup=ReplyKeyboardRemove())
 
@@ -268,6 +288,7 @@ def register_client_handlers(dp: Dispatcher):
     dp.register_message_handler(cancel_handler, state='*', commands="end")
     dp.register_message_handler(score_handler, state='*', commands="score")
     dp.register_message_handler(tip_handler, state='*', commands="tip")
+    dp.register_message_handler(skip_handler, state='*', commands="skip")
     dp.register_message_handler(name_quest, state=QuestStates.naming)
     dp.register_message_handler(quest_proc, state=QuestStates.session)
     dp.register_message_handler(warning)

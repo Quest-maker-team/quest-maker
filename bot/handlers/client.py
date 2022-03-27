@@ -224,7 +224,7 @@ def add_file_to_media(media: types.MediaGroup, file, caption):
         media.attach_video(file[0], caption=caption)
 
 
-async def send_files(message: types.Message, caption, files, reply_markup: ReplyKeyboardRemove | ReplyKeyboardMarkup):
+async def send_files(message: types.Message, caption, files, reply_markup):
     """Send files with caption to the chat
     :param message: message from user
     :param caption: caption
@@ -257,7 +257,8 @@ async def name_quest(message: types.Message, state: FSMContext):
         await message.answer('Квест "' + get_quest_title(message.text) + '" начат. '
             'Чтобы закончить напишите /end, '
             'чтобы получить количество баллов - /score, '
-            'чтобы получить подсказку - /tip.')
+            'чтобы получить подсказку - /tip, '
+            'чтобы попытаться пропустить точку - /skip.')
         await send_files(message, data['quest'].cur_point.msg, data['quest'].cur_point.files, ReplyKeyboardRemove())
     else:
         await message.reply('Квест с идентификатором "' + message.text + '" не найден',
@@ -308,6 +309,26 @@ async def score_handler(message: types.Message, state: FSMContext):
             await message.answer('Выберите квест командой /quest.', reply_markup=ReplyKeyboardRemove())
 
 
+async def skip_handler(message: types.Message, state: FSMContext):
+    """Skip pointer handler.
+    :param message: message from user
+    :param state: state machine context
+    """
+    async with state.proxy() as data:
+        if 'quest' in data:
+            if 'skip' in data['quest'].cur_point.next_points:
+                (quest_ends, msg, files) = data['quest'].next_point('skip')
+                if data['quest'].cur_point.type == "open":
+                    await send_files(message, msg, files, ReplyKeyboardRemove())
+                elif data['quest'].cur_point.type == "choice":
+                    keyboard = create_keyboard(data['quest'].cur_point.next_points)
+                    await send_files(message, msg, files, keyboard)
+            else:
+                await message.answer('Точка не поддерживает пропуск.')
+        else:
+            await message.answer('Выберите квест командой /quest.', reply_markup=ReplyKeyboardRemove())
+
+
 async def quest_proc(message: types.Message, state: FSMContext):
     """Quest processing handler.
     :param message: message from user
@@ -344,6 +365,7 @@ def register_client_handlers(dp: Dispatcher):
     dp.register_message_handler(cancel_handler, state='*', commands="end")
     dp.register_message_handler(score_handler, state='*', commands="score")
     dp.register_message_handler(tip_handler, state='*', commands="tip")
+    dp.register_message_handler(skip_handler, state='*', commands="skip")
     dp.register_message_handler(name_quest, state=QuestStates.naming)
     dp.register_message_handler(quest_proc, state=QuestStates.session)
     dp.register_message_handler(warning)

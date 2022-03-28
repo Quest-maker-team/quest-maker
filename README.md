@@ -5,10 +5,11 @@ Consist of 2 parts:
 + [Telegram bot to play quests.](bot/README.md)
 + [Service for quest creating including back-end and front-end.](website/README.md)
 
-To play quests user must use telegram bot. In bot player need to choose quest and then quest session starts.
+There is telegram bot [@QuestMakerBot](https://t.me/QuestMakerBot) to play quests.
+In bot player is able to choose quest and then quest session starts.
 
 Quests are created with web service. Creators make quests with sequence of stations.
-After creation quest become unpublic and only selected users can play it.
+After creation quest becomes unpublic and only selected users can play it.
 To make quest public and visible in global list admin review is required.
 After moderation all users can choose quest to play.
 

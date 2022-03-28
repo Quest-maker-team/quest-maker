@@ -240,6 +240,4 @@ class Quest:
         if self.first_question.type != 'start':
             return False
         else:
-            create_question_files(self.first_question, question_id, None)
-            create_hints(self.first_question, question_id, None)
             return set_questions(used_files, self.first_question, quest_id, {}, question_id, questions, {}, {})

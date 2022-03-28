@@ -1,10 +1,14 @@
-{% extends "page_base.html" %}
-{% set active_page = active_page|default('profile') -%}
+{% extends "profile_base.html" %}
+{% set active_profile_page = active_page|default('user_data') -%}
 
-{% block content %}
-    <h1>Profile</h1>
-    <p>You are authorized and this is your profile</p>
-    <p>Your name: {{ user.author['name'] }}</p>
-    <p>Your email: {{ user.author['email'] }}</p>
-    <p><a href="{{ url_for('auth.logout') }}">Выйти из профиля</a></p>
+{% block profile_info %}
+<div class="position-absolute d-flex min-vw-100 flex-fill" style="top: 88px">
+    <div class="collapsed col-3 col-lg-2 me-3">
+    </div>
+    <div>
+        <h1>Персональные данные</h1>
+        <p>Ваше имя: {{ user.author['name'] }}</p>
+        <p>Ваш email: {{ user.author['email'] }}</p>
+    </div>
+</div>
 {% endblock %}

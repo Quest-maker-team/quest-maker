@@ -66,6 +66,69 @@ def load_test_db_command():
     click.echo('Test database loaded')
 
 
+def print_quest(file, quest):
+    import sys
+
+    sys.stdout = open(file, "w")
+    sys.stdout.reconfigure(encoding='utf-8')
+    print('Quest info:')
+    print(quest.title)
+    print(quest.hidden)
+    print(quest.tags)
+    print(quest.rating)
+    print(quest.description)
+    print('Quest files:')
+    for f in quest.files:
+        print('\t', f.type)
+        print('\t', f.url[:5])
+
+    from queue import Queue
+    qu = Queue()
+    qu.put(quest.first_question)
+    visited = []
+    while not qu.empty():
+        q = qu.get()
+        if q in visited:
+            continue
+        else:
+            visited.append(q)
+        print('Question info:')
+        print(q.type)
+        print(q.text)
+        print('Hints:')
+        for hint in q.hints:
+            print('\t', hint.text)
+            print('\t', hint.fine)
+            print('\t', 'Hint files:')
+            for f in hint.files:
+                print('\t\t', f.type)
+                print('\t\t', f.url[:5])
+
+        print('Question files:')
+        for f in q.files:
+            print('\t', f.type)
+            print('\t', f.url[:5])
+
+        if q.type == 'movement':
+            print('Movements:')
+            for move in q.movements:
+                print('\t', move.place.coords, move.place.radius)
+                if move.next_question:
+                    qu.put(move.next_question)
+        else:
+            print('Answers:')
+            for a in q.answers:
+                print('\t', a.text)
+                print('\t', a.points)
+                if q.type == 'start':
+                    for move in q.movements:
+                        print('\t', move.place.coords, move.place.radius)
+                if a.next_question:
+                    qu.put(a.next_question)
+
+    sys.stdout = sys.__stdout__
+
+
 @click.command('test-loading')
 @with_appcontext
 def test_loading_to_and_from_db_command():
@@ -75,10 +138,16 @@ def test_loading_to_and_from_db_command():
     """
     from .quest import Quest, Author
     quest = Quest.from_db(1)
+    print_quest('quest1.txt', quest)
+
     author = Author("", "", "", "author", "")
     author.to_db()
     quest.to_db(author)
-    click.echo('Test complited')
+
+    quest = Quest.from_db(2)
+    print_quest('quest2.txt', quest)
+
+    click.echo('Test completed')
 
 
 def init_app(app):

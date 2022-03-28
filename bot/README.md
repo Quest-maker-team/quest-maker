@@ -25,3 +25,15 @@ deactivate                             # deactivating enveronment
 We use PostgreSQL. See docs for more information:
 + [description](../docs/db_description.md);
 + [guide](../docs/db_guide.md).
+### Create config file
+* In `QuestMaker/bot` create file `db_config.ini`.
+* File must contain following:
+  ```
+  [DB]
+  NAME = 'questmaker'
+  USER = 'postgres'
+  PASSWORD = 'postgres'
+  HOST = 'localhost'
+  PORT = '5432'
+  ```
+  if the database is configured according to the [guide](../docs/db_guide.md).

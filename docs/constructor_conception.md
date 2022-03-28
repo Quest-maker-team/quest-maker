@@ -3,7 +3,7 @@
 The constructor is a graphic editor of the quest graph. Using it, the user can both create new quests and edit old ones.
 
 ## Graphical representation
-Each question or instruction (as well as the first greeting and last farewell messages) is represented by a block with brief information: the wording of the question or instruction (with a limit on the length of the text output), the type of question, and additional brief information (see block descriptions). The blocks are arranged in levels. The block is located at the next level from the level of the previous question (indication) and is connected to the ancestor by a line. Thus, the starting block is located at the very top and the entire quest graph "descends" from it to the final block.
+Each question or instruction (as well as the first greeting and last farewell messages) is represented by a block with brief information: the wording of the question or instruction (with a limit on the length of the text output), the type of question, and additional brief information (see block descriptions). The blocks are arranged in levels. The block is located at the next level from the level of the previous question (indication) and is connected to the ancestor by a line. Thus, the starting block is located on the top of page and the entire quest graph "descends" from it to the final block.
 
 ## Appearance of blocks
 ### Open question

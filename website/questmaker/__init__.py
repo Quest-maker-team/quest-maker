@@ -8,7 +8,7 @@ functions:
 """
 
 from flask import Flask, render_template
-
+from flask_login import current_user
 
 def create_app(test_config=None):
     """Create and configure the questmaker app
@@ -35,6 +35,6 @@ def create_app(test_config=None):
         Main questmaker page
         :return: main questmaker page
         """
-        return render_template('index.html')
+        return render_template('index.html', user=current_user)
 
     return app

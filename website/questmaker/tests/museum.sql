@@ -95,4 +95,3 @@ INSERT INTO ratings(quest_id) VALUES (1);
 
 
 
-

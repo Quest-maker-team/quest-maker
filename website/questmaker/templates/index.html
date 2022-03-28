@@ -1,5 +1,61 @@
-{% extends "base.html" %}
+{% extends "page_base.html" %}
+{% set active_page = active_page|default('index') -%}
+
+{% block styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+{% endblock %}
 
 {% block content %}
-<h1>QuestMaker</h1>
+    <header class="mask d-flex flex-column align-items-center justify-content-center min-vh-100 header"
+             style="background-image: url({{ url_for('static', filename='img/telegram_scrin_on_phone.jpg') }});">
+            <div class="min-vh-100 w-75 position-relative">
+                <div class="position-absolute end-0 top-50 col-8">
+                    <div class="text-light">
+                        <h1 class="h1 text-center">Quest Maker</h1>
+                        <div class="text-center">Инструмент для создания telegram-квестов</div>
+                    </div>
+                </div>
+            </div>
+    </header>
+
+    <main>
+        {% set sections_content = [('Заголовок1', 'img1.jpg', 'Лозунг', 'Тескт тескт тескт тескт тескт', 'right'),
+                                   ('Заголовок2', 'img1.jpg', 'Лозунг', 'Тескт тескт тескт тескт тескт', 'left')] %}
+        {% for header, img, slogan, text, direction in sections_content %}
+            <section class="py-4 pt-md-5">
+                <div class="container">
+                    <div class="{% if direction == 'right' %} flex-row row {% else %} flex-row-reverse row {% endif %}">
+                        <div class="col-md-2">
+                            <!-- Divider -->
+                            <hr class="hr-sm bg-primary">
+                            <!-- Text -->
+                            <p class="fs-lg lh-lg text-black mb-5 mb-md-0">
+                                {{ header }}
+                            </p>
+                        </div>
+                        <div class="col-md-4">
+                            <!-- Media -->
+                            <div class="mb-5 mb-md-0" style="max-width: 80%">
+                                <!-- Image -->
+                                <img class="img-fluid" src="{{ url_for('static', filename='img/' + img ) }}" alt="...">
+                            </div>
+                        </div>
+                        <div class="col-md-5 align-self-center mx-auto">
+                            <!-- Heading -->
+                            <h2 class="mb-2">
+                                "Лозунг"
+                            </h2>
+                            <!-- Text -->
+                            <p class="mb-0">
+                                {{ text }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        {% endfor %}
+    </main>
+{% endblock %}
+{% block script %}
+    <!-- <script src="{{ url_for('static', filename='script/index.js') }}"></script> -->
 {% endblock %}

@@ -1,3 +1,7 @@
+"""
+Contains classes for database entities
+"""
+
 from . import db
 from flask import g
 
@@ -6,7 +10,15 @@ from .db import set_author, set_quest, set_rating, set_tags, set_quest_files, se
 
 
 class File:
+    """
+    File representation class
+    """
     def __init__(self, f_type, url):
+        """
+        Create file object
+        :param f_type: type of file (image, video, etc.)
+        :param url: url for file resource
+        """
         self.type = f_type
         self.url = url
 
@@ -25,22 +37,43 @@ class Author:
 
 
 class Hint:
+    """
+    Hint representation class
+    """
     @staticmethod
     def from_db(hint_id):
+        """
+        Load hint from database
+        :param hint_id: hint id in database
+        :return: hint object with info from db
+        """
         hint_info = db.get_hint(hint_id)
         hint = Hint(hint_info['hint_text'], hint_info['fine'])
         hint.files = [File(file['f_type_name'], file['url_for_file']) for file in db.get_hint_files(hint_id)]
         return hint
 
     def __init__(self, text=None, fine=0):
+        """
+        Create hint
+        :param text: hint text
+        :param fine: hint fine
+        """
         self.text = text
         self.fine = fine
         self.files = []
 
 
 class Answer:
+    """
+    Answer (answer option in database) representation class
+    """
     @staticmethod
     def from_db(answer_id):
+        """
+        Load answer from database
+        :param answer_id: answer id in database
+        :return: answer object with info from database
+        """
         answer_info = db.get_answer_option(answer_id)
         answer = Answer(answer_info['option_text'], answer_info['points'])
         next_question_id = answer_info['next_question_id']
@@ -52,18 +85,38 @@ class Answer:
         return answer
 
     def __init__(self, text=None, points=0):
+        """
+        Create answer object
+        :param text: answer text
+        :param points: answer points
+        """
         self.text = text
         self.points = points
         self.next_question = None
 
 
 class Place:
+    """
+    Place representation class
+    """
     @staticmethod
     def from_db(place_id):
+        """
+        Load place from database
+        :param place_id: place id in database
+        :return: place object with info from database
+        """
         place = db.get_place(place_id)
         return Place(place['coords'], place['radius'], place['time_open'], place['time_close'])
 
     def __init__(self, coords=None, radius=None, time_open=None, time_close=None):
+        """
+        Create place object
+        :param coords: place coordinates
+        :param radius: radius where user is detected
+        :param time_open: the earliest time user can visit place
+        :param time_close: the latest time  user can visit place
+        """
         self.coords = coords
         self.radius = radius
         self.time_open = time_open
@@ -71,8 +124,16 @@ class Place:
 
 
 class Movement:
+    """
+    Movement representation class
+    """
     @staticmethod
     def from_db(movement_id):
+        """
+        Load movement from database
+        :param movement_id: movement id in database
+        :return: movement object with info from database
+        """
         move_info = db.get_movement(movement_id)
         move = Movement()
         move.place = Place.from_db(move_info['place_id'])
@@ -92,6 +153,11 @@ class Movement:
 class Question:
     @staticmethod
     def from_db(question_id):
+        """
+        Load question from database
+        :param question_id: question id in database
+        :return: question object with info from database
+        """
         question_info = db.get_question(question_id)
         question = Question()
         question.text = question_info['question_text']
@@ -119,8 +185,14 @@ class Question:
 
 
 class Quest:
+
     @staticmethod
     def from_db(quest_id):
+        """
+        Recursively load quest and related objects from database
+        :param quest_id: quest id in database
+        :return: quest object with info from database
+        """
         g.questions = {}  # save mapped questions to process loops
         quest_info = db.get_quest(quest_id)
         quest = Quest()

@@ -266,9 +266,11 @@ def get_place(place_id):
 def set_file(file):
     """
     Add rows to table files in database.
+    :param file: file to load
+    :return: file id if success, False if not
     """
     ids = []
-    with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+    with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('SELECT f_type_id FROM file_types WHERE f_type_name = %s', (file.type,))
         type_id = cursor.fetchone()['f_type_id']
         if type_id:
@@ -280,6 +282,11 @@ def set_file(file):
 
 
 def get_author_id_by_email(email: str):
+    """
+    Method to get author_id by email
+    :param email: email
+    :return: author id
+    """
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('SELECT author_id FROM authors WHERE email = %s ', (email,))
         author_id = 1
@@ -289,7 +296,12 @@ def get_author_id_by_email(email: str):
 
 
 def set_author(author):
-    with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+    """
+    Add row in table authors from Author object
+    :param author: Author object to loa
+    :return: author id if it exists, False if not
+    """
+    with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('SELECT status_id FROM statuses WHERE status_name = %s', (author.status,))
         status_id = cursor.fetchone()['status_id']
         if status_id:
@@ -303,9 +315,12 @@ def set_author(author):
 
 def set_quest(quest, author_email):
     """
-    Add row to table quest in database
+    Add row to table quest in database from Quest object and author email
+    :param quest: quest to load in database
+    :param author_email: author email
+    :return: quest id
     """
-    with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+    with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('INSERT INTO quests (title, author_id, description, password, '
                        'time_open, time_close, lead_time, cover_url, hidden) '
                        'VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING quest_id',
@@ -318,8 +333,11 @@ def set_quest(quest, author_email):
 def set_rating(quest_id, rating: dict):
     """
     Add row to table ratings
+    :param quest_id: quest id
+    :param rating: data to load
+    :return: rating id
     """
-    with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+    with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('INSERT INTO ratings (quest_id, one_star_amount, two_star_amount,'
                        'three_star_amount, four_star_amount, five_star_amount)'
                        'VALUES (%s, %s, %s, %s, %s, %s) RETURNING rating_id',
@@ -333,8 +351,11 @@ def set_rating(quest_id, rating: dict):
 def set_tags(quest, quest_id: int):
     """
     Add rows to table tags
+    :param quest: quest
+    :param quest_id: quest id
+    :return: True if tags are loaded
     """
-    with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+    with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         for tag in quest.tags:
             cursor.execute('INSERT INTO tags (quest_id, tag_name) '
                            'VALUES (%s, %s)', (quest_id, tag))
@@ -345,9 +366,12 @@ def set_tags(quest, quest_id: int):
 def set_quest_files(files: list, quest_id: int):
     """
     Add rows to table quest_files
+    :param files: list of files to load
+    :param quest_id: quest id
+    :return: list correctly loaded files
     """
     ids = []
-    with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+    with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         for file in files:
             file_id = set_file(file)
             cursor.execute('INSERT INTO quest_files (f_id, quest_id) '
@@ -358,29 +382,73 @@ def set_quest_files(files: list, quest_id: int):
 
 
 def get_question_type_id(q_type_name: str):
+    """
+    :param q_type_name: question type
+    :return: question type id
+    """
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('SELECT q_type_id FROM question_types WHERE q_type_name = %s', (q_type_name,))
         return cursor.fetchone()['q_type_id']
 
 
-def set_place(place):
-    with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+def set_place(place, cursor):
+    """
+    :param place: place to load
+    :param cursor: our connection to database, if None create new
+    :return:place id
+    """
+    if not cursor:
+        with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+            cursor.execute('INSERT INTO places (coords, time_open, time_close, radius)'
+                           'VALUES (%s, %s, %s, %s) RETURNING place_id',
+                           (place.coords, place.time_open, place.time_close, place.radius))
+            return cursor.fetchone()['place_id']
+    else:
         cursor.execute('INSERT INTO places (coords, time_open, time_close, radius)'
                        'VALUES (%s, %s, %s, %s) RETURNING place_id',
                        (place.coords, place.time_open, place.time_close, place.radius))
         return cursor.fetchone()['place_id']
 
 
-def create_new_question(question, quest_id):
-    with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+def create_new_question(question, quest_id, cursor=None):
+    """
+    Add new row to table questions from Question object
+    :param question: question to witch hints are loaded
+    :param quest_id: quest id
+    :param cursor: our connection to database, if None create new
+    :return: question id
+    """
+    if not cursor:
+        with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+            cursor.execute('INSERT INTO questions (quest_id, question_text, q_type_id)'
+                           'VALUES (%s, %s, %s) RETURNING question_id',
+                           (quest_id, question.text, get_question_type_id(question.type)))
+            return cursor.fetchone()['question_id']
+    else:
         cursor.execute('INSERT INTO questions (quest_id, question_text, q_type_id)'
                        'VALUES (%s, %s, %s) RETURNING question_id',
                        (quest_id, question.text, get_question_type_id(question.type)))
         return cursor.fetchone()['question_id']
 
 
-def create_question_files(question, question_id: int):
-    with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+def create_question_files(question, question_id: int, cursor):
+    """
+    Load question files to database
+    :param question: question to witch hints are loaded
+    :param question_id: question id
+    :param cursor: our connection to database, if None create new
+    :return: list of question files
+    """
+    if not cursor:
+        with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+            ids = []
+            for file in question.files:
+                file_id = set_file(file)
+                ids.append(file)
+                cursor.execute('INSERT INTO question_files (f_id, question_id)'
+                               'VALUES (%s, %s)', (file_id, question_id))
+            return ids
+    else:
         ids = []
         for file in question.files:
             file_id = set_file(file)
@@ -390,8 +458,29 @@ def create_question_files(question, question_id: int):
         return ids
 
 
-def create_hints(question, question_id: int):
-    with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+def create_hints(question, question_id: int, cursor):
+    """
+    Add rows to hints and hint_files tables
+    :param question: question to witch hints are loaded
+    :param question_id: question id
+    :param cursor: our connection to database, if None create new
+    :return: list of hint files
+    """
+    if not cursor:
+        with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+            ids = []
+            for hint in question.hints:
+                cursor.execute('INSERT INTO hints (question_id, hint_text, fine)'
+                               'VALUES (%s, %s, %s) RETURNING hint_id',
+                               (question_id, hint.text, hint.fine))
+                hint_id = cursor.fetchone()['hint_id']
+                for hint_file in hint.files:
+                    hint_file_id = set_file(hint_file)
+                    cursor.execute('INSERT INTO hint_files (f_id, hint_id)'
+                                   'VALUES (%s, %s)', (hint_file_id, hint_id))
+                    ids.append(hint_file)
+        return ids
+    else:
         ids = []
         for hint in question.hints:
             cursor.execute('INSERT INTO hints (question_id, hint_text, fine)'
@@ -407,20 +496,68 @@ def create_hints(question, question_id: int):
 
 
 def set_questions(used_files: list, question, quest_id: int, places: dict, question_id, questions: dict, answers: dict,
-                  movements: dict):
+                  movements: dict, cursor=None):
     """
-    Add rows to questions table
+    Add rows to questions table, using recursion to bypass the entire graph of questions
+    :param used_files: already load files
+    :param question: current question
+    :param quest_id: id of quest
+    :param places: already load places
+    :param question_id: current question id
+    :param questions: already load questions
+    :param answers: already load answers
+    :param movements: already load movements
+    :param cursor: to avoid re-connection to database
+    :return: True if all is ok
     """
-    with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+    if not cursor:
+        with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+            if question not in questions.keys():
+                used_files.append(create_question_files(question, question_id, cursor))
+                used_files.append(create_hints(question, question_id, cursor))
+            if question.type == 'movement':
+                for movement in question.movements:
+                    if movement.place not in places:
+                        places[movement] = set_place(movement.place, cursor)
+                    if movement.next_question not in questions.keys():
+                        next_question_id = create_new_question(movement.next_question, quest_id, cursor)
+                        questions[movement.next_question] = next_question_id
+                    else:
+                        next_question_id = questions[movement.next_question]
+                    if movement not in movements.keys():
+                        cursor.execute('INSERT INTO movements (question_id, place_id, next_question_id)'
+                                       'VALUES (%s, %s, %s) RETURNING movement_id',
+                                       (question_id, places[movement], next_question_id))
+                        movements[movement] = cursor.fetchone()['movement_id']
+                        set_questions(used_files, movement.next_question, quest_id, places, next_question_id, questions,
+                                      answers, movements, cursor)
+            elif question.type != 'end':
+                for answer in question.answers:
+                    if answer.next_question not in questions.keys():
+                        next_question_id = create_new_question(answer.next_question, quest_id, cursor)
+                        questions[answer.next_question] = next_question_id
+                    else:
+                        next_question_id = questions[answer.next_question]
+                    if answer not in answers:
+                        cursor.execute('INSERT INTO answer_options (question_id, option_text, points, next_question_id)'
+                                       'VALUES (%s, %s, %s, %s) RETURNING option_id',
+                                       (question_id, answer.text, answer.points, next_question_id))
+                        answers[answer] = cursor.fetchone()['option_id']
+                        set_questions(used_files, answer.next_question, quest_id, places, next_question_id, questions,
+                                      answers, movements, cursor)
+
+            else:
+                return True
+    else:
         if question not in questions.keys():
-            used_files.append(create_question_files(question, question_id))
-            used_files.append(create_hints(question, question_id))
+            used_files.append(create_question_files(question, question_id, cursor))
+            used_files.append(create_hints(question, question_id, cursor))
         if question.type == 'movement':
             for movement in question.movements:
                 if movement.place not in places:
-                    places[movement] = set_place(movement.place)
+                    places[movement] = set_place(movement.place, cursor)
                 if movement.next_question not in questions.keys():
-                    next_question_id = create_new_question(movement.next_question, quest_id)
+                    next_question_id = create_new_question(movement.next_question, quest_id, cursor)
                     questions[movement.next_question] = next_question_id
                 else:
                     next_question_id = questions[movement.next_question]
@@ -430,11 +567,11 @@ def set_questions(used_files: list, question, quest_id: int, places: dict, quest
                                    (question_id, places[movement], next_question_id))
                     movements[movement] = cursor.fetchone()['movement_id']
                     set_questions(used_files, movement.next_question, quest_id, places, next_question_id, questions,
-                                  answers, movements)
+                                  answers, movements, cursor)
         elif question.type != 'end':
             for answer in question.answers:
                 if answer.next_question not in questions.keys():
-                    next_question_id = create_new_question(answer.next_question, quest_id)
+                    next_question_id = create_new_question(answer.next_question, quest_id, cursor)
                     questions[answer.next_question] = next_question_id
                 else:
                     next_question_id = questions[answer.next_question]
@@ -444,7 +581,7 @@ def set_questions(used_files: list, question, quest_id: int, places: dict, quest
                                    (question_id, answer.text, answer.points, next_question_id))
                     answers[answer] = cursor.fetchone()['option_id']
                     set_questions(used_files, answer.next_question, quest_id, places, next_question_id, questions,
-                                  answers, movements)
+                                  answers, movements, cursor)
 
         else:
             return True

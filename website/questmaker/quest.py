@@ -155,6 +155,9 @@ class Quest:
         self.rating = {'one': 0, 'two': 0, 'three': 0, 'four': 0, 'five': 0}
 
     def to_db(self, author: Author):
+        """
+        Write data from Quest object to database
+        """
         quest_id = set_quest(self, author.email)
         rating_id = set_rating(quest_id, self.rating)
         set_tags(self, quest_id)
@@ -165,6 +168,6 @@ class Quest:
         if self.first_question.type != 'start':
             return False
         else:
-            create_question_files(self.first_question, question_id)
-            create_hints(self.first_question, question_id)
+            create_question_files(self.first_question, question_id, None)
+            create_hints(self.first_question, question_id, None)
             return set_questions(used_files, self.first_question, quest_id, {}, question_id, questions, {}, {})

@@ -1,9 +1,9 @@
 # Description of the quest constructor interface
 ## Basic concept
-The constructor is a graphic editor of the quest graph. With it, the user can both create new quests and edit old ones.
+The constructor is a graphic editor of the quest graph. Using it, the user can both create new quests and edit old ones.
 
 ## Graphical representation
-Each question or instruction (as well as the first greeting and last farewell messages) is represented by a block with brief information: the wording of the question or instruction (with a limit on the length of the text output), the type of question, and additional brief information (see block descriptions). The blocks are arranged in levels. The block is located at the next level from the level of the previous question (indication) and is connected to the ancestor by a line.
+Each question or instruction (as well as the first greeting and last farewell messages) is represented by a block with brief information: the wording of the question or instruction (with a limit on the length of the text output), the type of question, and additional brief information (see block descriptions). The blocks are arranged in levels. The block is located at the next level from the level of the previous question (indication) and is connected to the ancestor by a line. Thus, the starting block is located at the very top and the entire quest graph "descends" from it to the final block.
 
 ## Appearance of blocks
 ### Open question
@@ -28,4 +28,4 @@ When clicking on the block with the left mouse button, the user goes to a modal 
 When right-clicking on a block, the user sees a drop-down menu where one of the options is "create next block". Clicking on it takes the user to a modal window with the choice of the type of the next block (and the choice of the answer leading to this block for a multiple choice question). After that, a block is created, and the user goes to the modal window for its settings. A block with no outgoing connections is automatically connected to a target block until the outgoing block is created. If the end block is selected as the next block, it is simply connected to it
 
 ## Removing blocks
-When right-clicking on a block, the user sees a drop-down menu, one of which is "delete block". When clicked, confirmation is requested and the block is removed <b>with all descendants</b> (this concept may be revised later).
+When right-clicking on a block, the user sees a drop-down menu, one of which is "delete block". When clicked, confirmation is requested and the block is removed with all its information (files, hints, etc.), after which the graph may become disconnected.

@@ -17,7 +17,7 @@ CREATE TABLE authors (
     avatar_url TEXT
 );
 
-DROP TABLE IF EXISTS quests CASCADE; 
+DROP TABLE IF EXISTS quests CASCADE;
 CREATE TABLE quests (
     quest_id SERIAL PRIMARY KEY,
     title CHARACTER VARYING NOT NULL,
@@ -31,7 +31,7 @@ CREATE TABLE quests (
     hidden BOOLEAN NOT NULL
 );
 
-DROP TABLE IF EXISTS places CASCADE; 
+DROP TABLE IF EXISTS places CASCADE;
 CREATE TABLE places (
     place_id SERIAL PRIMARY KEY,
     coords POINT NOT NULL,
@@ -53,9 +53,9 @@ CREATE TABLE file_types (
     f_type_name CHARACTER VARYING(100) UNIQUE NOT NULL
 );
 
-DROP TABLE IF EXISTS files CASCADE; 
+DROP TABLE IF EXISTS files CASCADE;
 CREATE TABLE files (
-    f_id SERIAL PRIMARY KEY, 
+    f_id SERIAL PRIMARY KEY,
     url_for_file TEXT NOT NULL,
     f_type_id INTEGER NOT NULL REFERENCES file_types (f_type_id) ON DELETE RESTRICT
 );
@@ -73,7 +73,7 @@ CREATE TABLE question_types (
     q_type_name CHARACTER VARYING(100) UNIQUE NOT NULL
 );
 
-DROP TABLE IF EXISTS questions CASCADE; 
+DROP TABLE IF EXISTS questions CASCADE;
 CREATE TABLE questions (
     question_id SERIAL PRIMARY KEY,
     quest_id INTEGER NOT NULL REFERENCES quests (quest_id) ON DELETE CASCADE,
@@ -96,7 +96,7 @@ CREATE TABLE hint_files (
     f_id INTEGER NOT NULL REFERENCES files (f_id) ON DELETE RESTRICT
 );
 
-DROP TABLE IF EXISTS answer_options CASCADE; 
+DROP TABLE IF EXISTS answer_options CASCADE;
 CREATE TABLE answer_options (
     option_id SERIAL PRIMARY KEY,
     question_id INTEGER NOT NULL REFERENCES questions (question_id) ON DELETE CASCADE,
@@ -105,7 +105,7 @@ CREATE TABLE answer_options (
     next_question_id INTEGER REFERENCES questions (question_id) ON DELETE CASCADE
 );
 
-DROP TABLE IF EXISTS movements CASCADE; 
+DROP TABLE IF EXISTS movements CASCADE;
 CREATE TABLE movements (
     movement_id SERIAL PRIMARY KEY,
     place_id INTEGER NOT NULL REFERENCES places (place_id) ON DELETE RESTRICT,

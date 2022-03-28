@@ -5,6 +5,9 @@ Contains classes for database entities
 from . import db
 from flask import g
 
+from .db import set_author, set_quest, set_rating, set_tags, set_quest_files, set_questions, \
+    create_new_question, create_question_files, create_hints
+
 
 class File:
     """
@@ -18,6 +21,19 @@ class File:
         """
         self.type = f_type
         self.url = url
+
+
+class Author:
+    def __init__(self, name, password, email, status, avatar_url):
+        self.name = name
+        self.password = password
+        self.email = email
+        self.status = status
+        self.avatar_url = avatar_url
+
+    def to_db(self):
+        author_id = set_author(self)
+        return author_id
 
 
 class Hint:
@@ -44,6 +60,7 @@ class Hint:
         """
         self.text = text
         self.fine = fine
+        self.files = []
 
 
 class Answer:
@@ -209,8 +226,18 @@ class Quest:
         self.first_question = None
         self.rating = {'one': 0, 'two': 0, 'three': 0, 'four': 0, 'five': 0}
 
-    def to_db(self):
+    def to_db(self, author: Author):
         """
-        Write quest to database
+        Write data from Quest object to database
         """
-        pass
+        quest_id = set_quest(self, author.email)
+        rating_id = set_rating(quest_id, self.rating)
+        set_tags(self, quest_id)
+        question_id = create_new_question(self.first_question, quest_id)
+        questions = dict()
+        questions[self.first_question] = question_id
+        used_files = set_quest_files(self.files, quest_id)
+        if self.first_question.type != 'start':
+            return False
+        else:
+            return set_questions(used_files, self.first_question, quest_id, {}, question_id, questions, {}, {})

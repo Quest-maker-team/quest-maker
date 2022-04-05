@@ -9,6 +9,7 @@ functions:
 
 from flask import Flask, render_template
 from flask_login import current_user
+from flask_manage_webpack import FlaskManageWebpack
 
 def create_app(test_config=None):
     """Create and configure the questmaker app
@@ -28,6 +29,9 @@ def create_app(test_config=None):
 
     from .profile import prof
     app.register_blueprint(prof)
+
+    manage_webpack = FlaskManageWebpack()
+    manage_webpack.init_app(app)
 
     @app.route('/')
     def index():

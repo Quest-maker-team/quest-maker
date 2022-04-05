@@ -1,0 +1,20 @@
+{
+  "name": "questmaker",
+  "description": "Web application for creating and managing quests. \r ## Installation\r Use `git clone  https://github.com/Quest-maker-team/quest-maker` to load repo in your computer.\r ## Dependencies\r ### Virtual environment\r You may install dependencies to isolated environment (only for this project).\r Enter `python venv venv` in `website` directory to create virtual environment with name `venv`. \r Then activate it with command `venv/Scripts/activate`.\r ### Packages\r You may use pip - standard python package manager.\r Enter `pip install -r requirements.txt` to install packages.",
+  "version": "0.2.0",
+  "private": "true",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@jsplumb/browser-ui": "^5.5.5",
+    "@jsplumb/connector-flowchart": "^5.5.5",
+    "webpack": "^5.71.0"
+  },
+  "devDependencies": {
+    "terser-webpack-plugin": "^5.3.1",
+    "webpack-cli": "^4.9.2"
+  }
+}

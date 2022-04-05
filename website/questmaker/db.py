@@ -187,7 +187,7 @@ def get_author_by_id(author_id):
     """
     Find user in table authors by id
     :param author_id: user id
-    :return: dictionary view of line from table authors
+    :return: dictionary src of line from table authors
     """
     with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('SELECT * from authors WHERE author_id= %s', (author_id,))
@@ -202,7 +202,7 @@ def get_author_by_email(email):
     """
     Find user in table authors by email
     :param email: user email
-    :return: dictionary view of line from table authors
+    :return: dictionary src of line from table authors
     """
     with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('SELECT * from authors WHERE email= %s', (email,))

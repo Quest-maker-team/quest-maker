@@ -5,14 +5,15 @@ Contains classes for database entities
 from . import db
 from flask import g
 
-from .db import set_author, set_quest, set_rating, set_tags, set_quest_files, set_questions, \
-    create_new_question, create_question_files, create_hints
+from .db import set_author, set_quest, set_tags, set_quest_files, set_questions, \
+    create_new_question
 
 
 class File:
     """
     File representation class
     """
+
     def __init__(self, f_type, url):
         """
         Create file object
@@ -40,6 +41,7 @@ class Hint:
     """
     Hint representation class
     """
+
     @staticmethod
     def from_db(hint_id):
         """
@@ -62,11 +64,15 @@ class Hint:
         self.fine = fine
         self.files = []
 
+    def to_dict(self):
+        return {'hint_text': self.text, 'fine': self.fine, 'files': [file.__dict__ for file in self.files]}
+
 
 class Answer:
     """
     Answer (answer option in database) representation class
     """
+
     @staticmethod
     def from_db(answer_id):
         """
@@ -76,6 +82,7 @@ class Answer:
         """
         answer_info = db.get_answer_option(answer_id)
         answer = Answer(answer_info['option_text'], answer_info['points'])
+        answer.answer_option_id = answer_id
         next_question_id = answer_info['next_question_id']
         if 'questions' in g and next_question_id in g.questions.keys():
             # question has already been created
@@ -90,15 +97,25 @@ class Answer:
         :param text: answer text
         :param points: answer points
         """
+        self.answer_option_id = None
         self.text = text
         self.points = points
         self.next_question = None
+
+    def to_dict(self, quest_dict, question_dict):
+        ans_dict = {'text': self.text, 'points': self.points}
+        if self.next_question:
+            if self.next_question.question_id not in [question['question_id'] for question in quest_dict['questions']]:
+                self.next_question.to_dict(quest_dict)
+            ans_dict['next_question_id'] = self.next_question.question_id
+        question_dict['answer_options'].append(ans_dict)
 
 
 class Place:
     """
     Place representation class
     """
+
     @staticmethod
     def from_db(place_id):
         """
@@ -127,6 +144,7 @@ class Movement:
     """
     Movement representation class
     """
+
     @staticmethod
     def from_db(movement_id):
         """
@@ -136,6 +154,7 @@ class Movement:
         """
         move_info = db.get_movement(movement_id)
         move = Movement()
+        move.movement_id = movement_id
         move.place = Place.from_db(move_info['place_id'])
         next_question_id = move_info['next_question_id']
         if 'questions' in g and next_question_id in g.questions.keys():
@@ -146,8 +165,19 @@ class Movement:
         return move
 
     def __init__(self):
+        self.movement_id = None
         self.place = None
         self.next_question = None
+
+    def to_dict(self, quest_dict, question_dict):
+        move_dict = {}
+        if self.place:
+            move_dict['place'] = self.place.__dict__
+        if self.next_question:
+            if self.next_question.question_id not in [question['question_id'] for question in quest_dict['questions']]:
+                self.next_question.to_dict(quest_dict)
+            move_dict['next_question_id'] = self.next_question.question_id
+        question_dict['movements'].append(move_dict)
 
 
 class Question:
@@ -160,6 +190,7 @@ class Question:
         """
         question_info = db.get_question(question_id)
         question = Question()
+        question.question_id = question_id
         question.text = question_info['question_text']
         question.type = question_info['q_type_name']
         question.files = [File(file['f_type_name'], file['url_for_file'])
@@ -176,6 +207,7 @@ class Question:
         return question
 
     def __init__(self):
+        self.question_id = None
         self.type = None
         self.text = None
         self.hints = []
@@ -183,9 +215,26 @@ class Question:
         self.answers = []
         self.movements = []
 
+    def to_dict(self, quest_dict):
+        question_dict = {}
+        if self.question_id:
+            question_dict['question_id'] = self.question_id
+        if self.type:
+            question_dict['type'] = self.type
+        if self.text:
+            question_dict['text'] = self.text
+        question_dict['files'] = [file.__dict__ for file in self.files]
+        question_dict['hints'] = [hint.to_dict() for hint in self.hints]
+        question_dict['answer_options'] = []
+        question_dict['movements'] = []
+        for ans in self.answers:
+            ans.to_dict(quest_dict, question_dict)
+        for mov in self.movements:
+            mov.to_dict(quest_dict, question_dict)
+        quest_dict['questions'].append(question_dict)
+
 
 class Quest:
-
     @staticmethod
     def from_db(quest_id):
         """
@@ -196,6 +245,7 @@ class Quest:
         g.questions = {}  # save mapped questions to process loops
         quest_info = db.get_quest(quest_id)
         quest = Quest()
+        quest.quest_id = quest_id
         quest.title = quest_info['title']
         quest.author = quest_info['author']
         quest.description = quest_info['description']
@@ -212,6 +262,7 @@ class Quest:
         return quest
 
     def __init__(self):
+        self.quest_id = None
         self.title = None
         self.author = None
         self.tags = []
@@ -231,7 +282,6 @@ class Quest:
         Write data from Quest object to database
         """
         quest_id = set_quest(self, author.email)
-        rating_id = set_rating(quest_id, self.rating)
         set_tags(self, quest_id)
         question_id = create_new_question(self.first_question, quest_id)
         questions = dict()
@@ -241,3 +291,15 @@ class Quest:
             return False
         else:
             return set_questions(used_files, self.first_question, quest_id, {}, question_id, questions, {}, {})
+
+    def to_dict(self):
+        quest_dict = dict((key, val) for key, val in self.__dict__.items()
+                          if key not in ['files', 'first_question', 'rating'] and val is not None)
+        quest_dict['rating'] = dict(self.rating)
+        if 'lead_time' in quest_dict.keys():
+            quest_dict['lead_time'] = quest_dict['lead_time'].total_seconds()
+        quest_dict['start_question_id'] = self.first_question.question_id
+        quest_dict['files'] = [file.__dict__ for file in self.files]
+        quest_dict['questions'] = []
+        self.first_question.to_dict(quest_dict)
+        return quest_dict

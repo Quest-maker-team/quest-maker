@@ -29,6 +29,9 @@ def create_app(test_config=None):
     from .profile import prof
     app.register_blueprint(prof)
 
+    from .api import api
+    app.register_blueprint(api, url_prefix='/api')
+
     @app.route('/')
     def index():
         """

@@ -41,4 +41,12 @@ def create_app(test_config=None):
         """
         return render_template('index.html', user=current_user)
 
+    @app.route('/constructor.html')
+    def constructor():
+        """
+        Constructor page
+        :return: constructor page
+        """
+        return render_template('constructor.html', user=current_user)
+
     return app

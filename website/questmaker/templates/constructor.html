@@ -2,7 +2,19 @@
 {% set active_page = active_page|default('constructor') -%}
 
 {% block content %}
+    <div id="container" style="position: relative;">
+        <div id="parent1" style="width: 100px; height: 100px; background-color: aqua; position: absolute;"></div>
+        <div id="parent2" style="width: 100px; height: 100px; background-color: aqua; position: absolute; left: 200px"></div>
+        <div id="parent3" style="width: 100px; height: 100px; background-color: aqua; position: absolute; left: 400px"></div>
+        <div id="parent4" style="width: 100px; height: 100px; background-color: aqua; position: absolute; left: 600px"></div>
+        <div id="child1" style="width: 100px; height: 100px; background-color: aqua; position: absolute; top: 200px; left: 100px;"></div>
+        <div id="child2" style="width: 100px; height: 100px; background-color: aqua; position: absolute; top: 300px; left: 300px;"></div>
+    </div>
+{% endblock %}
+
+{% block footer %}
 {% endblock %}
 
 {% block script %}
+    <script id="main_js" src="{{ webpack_url_for('main_js.js') }}"></script>
 {% endblock %}

@@ -48,7 +48,7 @@ module.exports = {
     ],*/
   },
   output: {
-    path: path.resolve(__dirname, 'quesmaker', 'static'),
+    path: path.resolve(__dirname, 'questmaker', 'static'),
     publicPath: `${publicHost}/static/`,
     filename: "script/[name]." + hashType + ".js",
     chunkFilename: "script/[name]." + hashType + ".chunk.js"

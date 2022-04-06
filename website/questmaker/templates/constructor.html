@@ -2,14 +2,26 @@
 {% set active_page = active_page|default('constructor') -%}
 
 {% block content %}
-    <div id="container" style="position: relative;">
-        <div id="parent1" style="width: 100px; height: 100px; background-color: aqua; position: absolute;"></div>
-        <div id="parent2" style="width: 100px; height: 100px; background-color: aqua; position: absolute; left: 200px"></div>
-        <div id="parent3" style="width: 100px; height: 100px; background-color: aqua; position: absolute; left: 400px"></div>
-        <div id="parent4" style="width: 100px; height: 100px; background-color: aqua; position: absolute; left: 600px"></div>
-        <div id="child1" style="width: 100px; height: 100px; background-color: aqua; position: absolute; top: 200px; left: 100px;"></div>
-        <div id="child2" style="width: 100px; height: 100px; background-color: aqua; position: absolute; top: 300px; left: 300px;"></div>
-    </div>
+    <main class="min-vh-100 min-vw-100 position-relative d-flex">
+        <div class="position-absolute d-flex min-vw-100 min-vh-100 flex-fill" style="top: 88px;">
+            <div class="mt-2 position-relative" id="container">
+                <div class="position-absolute border-2 card" id="start" style="width: 10rem">
+                    <div class="card-body">
+                        <h5 class="card-title text-center">Start</h5>
+                        <hr>
+                        <p class="card-text text-center">Some text</p>
+                    </div>
+                </div>
+                <div class="position-absolute border-2 card" id="finish" style="top: 500px; left: 200px; width: 10rem">
+                    <div class="card-body">
+                        <h5 class="card-title text-center">Finish</h5>
+                        <hr>
+                        <p class="card-text text-center">Some text</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
 {% endblock %}
 
 {% block footer %}

@@ -7,7 +7,6 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
-  "license": "ISC",
   "dependencies": {
     "@jsplumb/browser-ui": "^5.5.5",
     "@jsplumb/connector-flowchart": "^5.5.5",

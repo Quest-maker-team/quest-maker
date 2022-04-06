@@ -42,7 +42,7 @@ module.exports = {
   // configuration
   context: __dirname,
   entry: {
-    main_js: path.join(__dirname, 'assets', 'js', 'main.js'),
+    main_js: path.join(__dirname, 'assets', 'js', 'constructor.js'),
     /*main_css: [
       path.join(__dirname, 'assets', 'css', 'main.css'),
     ],*/

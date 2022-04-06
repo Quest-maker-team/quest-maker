@@ -216,17 +216,9 @@ class Question:
         self.movements = []
 
     def to_dict(self, quest_dict):
-        question_dict = {}
-        if self.question_id:
-            question_dict['question_id'] = self.question_id
-        if self.type:
-            question_dict['type'] = self.type
-        if self.text:
-            question_dict['text'] = self.text
-        question_dict['files'] = [file.__dict__ for file in self.files]
-        question_dict['hints'] = [hint.to_dict() for hint in self.hints]
-        question_dict['answer_options'] = []
-        question_dict['movements'] = []
+        question_dict = {'question_id': self.question_id, 'type': self.type, 'text': self.text,
+                         'files': [file.__dict__ for file in self.files],
+                         'hints': [hint.to_dict() for hint in self.hints], 'answer_options': [], 'movements': []}
         for ans in self.answers:
             ans.to_dict(quest_dict, question_dict)
         for mov in self.movements:
@@ -303,3 +295,15 @@ class Quest:
         quest_dict['questions'] = []
         self.first_question.to_dict(quest_dict)
         return quest_dict
+
+    def update_from_dict(self, quest_dict):
+        for key, value in quest_dict.items():
+            if key in self.__dict__.keys():
+                self.__setattr__(key, value)
+
+    def create_from_dict(self, quest_dict):
+        self.update_from_dict(quest_dict)
+        startQuestion = Question()
+        startQuestion.type = 'start'
+        startQuestion.answers.append(Answer())
+        self.first_question = startQuestion

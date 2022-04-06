@@ -242,18 +242,39 @@ async def cmd_quest(message: types.Message):
     await message.answer('Введите идентификатор квеста.')
 
 
-def add_file_to_media(media: types.MediaGroup, file, caption):
+def make_media_groups(files):
     """Add file to the media group
     :param media: media group
     :param file: tuple with values url and type name
-    :param caption: caption to file
+    :return list of media groups
     """
-    if file[1] == 'image':
-        media.attach_photo(file[0], caption=caption)
-    elif file[1] == 'audio':
-        media.attach_audio(file[0], caption=caption)
-    elif file[1] == 'video':
-        media.attach_video(file[0], caption=caption)
+    image = []
+    video = []
+    audio = []
+    groups = []
+    for i in range(len(files)):
+        if files[i][1] == 'image':
+            image.append(files[i])
+        elif files[i][1] == 'video':
+            video.append(files[i])
+        else:
+            audio.append(files[i])
+
+    if len(image) != 0 or len(video) != 0:
+        media = types.MediaGroup()
+        for i in image:
+            media.attach_photo(i[0])
+        for v in video:
+            media.attach_video(v[0])
+        groups.append(media)
+
+    if len(audio) != 0:
+        media_a = types.MediaGroup()
+        for a in audio:
+            media_a.attach_audio(a[0])
+        groups.append(media_a)
+
+    return groups
 
 
 async def send_files(message: types.Message, caption, files, reply_markup):
@@ -268,10 +289,9 @@ async def send_files(message: types.Message, caption, files, reply_markup):
     else:
         try:
             await types.ChatActions.upload_document()
-            media = types.MediaGroup()
-            for i in range(len(files)):
-                add_file_to_media(media, files[i], '')
-            await message.answer_media_group(media)
+            groups = make_media_groups(files)
+            for g in groups:
+                await message.answer_media_group(g)
         except:
             await message.answer('Здесь должны были быть файлы, но загрузить их не удалось')
 

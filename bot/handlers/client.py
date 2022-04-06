@@ -243,9 +243,8 @@ async def cmd_quest(message: types.Message):
 
 
 def make_media_groups(files):
-    """Add file to the media group
-    :param media: media group
-    :param file: tuple with values url and type name
+    """Make media groups
+    :param files: list of files with their types
     :return list of media groups
     """
     image = []

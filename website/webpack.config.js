@@ -71,7 +71,7 @@ module.exports = {
         '!script/index.js*',
     ],
     }),
-    new WebpackManifestPlugin(),
+    new WebpackManifestPlugin({publicPath:"/static/"}),
   ],
   
 }

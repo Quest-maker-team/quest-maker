@@ -1,4 +1,5 @@
 import { newInstance } from "@jsplumb/browser-ui";
+import {Endpoint} from "@jsplumb/core";
 import { FlowchartConnector } from "@jsplumb/connector-flowchart";
 import { Render } from "./render"
 import { TestJSON } from "./testJSON";
@@ -47,3 +48,4 @@ let finishEndpoint = instance.addEndpoint(finishBlock, { anchor:[ 0.5, 0, 0, -1 
 });*/
 
 Render(TestJSON, instance, sourceEndpoint, targetEndpoint);
+//instance.addEndpoint(containerElement, sourceEndpoint);

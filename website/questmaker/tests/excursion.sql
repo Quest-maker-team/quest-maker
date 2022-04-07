@@ -361,20 +361,20 @@ INSERT INTO files (url_for_file, f_type_id) VALUES (
     'https://notypicspb.ru/wp-content/uploads/2021/09/p_cyx_4thmc_aleksandr_yaroslavcev.jpg',
     (SELECT f_type_id FROM file_types WHERE f_type_name= 'image'));
 INSERT INTO files (url_for_file, f_type_id) VALUES (
-    'https://drive.google.com/file/d/1v2z5xxcG1zOKieOs33UyU8-Nkq_MD8hh/view?usp=sharing',
+    'https://gvfsmimulqbb.usemoralis.com/0.mp4',
     (SELECT f_type_id FROM file_types WHERE f_type_name= 'video'));
 --branch "Yards and layouts"
 INSERT INTO files (url_for_file, f_type_id) VALUES (
     'https://www.fiesta.ru/uploads/slider_image/image/40183/v880_12_MG_9257.jpg',
     (SELECT f_type_id FROM file_types WHERE f_type_name= 'image'));
 INSERT INTO files (url_for_file, f_type_id) VALUES (
-    'https://drive.google.com/file/d/128BvcoYU1yNgvKcx_tqcjzvXVxwXVuM-/view?usp=sharing',
+    'https://gvfsmimulqbb.usemoralis.com/1.mp3',
     (SELECT f_type_id FROM file_types WHERE f_type_name= 'audio'));
 INSERT INTO files (url_for_file, f_type_id) VALUES (
     'https://www.fiesta.ru/uploads/slider_image/image/11478/v880_0_5c50d_e6fc0040_orig.jpg',
     (SELECT f_type_id FROM file_types WHERE f_type_name= 'image'));
 INSERT INTO files (url_for_file, f_type_id) VALUES (
-    'https://drive.google.com/file/d/1O9txVsyr13Co0IucUVRGVrn-M5peFAdc/view?usp=sharing',
+    'https://gvfsmimulqbb.usemoralis.com/2.mp4',
     (SELECT f_type_id FROM file_types WHERE f_type_name= 'video'));
 --branch "Art"
 INSERT INTO files (url_for_file, f_type_id) VALUES (
@@ -397,19 +397,19 @@ INSERT INTO question_files (f_id, question_id) VALUES (
     (SELECT f_id FROM files WHERE url_for_file= 'https://notypicspb.ru/wp-content/uploads/2021/09/p_cyx_4thmc_aleksandr_yaroslavcev.jpg'),
     (SELECT question_id FROM questions WHERE question_text= 'Самый северный на планете буддийский храм был построен в Петербурге в 1909–1915 годы. Проектировкой и возведением здания занимался архитектор Барановский, который тщательно подошёл к работе над проектом. В своём великолепном здании он учёл все тибетские традиции и каноны, что позволило передать атмосферу настоящего буддийского храма.'));
 INSERT INTO question_files (f_id, question_id) VALUES (
-    (SELECT f_id FROM files WHERE url_for_file= 'https://drive.google.com/file/d/1v2z5xxcG1zOKieOs33UyU8-Nkq_MD8hh/view?usp=sharing'),
+    (SELECT f_id FROM files WHERE url_for_file= 'https://gvfsmimulqbb.usemoralis.com/0.mp4'),
     (SELECT question_id FROM questions WHERE question_text= 'Самый северный на планете буддийский храм был построен в Петербурге в 1909–1915 годы. Проектировкой и возведением здания занимался архитектор Барановский, который тщательно подошёл к работе над проектом. В своём великолепном здании он учёл все тибетские традиции и каноны, что позволило передать атмосферу настоящего буддийского храма.'));
 INSERT INTO question_files (f_id, question_id) VALUES (
     (SELECT f_id FROM files WHERE url_for_file= 'https://www.fiesta.ru/uploads/slider_image/image/40183/v880_12_MG_9257.jpg'),
     (SELECT question_id FROM questions WHERE question_text= 'Копия Эйфелевой башни высотой в пятиэтажный дом, Триумфальная арка и даже стеклянная пирамида Лувра — двор жилого комплекса «Гранд Фамилия» в Московском районе летом 2014 стал настоящей резиденцией Парижа в Петербурге. Не хватает разве что шарманщика, запаха жареных каштанов и уютных кафе. Но со временем возможно всё.'));
 INSERT INTO question_files (f_id, question_id) VALUES (
-    (SELECT f_id FROM files WHERE url_for_file= 'https://drive.google.com/file/d/128BvcoYU1yNgvKcx_tqcjzvXVxwXVuM-/view?usp=sharing'),
+    (SELECT f_id FROM files WHERE url_for_file= 'https://gvfsmimulqbb.usemoralis.com/1.mp3'),
     (SELECT question_id FROM questions WHERE question_text= 'Копия Эйфелевой башни высотой в пятиэтажный дом, Триумфальная арка и даже стеклянная пирамида Лувра — двор жилого комплекса «Гранд Фамилия» в Московском районе летом 2014 стал настоящей резиденцией Парижа в Петербурге. Не хватает разве что шарманщика, запаха жареных каштанов и уютных кафе. Но со временем возможно всё.'));
 INSERT INTO question_files (f_id, question_id) VALUES (
     (SELECT f_id FROM files WHERE url_for_file= 'https://www.fiesta.ru/uploads/slider_image/image/11478/v880_0_5c50d_e6fc0040_orig.jpg'),
     (SELECT question_id FROM questions WHERE question_text= 'Этот удивительный дворик на улице Чайковского является одной из самых молодых достопримечательностей Петербурга. Кстати, двор знаменит не только благодаря ярким краскам мозаики, но также и потому, что сделан он руками детей. Красочное панно, словно чешуя пёстрой рыбы, окутало буквально каждый объект во дворе. Скамейки, дорожки, стены домов, скульптуры и солнечные часы украшены красочными рисунками мозаики из цветного стекла. Ничем не примечательный двор в какой-то момент начал буквально обрастать мозаикой прямо на глазах у местных жителей и со временем стал своеобразным музеем под открытым небом. Эту достопримечательность, которую лучше один раз увидеть, чем сто раз о ней услышать, создали ученики Малой Академии искусств.'));
 INSERT INTO question_files (f_id, question_id) VALUES (
-    (SELECT f_id FROM files WHERE url_for_file= 'https://drive.google.com/file/d/1O9txVsyr13Co0IucUVRGVrn-M5peFAdc/view?usp=sharing'),
+    (SELECT f_id FROM files WHERE url_for_file= 'https://gvfsmimulqbb.usemoralis.com/2.mp4'),
     (SELECT question_id FROM questions WHERE question_text= 'Экспозиция музея – самый большой макет России в мире площадью 800 квадратных метров, который является художественным воплощением образа нашей страны: от ее Дальневосточных рубежей до «янтарного» побережья Балтийского моря. Над его созданием трудились круглосуточно в течение пяти лет десятки самых разнообразных специалистов. На макетном поле переданы собирательные образы различных городов и регионов, а в жанровых сценках отображены фактически все виды человеческой деятельности.'));
 INSERT INTO question_files (f_id, question_id) VALUES (
     (SELECT f_id FROM files WHERE url_for_file= 'https://www.nashe.ru/storage/3427/conversions/expush2b-large.jpg'),

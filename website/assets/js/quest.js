@@ -29,9 +29,7 @@ export class Quest{
         deleteButton.style.position = "absolute";
         deleteButton.style.top = "0";
         deleteButton.style.right = "0";
-        let DeleteQuestion = this.DeleteQuestion;
-        let questions = this.data.questions;
-        deleteButton.onclick = function (){
+        deleteButton.onclick = () => {
             for (let answerElement of answerElements) {
                 instance.deleteConnectionsForElement(answerElement);
                 instance.selectEndpoints({element: answerElement}).deleteAll();
@@ -39,8 +37,8 @@ export class Quest{
             instance.deleteConnectionsForElement(block);
             instance.selectEndpoints({element: block}).deleteAll();
             block.parentElement.removeChild(block);
-            DeleteQuestion(block.id, questions);
-        }
+            this.DeleteQuestion(block.id, this.data.questions);
+        };
         block.append(deleteButton);
     }
 

@@ -85,6 +85,31 @@ export class Quest{
 
         return block;
     }
+    RenderMovement(question, instance, sourceEndpoint, targetEndpoint){
+        let content = "<h5 class=\"card-title text-center\">Movement</h5>" +
+                        "<hr>" +
+                        "<p class=\"card-text text-center text-truncate\">"+ question.text +"</p>";
+        console.log(question.answer_options);
+        let block = this.RenderBlock(question.question_id, "15rem", content);
+
+        let answerTable = document.createElement("ul");
+        answerTable.className = "list-group list-group-flush";
+        for (let answer of question.answer_options) {
+            let tableElement = document.createElement("li");
+            tableElement.innerHTML = answer.text;
+            tableElement.className = "list-group-item";
+            answerTable.append(tableElement);
+            instance.addEndpoint(tableElement, {anchor: ["Right", "Left"]}, sourceEndpoint);
+        }
+        block.append(answerTable);
+
+        this.AddDeleteButton(block, answerTable.childNodes, instance);
+
+        instance.manage(block, block.id);
+        instance.addEndpoint(block, targetEndpoint);
+
+        return block;
+    }
 
     Render(instance, sourceEndpoint, targetEndpoint) {
         this.RenderStart(this.data.questions.find(question => question.type === "start"), instance, sourceEndpoint);
@@ -93,4 +118,5 @@ export class Quest{
         this.RenderOpenQuestion(this.data.questions.find(question => question.type === "open"), instance, sourceEndpoint, targetEndpoint);
         this.RenderOpenQuestion(this.data.questions.find(question => question.question_id == 8), instance, sourceEndpoint, targetEndpoint);
     }
+    Re
 }

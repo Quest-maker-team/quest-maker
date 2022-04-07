@@ -27,5 +27,36 @@ let targetEndpoint = {
 };
 
 let quest = new Quest(TestJSON);
-
+ document.getElementById("addMBtn").onclick = function () {
+    let max = quest.data.questions.reduce((acc, curr) => acc.question_id > curr.question_id ? acc : curr);
+    let newBlockId = max.question_id+1;
+    console.log(newBlockId);
+    quest.data.questions.push( {
+       "answer_options": [],
+       "files": [],
+       "hints": [],
+       "movements": [],
+       "question_id": newBlockId,
+       "text": "Новое передвижение № " + newBlockId.toString(),
+       "type": "movement"
+   });
+   console.log(quest.data.questions[newBlockId-1]);
+   quest.RenderMovement(quest.data.questions[newBlockId-1],instance,sourceEndpoint,targetEndpoint);
+}
+document.getElementById("addQBtn").onclick = function () {
+    let max = quest.data.questions.reduce((acc, curr) => acc.question_id > curr.question_id ? acc : curr);
+    let newBlockId = max.question_id+1;
+    console.log(newBlockId);
+    quest.data.questions.push( {
+       "answer_options": [],
+       "files": [],
+       "hints": [],
+       "movements": [],
+       "question_id": newBlockId,
+       "text": "Новый открытый вопрос № " + newBlockId.toString(),
+       "type": "open"
+   });
+   console.log(quest.data.questions[newBlockId-1]);
+   quest.RenderOpenQuestion(quest.data.questions[newBlockId-1],instance,sourceEndpoint,targetEndpoint);
+}
 quest.Render(instance, sourceEndpoint, targetEndpoint);

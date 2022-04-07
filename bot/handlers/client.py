@@ -38,6 +38,52 @@ class Tip:
             self.files = res
 
 
+def check_time(open_time, close_time):
+    """Checks whether the current time is in the specified interval
+    :param open_time: the beginning of time interval
+    :param close_time: end of time interval
+    :return True if we are in the specified interval
+    :return False otherwise
+    """
+    now = datetime.datetime.now().time()
+    open = True
+    not_close = True
+
+    if open_time != None:
+        open = now > open_time.time()
+    if close_time != None:
+        not_close = now < close_time.time()
+    if open_time != None and close_time != None:
+        # 22:00 - 2:00, for example
+        if open_time.time() > close_time.time():
+            return open or not_close
+        else:
+            return open and not_close
+    else:
+        return open and not_close
+
+
+def check_time_limits(time_start, time_limits):
+    """Checks whether we are keeping within the time limits
+    :param time_start: the start time of the quest
+    :param time_limits: a tuple with the closing time of the quest and a time limit on the passage
+    :return True if we are keeping within the time limits
+    :return False otherwise
+    """
+    if time_limits is None:
+        return True
+    
+    if time_limits[1] != None:
+        if time_limits[1] < datetime.datetime.now() - time_start:
+            return False
+
+    if time_limits[0] != None:
+        if datetime.datetime.now() > time_limits[0]:
+            return False
+
+    return True
+
+
 class QuestPoint:
     """Quest point representation type.
     """
@@ -136,6 +182,8 @@ class QuestPoint:
         # it is assumed that the coordinates were obtained in point_name
         try:
             movement_info = get_movement(self.id)
+            if not check_time(movement_info[3], movement_info[4]):
+                return (0, None)
             # check whether the place has been reached with the required accuracy
             #...
             question_info = get_question_by_id(movement_info[0])
@@ -184,6 +232,8 @@ class Quest:
         self.quest_id = quest_id
         self.score = 0
         self.start_msg, self.cur_point, self.name = get_quest_info(quest_id)
+        self.time_limits = get_quest_time_info(quest_id)
+        self.time_start = datetime.datetime.now()
 
 
     def next_point(self, message):
@@ -196,10 +246,13 @@ class Quest:
         if self.cur_point is None:
             return (True, "Ошибка в структуре квеста.", [])
 
+        if not check_time_limits(self.time_start, self.time_limits):
+            return (True, "Время активности квеста зокончилось.", [])
+
         (score_to_add, point) = self.cur_point.get_next(message)
         self.score += score_to_add
         if self.cur_point.type == 'movement' and point is None:
-            return (True, "Ошибка в структуре квеста.", [])
+            return (False, "Неверное место или время.", [])
         if point is None:
             return (False, "Неправильный ответ.", [])
         
@@ -243,8 +296,9 @@ async def cmd_quest(message: types.Message):
 
 
 def make_media_groups(files):
-    """Make media groups
-    :param files: list of files with their types
+    """Add file to the media group
+    :param media: media group
+    :param file: tuple with values url and type name
     :return list of media groups
     """
     image = []
@@ -390,6 +444,11 @@ async def skip_handler(message: types.Message, state: FSMContext):
                 elif data['quest'].cur_point.type == "choice":
                     keyboard = create_keyboard(data['quest'].cur_point.next_points)
                     await send_files(message, msg, files, keyboard)
+                if quest_ends == True:
+                    await state.finish()
+                    await message.answer('Квест "' + data['quest'].name + '" закончен. '
+                                         'Количество баллов: ' + str(data['quest'].score) + ".",
+                                          reply_markup=ReplyKeyboardRemove())
             else:
                 await message.answer('Точка не поддерживает пропуск.')
         else:
@@ -413,8 +472,8 @@ async def quest_proc(message: types.Message, state: FSMContext):
         if quest_ends == True:
             await state.finish()
             await message.answer('Квест "' + data['quest'].name + '" закончен. '
-                'Количество баллов: ' + str(data['quest'].score) + ".",
-                reply_markup=ReplyKeyboardRemove())
+                                 'Количество баллов: ' + str(data['quest'].score) + ".",
+                                  reply_markup=ReplyKeyboardRemove())
 
 
 async def warning(message: types.Message):

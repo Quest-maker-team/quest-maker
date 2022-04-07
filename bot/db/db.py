@@ -1,6 +1,7 @@
 from configparser import ConfigParser
 import psycopg2
 from psycopg2.extras import DictCursor
+import datetime
 
 
 class MetaSingleton(type):
@@ -88,11 +89,36 @@ def get_quest_title(quest_id):
     :return: None if quest with the same id don't exist
     """
     try:
-        name = select_one("SELECT title FROM quests WHERE quest_id= %s AND hidden= %s", (quest_id, 'false',))
-        if name:
-            return name[0]
+        info = select_one("SELECT title, time_open, time_close FROM quests WHERE quest_id= %s AND hidden= %s",
+                          (quest_id, 'false',))
+        if info:
+            now = datetime.datetime.now()
+            open = True
+            not_close = True
+            if info[1] != None:
+                open = now > info[1]
+            if info[2] != None:
+                not_close = now < info[2]
+            if open and not_close:
+                return info[0]
+            else:
+                return None
         else:
             return None
+    except:
+        #In case a non-integer is entered
+        return None
+
+
+def get_quest_time_info(quest_id):
+    """
+    Find quest time limits in table quest by id
+    :param quest_id: quest id
+    :return: time_close and lead_time
+    :return: None if quest with the same id don't exist
+    """
+    try:
+        return select_one("SELECT time_close, lead_time FROM quests WHERE quest_id= %s", (quest_id, ))
     except:
         #In case a non-integer is entered
         return None
@@ -149,12 +175,13 @@ def get_movement(question_id):
     """
     Find movement related to the question
     :param question_id: question id
-    :return: tuple with values next_question_id, coords, radius
+    :return: tuple with values next_question_id, coords, radius, time_open, time_close
     :return: None in case of failure
     """
     try:
-        return select_one('SELECT next_question_id, coords, radius FROM movements INNER JOIN places '
-                          'ON movements.place_id= places.place_id WHERE question_id= %s', (question_id, ))
+        return select_one('SELECT next_question_id, coords, radius, time_open, time_close FROM movements '
+                          'INNER JOIN places ON movements.place_id= places.place_id WHERE question_id= %s',
+                          (question_id, ))
     except:
         return None
 

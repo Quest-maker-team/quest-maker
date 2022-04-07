@@ -1,7 +1,8 @@
 import { newInstance } from "@jsplumb/browser-ui";
 import { FlowchartConnector } from "@jsplumb/connector-flowchart";
-import { Render } from "./render"
-import { TestJSON } from "./testJSON";
+//import { Render } from "./render"
+import {Quest} from "./quest";
+import {TestJSON} from "./testJSON";
 
 let containerElement = document.getElementById("container");
 
@@ -25,4 +26,6 @@ let targetEndpoint = {
     anchor: [ 0.5, 0, 0, -1 ],
 };
 
-Render(TestJSON, instance, sourceEndpoint, targetEndpoint);
+let quest = new Quest(TestJSON);
+
+quest.Render(instance, sourceEndpoint, targetEndpoint);

@@ -7,11 +7,27 @@ export function RenderBlock(id, width, cardBody){
     blockBody.className = "card-body";
     blockBody.innerHTML = cardBody;
     block.style.width = width;
-
     block.append(blockBody);
 
     document.getElementById("container").append(block);
     return block;
+}
+
+export function AddDeleteButton(block, answerElements, instance){
+    let deleteButton = document.createElement("button");
+    deleteButton.id = "btn" + block.id;
+    deleteButton.className = "btn-close";
+    deleteButton.onclick = function (){
+        console.log("delete");
+        for (let answerElement of answerElements) {
+            instance.deleteConnectionsForElement(answerElement);
+            instance.selectEndpoints({element: answerElement}).deleteAll();
+        }
+        instance.deleteConnectionsForElement(block);
+        instance.selectEndpoints({element: block}).deleteAll();
+        block.parentElement.removeChild(block);
+    }
+    block.append(deleteButton);
 }
 
 export function RenderStart(question, instance, sourceEndpoint){
@@ -49,6 +65,8 @@ export function RenderOpenQuestion(question, instance, sourceEndpoint, targetEnd
         instance.addEndpoint(tableElement, {anchor: ["Right", "Left"]}, sourceEndpoint);
     }
     block.append(answerTable);
+
+    AddDeleteButton(block, answerTable.childNodes, instance);
 
     instance.manage(block, block.id);
     instance.addEndpoint(block, targetEndpoint);

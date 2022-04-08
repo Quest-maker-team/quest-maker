@@ -16,14 +16,19 @@ class BFS:
             raise StopIteration
 
         cur = self.__queue__.get()
+        while cur in self.__visited__:
+            if self.__queue__.empty():
+                raise StopIteration
+            else:
+                cur = self.__queue__.get()
 
         self.__visited__.add(cur)
 
         for ans in cur.answers:
-            if ans not in self.__visited__ and ans.next_question is not None:
+            if ans.next_question is not None:
                 self.__queue__.put(ans.next_question)
         for move in cur.movements:
-            if move not in self.__visited__ and move.next_question is not None:
+            if move.next_question is not None:
                 self.__queue__.put(move.next_question)
 
         return cur

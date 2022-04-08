@@ -27,6 +27,7 @@ let targetEndpoint = {
 };
 
 let quest = new Quest(TestJSON);
+
  document.getElementById("addMBtn").onclick = function () {
     let max = quest.data.questions.reduce((acc, curr) => acc.question_id > curr.question_id ? acc : curr);
     let newBlockId = max.question_id+1;
@@ -43,6 +44,7 @@ let quest = new Quest(TestJSON);
    console.log(quest.data.questions[newBlockId-1]);
    quest.RenderMovement(quest.data.questions[newBlockId-1],instance,sourceEndpoint,targetEndpoint);
 }
+
 document.getElementById("addQBtn").onclick = function () {
     let max = quest.data.questions.reduce((acc, curr) => acc.question_id > curr.question_id ? acc : curr);
     let newBlockId = max.question_id+1;
@@ -59,4 +61,5 @@ document.getElementById("addQBtn").onclick = function () {
    console.log(quest.data.questions[newBlockId-1]);
    quest.RenderOpenQuestion(quest.data.questions[newBlockId-1],instance,sourceEndpoint,targetEndpoint);
 }
+
 quest.Render(instance, sourceEndpoint, targetEndpoint);

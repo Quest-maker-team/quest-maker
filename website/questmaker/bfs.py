@@ -1,8 +1,18 @@
+"""
+Contains class for BFS iterating quest questions
+"""
+
 from queue import SimpleQueue
 
 
 class BFS:
+    """
+    Class for iterating quest questions using BFS
+    """
     def __init__(self, question):
+        """
+        :param question: question BFS start from (not necessary 'start' question)
+        """
         self.__start_question__ = question
 
     def __iter__(self):

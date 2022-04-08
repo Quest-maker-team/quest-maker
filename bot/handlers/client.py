@@ -7,7 +7,7 @@ from aiogram import types, Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
-from aiogram.types import ReplyKeyboardRemove, ReplyKeyboardMarkup
+from aiogram.types import ReplyKeyboardRemove
 from keyboards import *
 
 from db.db import *
@@ -38,6 +38,52 @@ class Tip:
             self.files = res
 
 
+def check_time(open_time, close_time):
+    """Checks whether the current time is in the specified interval
+    :param open_time: the beginning of time interval
+    :param close_time: end of time interval
+    :return True if we are in the specified interval
+    :return False otherwise
+    """
+    now = datetime.datetime.now().time()
+    open = True
+    not_close = True
+
+    if open_time != None:
+        open = now > open_time.time()
+    if close_time != None:
+        not_close = now < close_time.time()
+    if open_time != None and close_time != None:
+        # 22:00 - 2:00, for example
+        if open_time.time() > close_time.time():
+            return open or not_close
+        else:
+            return open and not_close
+    else:
+        return open and not_close
+
+
+def check_time_limits(time_start, time_limits):
+    """Checks whether we are keeping within the time limits
+    :param time_start: the start time of the quest
+    :param time_limits: a tuple with the closing time of the quest and a time limit on the passage
+    :return True if we are keeping within the time limits
+    :return False otherwise
+    """
+    if time_limits is None:
+        return True
+    
+    if time_limits[1] != None:
+        if time_limits[1] < datetime.datetime.now() - time_start:
+            return False
+
+    if time_limits[0] != None:
+        if datetime.datetime.now() > time_limits[0]:
+            return False
+
+    return True
+
+
 class QuestPoint:
     """Quest point representation type.
     """
@@ -65,14 +111,19 @@ class QuestPoint:
         if len(points_info) == 0:
             return
 
-        self.next_points = {}
-        for i in range(len(points_info)):
-            if points_info[i][2] is None:
-                point = None
-            else:
-                question_info = get_question_by_id(points_info[i][2])
-                point = QuestPoint(question_info[0], question_info[2], question_info[1])
-            self.next_points[points_info[i][0]] = (points_info[i][1], point)
+        try:
+            self.next_points = {}
+            for i in range(len(points_info)):
+                if points_info[i][2] is None:
+                    point = None
+                else:
+                    question_info = get_question_by_id(points_info[i][2])
+                    point = QuestPoint(question_info[0], question_info[2], question_info[1])
+                self.next_points[points_info[i][0]] = (points_info[i][1], point)
+        except:
+            #delete all the options, because for example, an error when loading the correct answer will
+            #greatly distort the meaning
+            self.next_points = None
 
 
     def load_tips(self):
@@ -128,26 +179,46 @@ class QuestPoint:
                     return (point_info[0], point_info[1])
             return (0, None)
         # movement
-        point_info = list(self.next_points.items())[0][1]
-        point_info[1].load_next_points()
-        point_info[1].load_tips()
-        point_info[1].load_files()
-        return (point_info[0], point_info[1])
-
+        # it is assumed that the coordinates were obtained in point_name
+        try:
+            movement_info = get_movement(self.id)
+            if not check_time(movement_info[3], movement_info[4]):
+                return (0, None)
+            # check whether the place has been reached with the required accuracy
+            #...
+            question_info = get_question_by_id(movement_info[0])
+            point = QuestPoint(question_info[0], question_info[2], question_info[1])
+            point.load_next_points()
+            point.load_tips()
+            point.load_files()
+            return (0, point)
+        except:
+            return (0, None)
+        
 
 def get_quest_info(quest_id):
     """Get quest info.
     :param quest_id: quest id
-    :return first point
+    :return start message, first point and title
+    :return ('', None, '') in case of failure
     """
-    first_point_info = get_first_question(quest_id)
+    name = get_quest_title(quest_id)
+    start_msg, first_point_info = get_first_question(quest_id)
+    # here name can be None when, for example, the time of the quest activity came out
+    if first_point_info is None or name is None:
+        return ('', None, '')
+
     first_point = QuestPoint(first_point_info[0], first_point_info[2], first_point_info[1])
 
     first_point.load_next_points()
     first_point.load_tips()
     first_point.load_files()
 
-    return first_point
+    # since it will not be possible to send an empty message
+    if start_msg == '':
+        start_msg += 'Доборо пожаловать на квест "' + name + '"'
+
+    return start_msg, first_point, name
 
 
 class Quest:
@@ -160,7 +231,9 @@ class Quest:
         """
         self.quest_id = quest_id
         self.score = 0
-        self.cur_point = get_quest_info(quest_id)
+        self.start_msg, self.cur_point, self.name = get_quest_info(quest_id)
+        self.time_limits = get_quest_time_info(quest_id)
+        self.time_start = datetime.datetime.now()
 
 
     def next_point(self, message):
@@ -170,13 +243,25 @@ class Quest:
         :return (False, <message to send>, <list of files>) if quest need continue
         :return (True, <message to send>, <list of files>) if quest is over
         """
+        if self.cur_point is None:
+            return (True, "Ошибка в структуре квеста.", [])
+
+        if not check_time_limits(self.time_start, self.time_limits):
+            return (True, "Время активности квеста зокончилось.", [])
+
         (score_to_add, point) = self.cur_point.get_next(message)
         self.score += score_to_add
+        if self.cur_point.type == 'movement' and point is None:
+            return (False, "Неверное место или время.", [])
         if point is None:
             return (False, "Неправильный ответ.", [])
-        self.cur_point = point
-        if point.next_points is None:
+        
+        if point.type == 'end':
             return (True, point.msg, point.files)
+        elif (point.type == 'open' or point.type == 'choice') and point.next_points is None:
+            return (True, "Ошибка в структуре квеста.", [])
+        
+        self.cur_point = point
         return (False, point.msg, point.files)
 
 
@@ -210,18 +295,39 @@ async def cmd_quest(message: types.Message):
     await message.answer('Введите идентификатор квеста.')
 
 
-def add_file_to_media(media: types.MediaGroup, file, caption):
+def make_media_groups(files):
     """Add file to the media group
     :param media: media group
     :param file: tuple with values url and type name
-    :param caption: caption to file
+    :return list of media groups
     """
-    if file[1] == 'image':
-        media.attach_photo(file[0], caption=caption)
-    elif file[1] == 'audio':
-        media.attach_audio(file[0], caption=caption)
-    elif file[1] == 'video':
-        media.attach_video(file[0], caption=caption)
+    image = []
+    video = []
+    audio = []
+    groups = []
+    for i in range(len(files)):
+        if files[i][1] == 'image':
+            image.append(files[i])
+        elif files[i][1] == 'video':
+            video.append(files[i])
+        else:
+            audio.append(files[i])
+
+    if len(image) != 0 or len(video) != 0:
+        media = types.MediaGroup()
+        for i in image:
+            media.attach_photo(i[0])
+        for v in video:
+            media.attach_video(v[0])
+        groups.append(media)
+
+    if len(audio) != 0:
+        media_a = types.MediaGroup()
+        for a in audio:
+            media_a.attach_audio(a[0])
+        groups.append(media_a)
+
+    return groups
 
 
 async def send_files(message: types.Message, caption, files, reply_markup):
@@ -234,16 +340,20 @@ async def send_files(message: types.Message, caption, files, reply_markup):
         if caption != '':
             await message.answer(caption, reply_markup=reply_markup)
     else:
-        await types.ChatActions.upload_document()
-        media = types.MediaGroup()
-        for i in range(len(files)):
-            add_file_to_media(media, files[i], '')
-        await message.answer_media_group(media)
+        try:
+            await types.ChatActions.upload_document()
+            groups = make_media_groups(files)
+            for g in groups:
+                await message.answer_media_group(g)
+        except:
+            await message.answer('Здесь должны были быть файлы, но загрузить их не удалось')
+
         if caption != '':
             await message.answer(caption, reply_markup=reply_markup)
         else:
             #if only a file, but you need to change the keyboard (it won't send an empty line)
             await message.answer('↑', reply_markup=reply_markup)
+
 
 async def name_quest(message: types.Message, state: FSMContext):
     """Naming quest state handler.
@@ -253,13 +363,24 @@ async def name_quest(message: types.Message, state: FSMContext):
     if activate_quest(message.text):
         async with state.proxy() as data:
             data['quest'] = Quest(message.text)
+        if data['quest'].cur_point is None:
+            await message.answer('Не удалось запустить квест.')
+            await state.finish()
+            return
+
         await QuestStates.next()
-        await message.answer('Квест "' + get_quest_title(message.text) + '" начат. '
+        await message.answer('Квест "' + data['quest'].name + '" начат. '
             'Чтобы закончить напишите /end, '
             'чтобы получить количество баллов - /score, '
             'чтобы получить подсказку - /tip, '
             'чтобы попытаться пропустить точку - /skip.')
-        await send_files(message, data['quest'].cur_point.msg, data['quest'].cur_point.files, ReplyKeyboardRemove())
+        await message.answer(data['quest'].start_msg)
+
+        if data['quest'].cur_point.type == "choice":
+            keyboard = create_keyboard(data['quest'].cur_point.next_points)
+        else:
+            keyboard = ReplyKeyboardRemove()
+        await send_files(message, data['quest'].cur_point.msg, data['quest'].cur_point.files, keyboard)
     else:
         await message.reply('Квест с идентификатором "' + message.text + '" не найден',
             reply_markup=ReplyKeyboardRemove())
@@ -323,6 +444,11 @@ async def skip_handler(message: types.Message, state: FSMContext):
                 elif data['quest'].cur_point.type == "choice":
                     keyboard = create_keyboard(data['quest'].cur_point.next_points)
                     await send_files(message, msg, files, keyboard)
+                if quest_ends == True:
+                    await state.finish()
+                    await message.answer('Квест "' + data['quest'].name + '" закончен. '
+                                         'Количество баллов: ' + str(data['quest'].score) + ".",
+                                          reply_markup=ReplyKeyboardRemove())
             else:
                 await message.answer('Точка не поддерживает пропуск.')
         else:
@@ -345,8 +471,9 @@ async def quest_proc(message: types.Message, state: FSMContext):
             await send_files(message, msg, files, ReplyKeyboardRemove())
         if quest_ends == True:
             await state.finish()
-            await message.answer('Квест "' + get_quest_title(data['quest'].quest_id) + '" закончен. '
-                'Количество баллов: ' + str(data['quest'].score) + ".")
+            await message.answer('Квест "' + data['quest'].name + '" закончен. '
+                                 'Количество баллов: ' + str(data['quest'].score) + ".",
+                                  reply_markup=ReplyKeyboardRemove())
 
 
 async def warning(message: types.Message):

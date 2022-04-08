@@ -21,11 +21,12 @@ export class Quest{
                 console.log(answerElement);
                 instance.deleteConnectionsForElement(answerElement);
                 instance.selectEndpoints({element: answerElement}).deleteAll();
+                delete instance.getManagedElements()[answerElement.id];
             }
             instance.deleteConnectionsForElement(block);
-            console.log(instance.selectEndpoints({element: block}));
+
             instance.selectEndpoints({element: block}).deleteAll();
-            console.log(instance.selectEndpoints({element: block}));
+            delete instance.getManagedElements()[block.id];
             block.parentElement.removeChild(block);
             this.DeleteQuestion(block.id, this.data.questions);
         };

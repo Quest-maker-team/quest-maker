@@ -39,6 +39,7 @@ export class Render{
         let block = Render.RenderBlock(question.question_id, "15rem", content);
         let answerTable = document.createElement("ul");
         answerTable.className = "list-group list-group-flush";
+        block.append(answerTable);
         for (let answer of question.answer_options) {
             let tableElement = document.createElement("li");
             tableElement.innerHTML = answer.text;
@@ -46,7 +47,7 @@ export class Render{
             answerTable.append(tableElement);
             instance.addEndpoint(tableElement, {anchor: ["Right", "Left"]}, sourceEndpoint);
         }
-        block.append(answerTable);
+       
         quest.AddDeleteButton(block, instance, answerTable.childNodes);
 
         instance.addEndpoint(block, {anchor: "Top"}, targetEndpoint);

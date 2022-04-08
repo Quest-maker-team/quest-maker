@@ -33,7 +33,13 @@ export function createNewBlock(type, text, renderFunction){
     let newBlockId = max.question_id + 1;
     console.log(newBlockId);
     quest.data.questions.push( {
-       "answer_options": [],
+        "answer_options": [
+            {
+                "next_question_id": 11,
+                "points": 10.0,
+                "text": "1764—1775"
+            }
+        ], 
        "files": [],
        "hints": [],
        "movements": [],

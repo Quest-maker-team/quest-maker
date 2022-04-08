@@ -292,6 +292,7 @@ class Quest:
         for file in quest.files:
             file.parent = quest
         quest.first_question = Question().from_db(db.get_start_question_id(quest_id)['question_id'])
+        quest.first_question.parents.append(quest)
         quest.rating = db.get_quest_rating(quest_id)
         return quest
 

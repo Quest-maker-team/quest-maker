@@ -27,40 +27,32 @@ let targetEndpoint = {
     anchor: [ 0.5, 0, 0, -1 ],
 };
 
+export function createNewBlock(type, text, renderFunction){
+    console.log(text);
+    let max = quest.data.questions.reduce((acc, curr) => acc.question_id > curr.question_id ? acc : curr);
+    let newBlockId = max.question_id + 1;
+    console.log(newBlockId);
+    quest.data.questions.push( {
+       "answer_options": [],
+       "files": [],
+       "hints": [],
+       "movements": [],
+       "question_id": newBlockId,
+       "text": text,
+       "type": type
+   });
+   console.log(quest.data.questions.slice(-1)[0]);
+   renderFunction(quest, quest.data.questions.slice(-1)[0], instance, sourceEndpoint, targetEndpoint);
+}
+
 let quest = new Quest(TestJSON);
 
  document.getElementById("addMBtn").onclick = function () {
-    let max = quest.data.questions.reduce((acc, curr) => acc.question_id > curr.question_id ? acc : curr);
-    let newBlockId = max.question_id+1;
-    console.log(newBlockId);
-    quest.data.questions.push( {
-       "answer_options": [],
-       "files": [],
-       "hints": [],
-       "movements": [],
-       "question_id": newBlockId,
-       "text": "Новое передвижение № " + newBlockId.toString(),
-       "type": "movement"
-   });
-   console.log(quest.data.questions[newBlockId-1]);
-   Render.RenderNewBlock(quest, quest.data.questions[newBlockId-1],instance,sourceEndpoint,targetEndpoint,"Movement");
+    createNewBlock("movement", "Новое перемещение", Render.renderMovement);
 }
 
 document.getElementById("addQBtn").onclick = function () {
-    let max = quest.data.questions.reduce((acc, curr) => acc.question_id > curr.question_id ? acc : curr);
-    let newBlockId = max.question_id+1;
-    console.log(newBlockId);
-    quest.data.questions.push( {
-       "answer_options": [],
-       "files": [],
-       "hints": [],
-       "movements": [],
-       "question_id": newBlockId,
-       "text": "Новый открытый вопрос № " + newBlockId.toString(),
-       "type": "open"
-   });
-   console.log(quest.data.questions[newBlockId-1]);
-   Render.RenderNewBlock(quest,quest.data.questions[newBlockId-1],instance,sourceEndpoint,targetEndpoint,"Open");
+    createNewBlock("open", "Новый открытый вопрос", Render.renderOpenQuestion);
 }
 
-Render.Render(quest,instance, sourceEndpoint, targetEndpoint);
+Render.Render(quest, instance, sourceEndpoint, targetEndpoint);

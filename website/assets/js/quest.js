@@ -7,7 +7,7 @@ export class Quest{
         questions.splice(questions.indexOf(questions.find(question => question.question_id == id)), 1);
     }
 
-    AddDeleteButton(block, answerElements, instance){
+    AddDeleteButton(block, instance, answerElements){
         let deleteButton = document.createElement("button");
         deleteButton.id = "btn" + block.id;
         deleteButton.className = "btn-close btn-danger";
@@ -15,20 +15,20 @@ export class Quest{
         deleteButton.style.top = "0";
         deleteButton.style.right = "0";
         deleteButton.onclick = () => {
+            console.log(answerElements !== undefined);
+            if (answerElements !== undefined)
             for (let answerElement of answerElements) {
+                console.log(answerElement);
                 instance.deleteConnectionsForElement(answerElement);
                 instance.selectEndpoints({element: answerElement}).deleteAll();
             }
             instance.deleteConnectionsForElement(block);
+            console.log(instance.selectEndpoints({element: block}));
             instance.selectEndpoints({element: block}).deleteAll();
+            console.log(instance.selectEndpoints({element: block}));
             block.parentElement.removeChild(block);
             this.DeleteQuestion(block.id, this.data.questions);
         };
         block.append(deleteButton);
     }
-
-
-
-
-   
 }

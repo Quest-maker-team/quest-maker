@@ -2,6 +2,7 @@ import { newInstance } from "@jsplumb/browser-ui";
 import { FlowchartConnector } from "@jsplumb/connector-flowchart";
 //import { Render } from "./render"
 import {Quest} from "./quest";
+import { Render } from "./render";
 import {TestJSON} from "./testJSON";
 
 let containerElement = document.getElementById("container");
@@ -42,7 +43,7 @@ let quest = new Quest(TestJSON);
        "type": "movement"
    });
    console.log(quest.data.questions[newBlockId-1]);
-   quest.RenderMovement(quest.data.questions[newBlockId-1],instance,sourceEndpoint,targetEndpoint);
+   Render.RenderNewBlock(quest, quest.data.questions[newBlockId-1],instance,sourceEndpoint,targetEndpoint,"Movement");
 }
 
 document.getElementById("addQBtn").onclick = function () {
@@ -59,7 +60,7 @@ document.getElementById("addQBtn").onclick = function () {
        "type": "open"
    });
    console.log(quest.data.questions[newBlockId-1]);
-   quest.RenderOpenQuestion(quest.data.questions[newBlockId-1],instance,sourceEndpoint,targetEndpoint);
+   Render.RenderNewBlock(quest,quest.data.questions[newBlockId-1],instance,sourceEndpoint,targetEndpoint,"Open");
 }
 
-quest.Render(instance, sourceEndpoint, targetEndpoint);
+Render.Render(quest,instance, sourceEndpoint, targetEndpoint);

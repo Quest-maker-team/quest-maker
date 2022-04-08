@@ -8,6 +8,8 @@ from flask import g
 from .db import set_author, set_quest, set_tags, set_quest_files, set_questions, \
     create_new_question
 
+from .bfs import BFS
+
 
 def update_from_dict(entity, entity_dict):
     for key, value in entity_dict.items():
@@ -118,13 +120,11 @@ class Answer:
         self.next_question = None
         self.parent = parent
 
-    def to_dict(self, quest_dict, question_dict):
-        ans_dict = {'text': self.text, 'points': self.points}
-        if self.next_question:
-            if self.next_question.question_id not in [question['question_id'] for question in quest_dict['questions']]:
-                self.next_question.to_dict(quest_dict)
-            ans_dict['next_question_id'] = self.next_question.question_id
-        question_dict['answer_options'].append(ans_dict)
+    def to_dict(self):
+        return {'answer_option_id': self.answer_option_id,
+                'text': self.text,
+                'points': self.points,
+                'next_question_id': self.next_question.question_id if self.next_question is not None else None}
 
 
 class Place:
@@ -195,15 +195,10 @@ class Movement:
         self.next_question = None
         self.parent = parent
 
-    def to_dict(self, quest_dict, question_dict):
-        move_dict = {}
-        if self.place:
-            move_dict['place'] = self.place.to_dict()
-        if self.next_question:
-            if self.next_question.question_id not in [question['question_id'] for question in quest_dict['questions']]:
-                self.next_question.to_dict(quest_dict)
-            move_dict['next_question_id'] = self.next_question.question_id
-        question_dict['movements'].append(move_dict)
+    def to_dict(self):
+        return {'movement_id': self.movement_id,
+                'place': self.place.to_dict(),
+                'next_question_id': self.next_question.question_id if self.next_question is not None else None}
 
 
 class Question:
@@ -255,15 +250,12 @@ class Question:
         self.movements = []
         self.parents = []
 
-    def to_dict(self, quest_dict):
-        question_dict = {'question_id': self.question_id, 'type': self.type, 'text': self.text,
-                         'files': [file.to_dict() for file in self.files],
-                         'hints': [hint.to_dict() for hint in self.hints], 'answer_options': [], 'movements': []}
-        for ans in self.answers:
-            ans.to_dict(quest_dict, question_dict)
-        for mov in self.movements:
-            mov.to_dict(quest_dict, question_dict)
-        quest_dict['questions'].append(question_dict)
+    def to_dict(self):
+        return {'question_id': self.question_id, 'type': self.type, 'text': self.text,
+                'files': [file.to_dict() for file in self.files],
+                'hints': [hint.to_dict() for hint in self.hints],
+                'answer_options': [ans.to_dict() for ans in self.answers],
+                'movements': [move.to_dict() for move in self.movements]}
 
 
 class Quest:
@@ -328,15 +320,16 @@ class Quest:
             return set_questions(used_files, self.first_question, quest_id, {}, question_id, questions, {}, {})
 
     def to_dict(self):
-        quest_dict = dict((key, val) for key, val in self.__dict__.items()
-                          if key not in ['files', 'first_question', 'rating'])
-        quest_dict['rating'] = dict(self.rating)
-        if 'lead_time' in quest_dict.keys():
-            quest_dict['lead_time'] = quest_dict['lead_time'].total_seconds()
+        quest_dict = {key: val for key, val in self.__dict__.items()
+                      if key not in ['files', 'first_question', 'rating']}
+
+        quest_dict['lead_time'] = quest_dict['lead_time'].total_seconds()
         quest_dict['start_question_id'] = self.first_question.question_id
         quest_dict['files'] = [file.to_dict() for file in self.files]
         quest_dict['questions'] = []
-        self.first_question.to_dict(quest_dict)
+        for question in BFS(self.first_question):
+            quest_dict['questions'].append(question.to_dict())
+
         return quest_dict
 
     def create_from_dict(self, quest_dict):

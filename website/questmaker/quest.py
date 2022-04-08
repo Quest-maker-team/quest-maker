@@ -12,6 +12,11 @@ from .bfs import BFS
 
 
 def update_from_dict(entity, entity_dict):
+    """
+    Change or add field from dictionary to quest entity
+    :param entity: entity to change
+    :param entity_dict: dictionary with new params
+    """
     for key, value in entity_dict.items():
         if key in entity.__dict__.keys():
             entity.__setattr__(key, value)
@@ -33,6 +38,9 @@ class File:
         self.parent = parent
 
     def to_dict(self):
+        """
+        Transform file to dictionary (thus to JSON) representation
+        """
         return {'f_type': self.type, 'url_for_file': self.url}
 
 
@@ -80,6 +88,9 @@ class Hint:
         self.parent = parent
 
     def to_dict(self):
+        """
+        Transform hint to dictionary (thus to JSON) representation
+        """
         return {'hint_text': self.text, 'fine': self.fine, 'files': [file.to_dict() for file in self.files]}
 
 
@@ -121,6 +132,9 @@ class Answer:
         self.parent = parent
 
     def to_dict(self):
+        """
+        Transform answer to dictionary (thus to JSON) representation
+        """
         return {'answer_option_id': self.answer_option_id,
                 'text': self.text,
                 'points': self.points,
@@ -157,6 +171,9 @@ class Place:
         self.parent = parent
 
     def to_dict(self):
+        """
+        Transform place to dictionary (thus to JSON) representation
+        """
         return {'coords': self.coords, 'radius': self.radius,
                 'time_open': self.time_open, 'time_close': self.time_close}
 
@@ -196,6 +213,9 @@ class Movement:
         self.parent = parent
 
     def to_dict(self):
+        """
+        Transform movement to dictionary (thus to JSON) representation
+        """
         return {'movement_id': self.movement_id,
                 'place': self.place.to_dict(),
                 'next_question_id': self.next_question.question_id if self.next_question is not None else None}
@@ -251,6 +271,9 @@ class Question:
         self.parents = []
 
     def to_dict(self):
+        """
+        Transform question to dictionary (thus to JSON) representation
+        """
         return {'question_id': self.question_id, 'type': self.type, 'text': self.text,
                 'files': [file.to_dict() for file in self.files],
                 'hints': [hint.to_dict() for hint in self.hints],
@@ -320,6 +343,9 @@ class Quest:
             return set_questions(used_files, self.first_question, quest_id, {}, question_id, questions, {}, {})
 
     def to_dict(self):
+        """
+        Transform quest to dictionary (thus to JSON) representation
+        """
         quest_dict = {key: val for key, val in self.__dict__.items()
                       if key not in ['files', 'first_question', 'rating']}
 
@@ -333,6 +359,10 @@ class Quest:
         return quest_dict
 
     def create_from_dict(self, quest_dict):
+        """
+        Create new quest using params from dictionary
+        :param quest_dict: dictionary with quest params
+        """
         update_from_dict(self, quest_dict)
         startQuestion = Question()
         startQuestion.type = 'start'

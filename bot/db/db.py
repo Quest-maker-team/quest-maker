@@ -81,6 +81,18 @@ def select_all(query, params):
     return res
 
 
+def insert_or_update(query, params):
+    """
+    Executes the received insert or update request with the received parameters.
+    :param query: selection request
+    :param params: request parameters
+    """
+    with Database().connect() as conn:
+        with conn.cursor(cursor_factory=DictCursor) as cursor:
+            cursor.execute(query, params)
+            conn.commit()
+
+
 def get_quest_title(quest_id):
     """
     Find active quest title in table quest by id
@@ -229,6 +241,39 @@ def get_question_files(question_id):
         return None
 
 
-if __name__ == '__main__':
-    info = get_question_files(6)
-    print(info)
+def save_history(quest_id, telegram_id, is_finished, last_question_id, final_score):
+    """
+    Add an entry with the passed values to the histories table
+    :param quest_id: quest id
+    :param telegram_id: user id
+    :param is_finished: quest status, is true if it is completed to the end
+    :param last_question_id: id of the question where user left off, can be None if the resumption is not expected
+    :param final_score: final score 
+    """
+    try:
+        history_id = select_one('SELECT history_id FROM histories WHERE quest_id= %s AND telegram_id= %s',
+                                (quest_id, telegram_id, ))
+        if history_id is None:
+            insert_or_update('INSERT INTO histories (quest_id, telegram_id, is_finished, last_question_id, '
+                             'final_score) VALUES (%s, %s, %s, %s, %s)', 
+                             (quest_id, telegram_id, is_finished, last_question_id, final_score, ))
+        else:
+            insert_or_update('UPDATE histories SET is_finished= %s, last_question_id= %s, final_score= %s '
+                             'WHERE history_id= %s', (is_finished, last_question_id, final_score, history_id[0], ))
+    except:
+        pass
+
+
+def get_history(quest_id, telegram_id):
+    """
+    Find data in the histories table for the specified quest and user
+    :param quest_id: quest id
+    :param telegram_id: user id
+    :return: tuple with values is_finished, last_question_id, final_score
+    :return: None in case of failure
+    """
+    try:
+        return select_one('SELECT is_finished, last_question_id, final_score FROM histories '
+                          'WHERE quest_id= %s AND telegram_id= %s', (quest_id, telegram_id, ))
+    except:
+        return None

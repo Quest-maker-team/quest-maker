@@ -362,6 +362,7 @@ class Quest(QuestEntity):
         g.questions = {}  # save mapped questions to process loops
         quest_info = db.get_quest(quest_id)
         quest = Quest()
+        quest.__id_in_db = quest_id
         quest.quest_id = quest_id
         quest.title = quest_info['title']
         quest.author = quest_info['author']
@@ -382,6 +383,7 @@ class Quest(QuestEntity):
         return quest
 
     def __init__(self):
+        self.__id_in_db = None
         self.quest_id = None
         self.title = None
         self.author = None
@@ -413,10 +415,16 @@ class Quest(QuestEntity):
             return set_questions(used_files, self.first_question, quest_id, {}, question_id, questions, {}, {})
 
     def to_dict(self):
-        quest_dict = {key: val for key, val in self.__dict__.items()
-                      if key not in ['files', 'first_question', 'rating']}
-
-        quest_dict['lead_time'] = quest_dict['lead_time'].total_seconds()
+        quest_dict = dict()
+        quest_dict['quest_id'] = self.quest_id
+        quest_dict['title'] = self.title
+        quest_dict['tags'] = self.tags
+        quest_dict['hidden'] = self.hidden
+        quest_dict['description'] = self.description
+        quest_dict['password'] = self.password
+        quest_dict['time_open'] = self.time_open
+        quest_dict['time_close'] = self.time_close
+        quest_dict['lead_time'] = self.lead_time.total_seconds()
         quest_dict['start_question_id'] = self.first_question.question_id
         quest_dict['files'] = [file.to_dict() for file in self.files]
         quest_dict['questions'] = []

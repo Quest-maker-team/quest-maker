@@ -33,11 +33,16 @@ def after_request(response):
     return response
 
 
-@api.route('/quest/<quest_id>', methods=['GET'])
-def get_quest(quest_id):
+@api.route('/db/quest/<quest_id>', methods=['GET'])
+def get_quest_from_db(quest_id):
     quest = Quest().from_db(quest_id)
     g.container.add_quest(quest)
     return jsonify(quest.to_dict())
+
+
+@api.route('/draft/quest/<quest_id>', methods=['GET'])
+def get_quest_from_draft(quest_id):
+    return jsonify(g.container.get(EntityType.QUEST, quest_id).to_dict())
 
 
 @api.route('/quest', methods=['POST'])

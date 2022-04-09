@@ -35,9 +35,9 @@ export function createNewBlock(type, text, renderFunction){
     quest.data.questions.push( {
         "answer_options": [
             {
-                "next_question_id": 11,
-                "points": 10.0,
-                "text": "1764—1775"
+                "next_question_id": undefined,
+                "points": 0,
+                "text": "Ответ"
             }
         ], 
        "files": [],

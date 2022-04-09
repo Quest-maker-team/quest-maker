@@ -133,3 +133,9 @@ dmypy.json
 
 # Config files
 .ini
+bot/db_config.ini
+
+# Frontend trash
+quest_containers/
+node_modules/
+package-lock.json

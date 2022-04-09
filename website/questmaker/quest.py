@@ -33,6 +33,7 @@ class File:
         :param f_type: type of file (image, video, etc.)
         :param url: url for file resource
         """
+        self.file_id = None
         self.type = f_type
         self.url = url
         self.parent = parent
@@ -41,7 +42,7 @@ class File:
         """
         Transform file to dictionary (thus to JSON) representation
         """
-        return {'f_type': self.type, 'url_for_file': self.url}
+        return {'file_d': self.file_id, 'f_type': self.type, 'url_for_file': self.url}
 
 
 class Author:
@@ -82,6 +83,7 @@ class Hint:
         :param text: hint text
         :param fine: hint fine
         """
+        self.hint_id = None
         self.text = text
         self.fine = fine
         self.files = []
@@ -91,7 +93,8 @@ class Hint:
         """
         Transform hint to dictionary (thus to JSON) representation
         """
-        return {'hint_text': self.text, 'fine': self.fine, 'files': [file.to_dict() for file in self.files]}
+        return {'hint_id': self.hint_id, 'hint_text': self.text, 'fine': self.fine,
+                'files': [file.to_dict() for file in self.files]}
 
 
 class Answer:
@@ -164,6 +167,7 @@ class Place:
         :param time_open: the earliest time user can visit place
         :param time_close: the latest time  user can visit place
         """
+        self.place_id = None
         self.coords = coords
         self.radius = radius
         self.time_open = time_open
@@ -174,7 +178,7 @@ class Place:
         """
         Transform place to dictionary (thus to JSON) representation
         """
-        return {'coords': self.coords, 'radius': self.radius,
+        return {'place_id': self.place_id, 'coords': self.coords, 'radius': self.radius,
                 'time_open': self.time_open, 'time_close': self.time_close}
 
 

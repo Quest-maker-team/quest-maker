@@ -57,99 +57,131 @@ def create_quest():
                     'first_answer_id': quest.first_question.answers[0].answer_option_id})
 
 
-@api.route('/answer_option/<int:answer_id>/question', methods=['POST'])
-def add_question_to_answer(answer_id):
+@api.route('/question', methods=['POST'])
+def create_question():
     question_dict = request.get_json(force=True)
     question = Question()
     rc = update_from_dict(question, question_dict)
     if not rc:
         return 'Wrong JSON attributes', 400
 
-    question_id = g.container.add(question)
-    question.question_id = question_id
-    g.container.get(EntityType.ANSWER, answer_id).next_question = question
-
-    return jsonify({'question_id': question_id})
+    question.question_id = g.container.add(question)
+    return jsonify({'question_id': question.question_id})
 
 
-@api.route('/movement/<int:movement_id>/question', methods=['POST'])
-def add_question_to_movement(movement_id):
-    question_dict = request.get_json(force=True)
-    question = Question()
-    rc = update_from_dict(question, question_dict)
-    if not rc:
-        return 'Wrong JSON attributes', 400
-
-    question_id = g.container.add(question)
-    question.question_id = question_id
-    g.container.get(EntityType.MOVEMENT, movement_id).next_question = question
-
-    return jsonify({'question_id': question_id})
+@api.route('/answer_option/<int:answer_id>/question/<int:question_id>', methods=['PUT'])
+def add_question_to_answer(answer_id, question_id):
+    answer = g.container.get(EntityType.ANSWER, answer_id)
+    question = g.container.get(EntityType.QUESTION, question_id)
+    answer.next_question = question
+    question.parents.append(answer)
 
 
-@api.route('/<entity>/<int:e_id>/file', methods=['POST'])
-def add_file(entity, e_id):
+@api.route('/movement/<int:movement_id>/question/<int:question_id>', methods=['PUT'])
+def add_question_to_movement(movement_id, question_id):
+    movement = g.container.get(EntityType.MOVEMENT, movement_id)
+    question = g.container.get(EntityType.QUESTION, question_id)
+    movement.next_question = question
+    question.parents.append(movement)
+
+
+@api.route('/file', methods=['POST'])
+def create_file():
     file_dict = request.get_json(force=True)
     file = File()
     rc = update_from_dict(file, file_dict)
     if not rc:
         return 'Wrong JSON attributes', 400
-    file_id = g.container.add(EntityType.FILE, file)
+    file.file_id = g.container.add(file)
+    return jsonify({'file_id': file.file_id})
+
+
+@api.route('/<entity>/<int:e_id>/file/<file_id>', methods=['PUT'])
+def add_file(entity, e_id, file_id):
+    file = g.container.get(EntityType.FILE, file_id)
 
     e_type = EntityType.from_str(entity)
     if e_type not in (EntityType.QUEST, EntityType.QUESTION, EntityType.ANSWER, EntityType.HINT):
         return 'Bad Request', 400
 
     g.container.get(e_type, e_id).files.append(file)
+    file.parent = g.container.get(e_type, e_id)
 
-    return jsonify({'file_id': file_id})
 
-
-@api.route('/question/<int:question_id>/<e_type_str>', methods=['POST'])
-def add_entity_to_question(question_id, e_type_str):
-    if e_type_str == 'file':
-        return add_file('question', question_id)
-    e_dict = request.get_json(force=True)
-    e_type = EntityType.from_str(e_type_str)
-
-    if e_type == EntityType.ANSWER:
-        entity = Answer()
-        id_name = 'answer_option_id'
-    elif e_type == EntityType.HINT:
-        entity = Hint()
-        e_type = EntityType.HINT
-        id_name = 'hint_id'
-    elif e_type == EntityType.MOVEMENT:
-        entity = Movement()
-        id_name = 'movement_id'
-    else:
-        return 'Bad Request', 400
-
-    rc = update_from_dict(entity, e_dict)
+@api.route('/answer_option', methods=['POST'])
+def create_answer():
+    ans_dict = request.get_json(force=True)
+    ans = Answer()
+    rc = update_from_dict(ans, ans_dict)
     if not rc:
         return 'Wrong JSON attributes', 400
-    e_id = g.container.add(e_type, entity)
-    if e_type == EntityType.ANSWER:
-        g.container.get(EntityType.QUESTION, question_id).answers.append(entity)
-    elif e_type == EntityType.HINT:
-        g.container.get(EntityType.QUESTION, question_id).hints.append(entity)
-    else:  # entity is movement
-        g.container.get(EntityType.QUESTION, question_id).movements.append(entity)
-
-    return jsonify({id_name: e_id})
+    ans.answer_option_id = g.container.add(ans)
+    return jsonify({'answer_option_id': ans.answer_option_id})
 
 
-@api.route('/movement/<int:movement_id>/place', methods=['POST'])
-def add_place(movement_id):
+@api.route('/question/<question_id>/answer_option/<answer_id>', methods=['PUT'])
+def add_answer(question_id, answer_id):
+    answer = g.container.get(EntityType.ANSWER, answer_id)
+    question = g.container.get(EntityType.QUESTION, question_id)
+    question.answers.append(answer)
+    answer.parent = question
+
+
+@api.route('/movement', methods=['POST'])
+def create_movement():
+    move_dict = request.get_json(force=True)
+    move = Movement()
+    rc = update_from_dict(move, move_dict)
+    if not rc:
+        return 'Wrong JSON attributes', 400
+    move.movement_id = g.container.add(move)
+    return jsonify({'movement_id': move.movement_id})
+
+
+@api.route('/question/<question_id>/movement/<movement_id>', methods=['PUT'])
+def add_movement(question_id, movement_id):
+    movement = g.container.get(EntityType.MOVEMENT, movement_id)
+    question = g.container.get(EntityType.QUESTION, question_id)
+    question.movements.append(movement)
+    movement.parent = question
+
+
+@api.route('/hint', methods=['POST'])
+def create_hint():
+    hint_dict = request.get_json(force=True)
+    hint = Hint()
+    rc = update_from_dict(hint, hint_dict)
+    if not rc:
+        return 'Wrong JSON attributes', 400
+    hint.hint_id = g.container.add(hint)
+    return jsonify({'hint_id': hint.hint_id})
+
+
+@api.route('/question/<question_id>/hint/<hint_id>', methods=['PUT'])
+def add_hint(question_id, hint_id):
+    hint = g.container.get(EntityType.HINT, hint_id)
+    question = g.container.get(EntityType.QUESTION, question_id)
+    question.hints.append(hint)
+    hint.parent = question
+
+
+@api.route('/place', methods=['POST'])
+def create_place():
     place_dict = request.get_json(force=True)
     place = Place()
     rc = update_from_dict(place, place_dict)
     if not rc:
         return 'Wrong JSON attributes', 400
-    place_id = g.container.add(EntityType.PLACE, place)
-    g.container.get(EntityType.MOVEMENT, movement_id).place = place
+    place.place_id = g.container.add(EntityType.PLACE, place)
+    return jsonify({'place_id': place.place_id})
 
-    return jsonify({'place_id': place_id})
+
+@api.route('/movement/<int:movement_id>/place/<place_id>', methods=['PUT'])
+def add_place(movement_id, place_id):
+    place = g.container.get(EntityType.PLACE, place_id)
+    movement = g.contaienr.get(EntityType.MOVEMENT, movement_id)
+    movement.place = place
+    place.parent = movement
 
 
 @api.route('/<e_type_str>/<int:e_id>', methods=['PUT'])

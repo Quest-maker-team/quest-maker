@@ -451,8 +451,10 @@ class Quest(QuestEntity):
         startQuestion = Question()
         startQuestion.type = 'start'
         startQuestion.answers.append(Answer())
+        startQuestion.answers[0].parent = startQuestion
         endQuestion = Question
         endQuestion.type = 'end'
+        endQuestion.parent = startQuestion.answers[0]
         startQuestion.answers[0].next_question = endQuestion
         self.first_question = startQuestion
         return True

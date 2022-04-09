@@ -397,11 +397,11 @@ class Quest(QuestEntity):
         self.first_question = None
         self.rating = {'one': 0, 'two': 0, 'three': 0, 'four': 0, 'five': 0}
 
-    def to_db(self, author: Author):
+    def to_db(self, author_id):
         """
         Write data from Quest object to database
         """
-        quest_id = set_quest(self, author.email)
+        quest_id = set_quest(self, author_id)
         set_tags(self, quest_id)
         question_id = create_new_question(self.first_question, quest_id)
         questions = dict()

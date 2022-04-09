@@ -76,6 +76,7 @@ def add_question_to_answer(answer_id, question_id):
     question = g.container.get(EntityType.QUESTION, question_id)
     answer.next_question = question
     question.parents.append(answer)
+    return '', 200
 
 
 @api.route('/movement/<int:movement_id>/question/<int:question_id>', methods=['PUT'])
@@ -84,6 +85,7 @@ def add_question_to_movement(movement_id, question_id):
     question = g.container.get(EntityType.QUESTION, question_id)
     movement.next_question = question
     question.parents.append(movement)
+    return '', 200
 
 
 @api.route('/file', methods=['POST'])
@@ -107,6 +109,7 @@ def add_file(entity, e_id, file_id):
 
     g.container.get(e_type, e_id).files.append(file)
     file.parent = g.container.get(e_type, e_id)
+    return '', 200
 
 
 @api.route('/answer_option', methods=['POST'])
@@ -126,6 +129,7 @@ def add_answer(question_id, answer_id):
     question = g.container.get(EntityType.QUESTION, question_id)
     question.answers.append(answer)
     answer.parent = question
+    return '', 200
 
 
 @api.route('/movement', methods=['POST'])
@@ -145,6 +149,7 @@ def add_movement(question_id, movement_id):
     question = g.container.get(EntityType.QUESTION, question_id)
     question.movements.append(movement)
     movement.parent = question
+    return '', 200
 
 
 @api.route('/hint', methods=['POST'])
@@ -164,6 +169,7 @@ def add_hint(question_id, hint_id):
     question = g.container.get(EntityType.QUESTION, question_id)
     question.hints.append(hint)
     hint.parent = question
+    return '', 200
 
 
 @api.route('/place', methods=['POST'])
@@ -183,6 +189,7 @@ def add_place(movement_id, place_id):
     movement = g.contaienr.get(EntityType.MOVEMENT, movement_id)
     movement.place = place
     place.parent = movement
+    return '', 200
 
 
 @api.route('/<e_type_str>/<int:e_id>', methods=['PUT'])
@@ -201,6 +208,7 @@ def remove_entity(e_type_str, e_id):
     if e_type is None:
         return 'Bad Request', 400
     g.container.remove(e_type, e_id)
+    return '', 200
 
 
 @api.route('/save/<int:quest_id>', methods=['POST'])

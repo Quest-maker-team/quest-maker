@@ -3,12 +3,12 @@ Contains classes for database entities
 """
 
 from . import db
-from flask import g
-
 from .db import set_author, set_quest, set_tags, set_quest_files, set_questions, \
     create_new_question
-
 from .bfs import BFS
+
+from flask import g
+from abc import ABC, abstractmethod
 
 
 def update_from_dict(entity, entity_dict):
@@ -16,13 +16,43 @@ def update_from_dict(entity, entity_dict):
     Change or add field from dictionary to quest entity
     :param entity: entity to change
     :param entity_dict: dictionary with new params
+    :return: True if success else False
     """
     for key, value in entity_dict.items():
-        if key in entity.__dict__.keys():
+        if key in entity.available_attrs():
             entity.__setattr__(key, value)
+        else:
+            return False
+    return True
 
 
-class File:
+class QuestEntity(ABC):
+    """
+    Common class for all quest entities
+    """
+    @abstractmethod
+    def to_dict(self):
+        """
+        Transform entity to dictionary (thus to JSON) representation
+        """
+        pass
+
+    @abstractmethod
+    def remove_from_graph(self):
+        """
+        Remove entity from quest graph and clear all related links (graph can become disconnected)
+        """
+        pass
+
+    @abstractmethod
+    def available_attrs(self):
+        """
+        Attributes available to change from frontend
+        """
+        pass
+
+
+class File(QuestEntity):
     """
     File representation class
     """
@@ -39,10 +69,14 @@ class File:
         self.parent = parent
 
     def to_dict(self):
-        """
-        Transform file to dictionary (thus to JSON) representation
-        """
         return {'file_d': self.file_id, 'f_type': self.type, 'url_for_file': self.url}
+
+    def remove_from_graph(self):
+        if self.parent and self in self.parent.files:
+            self.parent.files.remove(self)
+
+    def available_attrs(self):
+        return 'type', 'url'
 
 
 class Author:
@@ -58,7 +92,7 @@ class Author:
         return author_id
 
 
-class Hint:
+class Hint(QuestEntity):
     """
     Hint representation class
     """
@@ -90,14 +124,19 @@ class Hint:
         self.parent = parent
 
     def to_dict(self):
-        """
-        Transform hint to dictionary (thus to JSON) representation
-        """
         return {'hint_id': self.hint_id, 'hint_text': self.text, 'fine': self.fine,
                 'files': [file.to_dict() for file in self.files]}
 
+    def remove_from_graph(self):
+        self.files = []
+        if self.parent and self in self.parent.hints:
+            self.parent.hints.remove(self)
 
-class Answer:
+    def available_attrs(self):
+        return 'text', 'fine'
+
+
+class Answer(QuestEntity):
     """
     Answer (answer option in database) representation class
     """
@@ -135,16 +174,22 @@ class Answer:
         self.parent = parent
 
     def to_dict(self):
-        """
-        Transform answer to dictionary (thus to JSON) representation
-        """
         return {'answer_option_id': self.answer_option_id,
                 'text': self.text,
                 'points': self.points,
                 'next_question_id': self.next_question.question_id if self.next_question is not None else None}
 
+    def remove_from_graph(self):
+        if self.next_question and self in self.next_question.parents:
+            self.next_question.parents.remove(self)
+        if self.parent and self in self.parent.answers:
+            self.parent.answers.remove(self)
 
-class Place:
+    def available_attrs(self):
+        return 'text', 'points'
+
+
+class Place(QuestEntity):
     """
     Place representation class
     """
@@ -175,14 +220,18 @@ class Place:
         self.parent = parent
 
     def to_dict(self):
-        """
-        Transform place to dictionary (thus to JSON) representation
-        """
         return {'place_id': self.place_id, 'coords': self.coords, 'radius': self.radius,
                 'time_open': self.time_open, 'time_close': self.time_close}
 
+    def remove_from_graph(self):
+        if self.parent:
+            self.parent.place = None
 
-class Movement:
+    def available_attrs(self):
+        return 'coords', 'radius', 'time_open', 'time_close'
+
+
+class Movement(QuestEntity):
     """
     Movement representation class
     """
@@ -217,15 +266,22 @@ class Movement:
         self.parent = parent
 
     def to_dict(self):
-        """
-        Transform movement to dictionary (thus to JSON) representation
-        """
         return {'movement_id': self.movement_id,
                 'place': self.place.to_dict(),
                 'next_question_id': self.next_question.question_id if self.next_question is not None else None}
 
+    def remove_from_graph(self):
+        if self.next_question and self in self.next_question.parents:
+            self.next_question.parents.remove(self)
+        if self.parent and self in self.parent.movements:
+            self.parent.movements.remove(self)
+        self.place = None
 
-class Question:
+    def available_attrs(self):
+        return ()
+
+
+class Question(QuestEntity):
     @staticmethod
     def from_db(question_id):
         """
@@ -275,17 +331,27 @@ class Question:
         self.parents = []
 
     def to_dict(self):
-        """
-        Transform question to dictionary (thus to JSON) representation
-        """
         return {'question_id': self.question_id, 'type': self.type, 'text': self.text,
                 'files': [file.to_dict() for file in self.files],
                 'hints': [hint.to_dict() for hint in self.hints],
                 'answer_options': [ans.to_dict() for ans in self.answers],
                 'movements': [move.to_dict() for move in self.movements]}
 
+    def remove_from_graph(self):
+        for parent in self.parents:
+            parent.next_question = None
+        for answer in self.answers:
+            answer.parent = None
+        for move in self.movements:
+            move.parent = None
+        self.files = []
+        self.hints = []
 
-class Quest:
+    def available_attrs(self):
+        return 'type', 'text'
+
+
+class Quest(QuestEntity):
     @staticmethod
     def from_db(quest_id):
         """
@@ -347,9 +413,6 @@ class Quest:
             return set_questions(used_files, self.first_question, quest_id, {}, question_id, questions, {}, {})
 
     def to_dict(self):
-        """
-        Transform quest to dictionary (thus to JSON) representation
-        """
         quest_dict = {key: val for key, val in self.__dict__.items()
                       if key not in ['files', 'first_question', 'rating']}
 
@@ -362,6 +425,12 @@ class Quest:
 
         return quest_dict
 
+    def remove_from_graph(self):
+        pass
+
+    def available_attrs(self):
+        return 'title', 'tags', 'hidden', 'description', 'password', 'time_open', 'time_close', 'lead_time'
+
     def create_from_dict(self, quest_dict):
         """
         Create new quest using params from dictionary
@@ -371,4 +440,7 @@ class Quest:
         startQuestion = Question()
         startQuestion.type = 'start'
         startQuestion.answers.append(Answer())
+        endQuestion = Question
+        endQuestion.type = 'end'
+        startQuestion.answers[0].next_question = endQuestion
         self.first_question = startQuestion

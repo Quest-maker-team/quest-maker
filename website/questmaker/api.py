@@ -33,14 +33,14 @@ def after_request(response):
     return response
 
 
-@api.route('/db/quest/<quest_id>', methods=['GET'])
+@api.route('/db/quest/<int:quest_id>', methods=['GET'])
 def get_quest_from_db(quest_id):
     quest = Quest().from_db(quest_id)
     g.container.add_quest(quest)
     return jsonify(quest.to_dict())
 
 
-@api.route('/draft/quest/<quest_id>', methods=['GET'])
+@api.route('/draft/quest/<int:quest_id>', methods=['GET'])
 def get_quest_from_draft(quest_id):
     return jsonify(g.container.get(EntityType.QUEST, quest_id).to_dict())
 
@@ -54,7 +54,8 @@ def create_quest():
         return 'Wrong JSON attributes', 400
     g.container.add_quest(quest)
     return jsonify({'quest_id': quest.quest_id,
-                    'first_answer_id': quest.first_question.answers[0].answer_option_id})
+                    'start_question_id': quest.first_question.question_id,
+                    'end_question_id': quest.first_question.answers[0].next_question.question_id})
 
 
 @api.route('/question', methods=['POST'])
@@ -96,7 +97,7 @@ def create_file():
     return jsonify({'file_id': file.file_id})
 
 
-@api.route('/<entity>/<int:e_id>/file/<file_id>', methods=['PUT'])
+@api.route('/<entity>/<int:e_id>/file/<int:file_id>', methods=['PUT'])
 def add_file(entity, e_id, file_id):
     file = g.container.get(EntityType.FILE, file_id)
 
@@ -119,7 +120,7 @@ def create_answer():
     return jsonify({'answer_option_id': ans.answer_option_id})
 
 
-@api.route('/question/<question_id>/answer_option/<answer_id>', methods=['PUT'])
+@api.route('/question/<int:question_id>/answer_option/<int:answer_id>', methods=['PUT'])
 def add_answer(question_id, answer_id):
     answer = g.container.get(EntityType.ANSWER, answer_id)
     question = g.container.get(EntityType.QUESTION, question_id)
@@ -138,7 +139,7 @@ def create_movement():
     return jsonify({'movement_id': move.movement_id})
 
 
-@api.route('/question/<question_id>/movement/<movement_id>', methods=['PUT'])
+@api.route('/question/<int:question_id>/movement/<int:movement_id>', methods=['PUT'])
 def add_movement(question_id, movement_id):
     movement = g.container.get(EntityType.MOVEMENT, movement_id)
     question = g.container.get(EntityType.QUESTION, question_id)
@@ -157,7 +158,7 @@ def create_hint():
     return jsonify({'hint_id': hint.hint_id})
 
 
-@api.route('/question/<question_id>/hint/<hint_id>', methods=['PUT'])
+@api.route('/question/<int:question_id>/hint/<int:hint_id>', methods=['PUT'])
 def add_hint(question_id, hint_id):
     hint = g.container.get(EntityType.HINT, hint_id)
     question = g.container.get(EntityType.QUESTION, question_id)
@@ -176,7 +177,7 @@ def create_place():
     return jsonify({'place_id': place.place_id})
 
 
-@api.route('/movement/<int:movement_id>/place/<place_id>', methods=['PUT'])
+@api.route('/movement/<int:movement_id>/place/<int:place_id>', methods=['PUT'])
 def add_place(movement_id, place_id):
     place = g.container.get(EntityType.PLACE, place_id)
     movement = g.contaienr.get(EntityType.MOVEMENT, movement_id)
@@ -191,7 +192,7 @@ def update_entity(e_type_str, e_id):
     if e_type is None:
         return 'Bad Request', 400
     rc = update_from_dict(g.container.get(e_type, e_id), e_dict)
-    return '', 200 if rc else 'Wrong JSON attributes', 400
+    return ('', 200) if rc else ('Wrong JSON attributes', 400)
 
 
 @api.route('/<e_type_str>/<int:e_id>', methods=['DELETE'])

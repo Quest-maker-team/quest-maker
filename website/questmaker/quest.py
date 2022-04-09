@@ -424,7 +424,8 @@ class Quest(QuestEntity):
         quest_dict['password'] = self.password
         quest_dict['time_open'] = self.time_open
         quest_dict['time_close'] = self.time_close
-        quest_dict['lead_time'] = self.lead_time.total_seconds()
+        if self.lead_time is not None:
+            quest_dict['lead_time'] = self.lead_time.total_seconds()
         quest_dict['start_question_id'] = self.first_question.question_id
         quest_dict['files'] = [file.to_dict() for file in self.files]
         quest_dict['questions'] = []
@@ -452,7 +453,7 @@ class Quest(QuestEntity):
         startQuestion.type = 'start'
         startQuestion.answers.append(Answer())
         startQuestion.answers[0].parent = startQuestion
-        endQuestion = Question
+        endQuestion = Question()
         endQuestion.type = 'end'
         endQuestion.parent = startQuestion.answers[0]
         startQuestion.answers[0].next_question = endQuestion

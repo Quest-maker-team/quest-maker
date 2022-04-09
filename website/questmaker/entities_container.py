@@ -136,7 +136,28 @@ class EntitiesContainer:
         :param e_type: enum value type of entity
         :param e_id: entity id in container
         """
-        pass
+        if e_id not in self.__entities[e_type].keys():
+            return
+
+        entity = self.__entities[e_type].pop(e_id)
+
+        if hasattr(entity, 'files'):
+            for file in entity.files:
+                self.__entities[EntityType.FILE].pop(file.file_id)
+        if e_type == EntityType.QUEST:
+            for question in BFS(entity.first_question):
+                self.remove(EntityType.QUESTION, question.question_id)
+        elif e_type == EntityType.QUESTION:
+            for hint in entity.hints:
+                self.remove(EntityType.HINT, hint)
+            for ans in entity.answers:
+                self.remove(EntityType.ANSWER, ans)
+            for move in entity.hints:
+                self.remove(EntityType.MOVEMENT, move)
+        elif e_type == EntityType.MOVEMENT:
+            self.remove(EntityType.PLACE, entity.place)
+
+        entity.remove_from_graph()
 
     def empty(self):
         """

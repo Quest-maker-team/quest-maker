@@ -55,6 +55,7 @@ def create_quest():
     g.container.add_quest(quest)
     return jsonify({'quest_id': quest.quest_id,
                     'start_question_id': quest.first_question.question_id,
+                    'first_answer_id': quest.first_question.answers[0].answer_id,
                     'end_question_id': quest.first_question.answers[0].next_question.question_id})
 
 

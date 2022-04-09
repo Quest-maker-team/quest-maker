@@ -435,8 +435,11 @@ class Quest(QuestEntity):
         """
         Create new quest using params from dictionary
         :param quest_dict: dictionary with quest params
+        :return: True if success else False
         """
-        update_from_dict(self, quest_dict)
+        rc = update_from_dict(self, quest_dict)
+        if not rc:
+            return False
         startQuestion = Question()
         startQuestion.type = 'start'
         startQuestion.answers.append(Answer())
@@ -444,3 +447,4 @@ class Quest(QuestEntity):
         endQuestion.type = 'end'
         startQuestion.answers[0].next_question = endQuestion
         self.first_question = startQuestion
+        return True

@@ -44,7 +44,9 @@ def get_quest(quest_id):
 def create_quest():
     quest_dict = request.get_json(force=True)
     quest = Quest()
-    quest.create_from_dict(quest_dict)
+    rc = quest.create_from_dict(quest_dict)
+    if not rc:
+        return 'Wrong JSON attributes', 400
     g.container.add_quest(quest)
     return jsonify({'quest_id': quest.quest_id,
                     'first_answer_id': quest.first_question.answers[0].answer_option_id})
@@ -54,7 +56,9 @@ def create_quest():
 def add_question_to_answer(answer_id):
     question_dict = request.get_json(force=True)
     question = Question()
-    update_from_dict(question, question_dict)
+    rc = update_from_dict(question, question_dict)
+    if not rc:
+        return 'Wrong JSON attributes', 400
 
     question_id = g.container.add(question)
     question.question_id = question_id
@@ -67,7 +71,9 @@ def add_question_to_answer(answer_id):
 def add_question_to_movement(movement_id):
     question_dict = request.get_json(force=True)
     question = Question()
-    update_from_dict(question, question_dict)
+    rc = update_from_dict(question, question_dict)
+    if not rc:
+        return 'Wrong JSON attributes', 400
 
     question_id = g.container.add(question)
     question.question_id = question_id
@@ -80,7 +86,9 @@ def add_question_to_movement(movement_id):
 def add_file(entity, e_id):
     file_dict = request.get_json(force=True)
     file = File()
-    update_from_dict(file, file_dict)
+    rc = update_from_dict(file, file_dict)
+    if not rc:
+        return 'Wrong JSON attributes', 400
     file_id = g.container.add(EntityType.FILE, file)
 
     e_type = EntityType.from_str(entity)
@@ -112,7 +120,9 @@ def add_entity_to_question(question_id, e_type_str):
     else:
         return 'Bad Request', 400
 
-    update_from_dict(entity, e_dict)
+    rc = update_from_dict(entity, e_dict)
+    if not rc:
+        return 'Wrong JSON attributes', 400
     e_id = g.container.add(e_type, entity)
     if e_type == EntityType.ANSWER:
         g.container.get(EntityType.QUESTION, question_id).answers.append(entity)
@@ -128,7 +138,9 @@ def add_entity_to_question(question_id, e_type_str):
 def add_place(movement_id):
     place_dict = request.get_json(force=True)
     place = Place()
-    update_from_dict(place, place_dict)
+    rc = update_from_dict(place, place_dict)
+    if not rc:
+        return 'Wrong JSON attributes', 400
     place_id = g.container.add(EntityType.PLACE, place)
     g.container.get(EntityType.MOVEMENT, movement_id).place = place
 
@@ -141,18 +153,23 @@ def update_entity(e_type_str, e_id):
     e_type = EntityType.from_str(e_type_str)
     if e_type is None:
         return 'Bad Request', 400
-    update_from_dict(g.container.get(e_type, e_id), e_dict)
-    return '', 200
+    rc = update_from_dict(g.container.get(e_type, e_id), e_dict)
+    return '', 200 if rc else 'Wrong JSON attributes', 400
 
 
-# TODO: delete entities
+@api.route('/<e_type_str>/<int:e_id>', methods=['DELETE'])
+def remove_entity(e_type_str, e_id):
+    e_type = EntityType.from_str(e_type_str)
+    if e_type is None:
+        return 'Bad Request', 400
+    g.container.remove(e_type, e_id)
 
 
 @api.route('/save/<int:quest_id>', methods=['POST'])
 def save_quest(quest_id):
-    # TODO: add remove method for container and refactor quest.to_db()
-    #  g.container.get(EntityType.QUEST, quest_id).to_db()
-    #  g.container.remove(EntityType.QUEST, quest_id)
+    author_id = 1
+    g.container.get(EntityType.QUEST, quest_id).to_db(author_id)
+    g.container.remove(EntityType.QUEST, quest_id)
     return '', 200
 
 

@@ -212,6 +212,64 @@ def remove_entity(e_type_str, e_id):
     return '', 200
 
 
+@api.route('/answer_option/<int:answer_id>/question', methods=['DELETE'])
+def remove_answer_question_link(answer_id):
+    answer = g.container.get(EntityType.ANSWER, answer_id)
+    if not answer:
+        return 'Wrong id', 400
+    if answer.next_question:
+        answer.next_question.parents.remove(answer)
+        answer.next_question = None
+        return '', 200
+    else:
+        return 'No link', 400
+
+
+@api.route('/movement/<int:movement_id>/question', methods=['DELETE'])
+def remove_movement_question_link(movement_id):
+    movement = g.container.get(EntityType.MOVEMENT, movement_id)
+    if not movement:
+        return 'Wrong id', 400
+    if movement.next_question:
+        movement.next_question.parents.remove(movement)
+        movement.next_question = None
+        return '', 200
+    else:
+        return 'No link', 400
+
+
+@api.route('/question/<int:question_id>/movement/<int:movement_id>', methods=['DELETE'])
+def remove_question_movement_link(question_id, movement_id):
+    question = g.container.get(EntityType.QUESTION, question_id)
+    if not question:
+        return 'Wrong question id', 400
+    movement = g.container.get(EntityType.MOVEMENT, movement_id)
+    if not movement:
+        return 'Wrong movement id', 400
+    if movement in question.movements:
+        question.movements.remove(movement)
+        movement.parent = None
+        return '', 200
+    else:
+        return 'No link', 400
+
+
+@api.route('/question/<int:question_id>/answer/<int:answer_id>', methods=['DELETE'])
+def remove_question_answer_link(question_id, answer_id):
+    question = g.container.get(EntityType.QUESTION, question_id)
+    if not question:
+        return 'Wrong question id', 400
+    answer = g.container.get(EntityType.ANSWER, answer_id)
+    if not answer:
+        return 'Wrong movement id', 400
+    if answer in question.answers:
+        question.answers.remove(answer)
+        answer.parent = None
+        return '', 200
+    else:
+        return 'No link', 400
+
+
 @api.route('/save/<int:quest_id>', methods=['POST'])
 def save_quest(quest_id):
     author_id = 1

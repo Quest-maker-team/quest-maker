@@ -257,6 +257,32 @@ class Quest:
         save_history(self.quest_id, telegram_id, is_finished, last_question_id, self.score)
 
 
+    def load(self, telegram_id):
+        """Download the quest status from history
+        :param self: instance
+        :param telegram_id: user id
+        :return True in case of success
+        :return False in case of failure
+        """
+        info = get_history(self.quest_id, telegram_id)
+        if info is None:
+            return False
+        if info[0] or (info[1] is None):
+            return False
+        
+        point_info = get_question_by_id(info[1])
+        if point_info is None:
+            return False
+
+        point = QuestPoint(point_info[0], point_info[2], point_info[1])
+        point.load_next_points()
+        point.load_tips()
+        point.load_files()
+        self.cur_point = point
+        self.score = info[2]
+
+        return True
+
 
     def next_point(self, message):
         """Go to next point.
@@ -294,6 +320,7 @@ class QuestStates(StatesGroup):
     """Quest states for aiogram state machine.
     """
     naming = State()
+    loading = State()
     session = State()
 
 
@@ -380,6 +407,19 @@ async def send_files(message: types.Message, caption, files, reply_markup):
             await message.answer('↑', reply_markup=reply_markup)
 
 
+def edit_options(options):
+    """Create a list of possible answers, excluding 'skip' and ''
+    :param options: list of options
+    :return new list of options without 'skip' and '' 
+    """
+    new_options = options.copy()
+    if 'skip' in new_options:
+        del new_options['skip']
+    if '' in new_options:
+        del new_options['']
+    return new_options
+
+
 async def name_quest(message: types.Message, state: FSMContext):
     """Naming quest state handler.
     :param message: message from user
@@ -392,8 +432,21 @@ async def name_quest(message: types.Message, state: FSMContext):
                 await message.answer('Не удалось запустить квест.')
                 await state.finish()
                 return
+            
+            info = get_history(message.text, message.from_user.id)
+            if info is None:
+                pass
+            elif info[0] or (info[1] is None):
+                pass
+            else:
+                await QuestStates.next()
+                options = ['Да', 'Нет']
+                keyboard = create_keyboard(options)
+                await message.answer('Данный квест уже был начат Вами ранее. Желаете продолжить?',
+                                     reply_markup=keyboard)
+                return
 
-            await QuestStates.next()
+            await QuestStates.session.set()
             await message.answer('Квест "' + data['quest'].name + '" начат. '
                 'Чтобы закончить напишите /end, '
                 'чтобы получить количество баллов - /score, '
@@ -402,19 +455,59 @@ async def name_quest(message: types.Message, state: FSMContext):
             await message.answer(data['quest'].start_msg)
 
             if data['quest'].cur_point.type == "choice":
-                options = data['quest'].cur_point.next_points.copy()
-                if 'skip' in options:
-                    del options['skip']
-                if '' in options:
-                    del options['']
-                keyboard = create_keyboard(options)
+                keyboard = create_keyboard(edit_options(data['quest'].cur_point.next_points))
             else:
                 keyboard = ReplyKeyboardRemove()
             await send_files(message, data['quest'].cur_point.msg, data['quest'].cur_point.files, keyboard)
+            if data['quest'].cur_point.type == "end": # who knows if this will happen
+                data['quest'].save(message.from_user.id, True)
+                await message.answer('Квест "' + data['quest'].name + '" закончен. '
+                                     'Количество баллов: ' + str(data['quest'].score) + ".",
+                                     reply_markup=ReplyKeyboardRemove())
+                await state.finish()
     else:
         await message.reply('Квест с идентификатором "' + message.text + '" не найден',
             reply_markup=ReplyKeyboardRemove())
         await state.finish()
+
+
+async def load_quest(message: types.Message, state: FSMContext):
+    """Loading quest state handler.
+    :param message: message from user
+    :param state: state machine context
+    """
+    async with state.proxy() as data:
+        if message.text == 'Нет':
+            await QuestStates.session.set()
+            await message.answer('Квест "' + data['quest'].name + '" начат. '
+                    'Чтобы закончить напишите /end, '
+                    'чтобы получить количество баллов - /score, '
+                    'чтобы получить подсказку - /tip, '
+                    'чтобы попытаться пропустить точку - /skip.')
+            await message.answer(data['quest'].start_msg)
+
+            if data['quest'].cur_point.type == "choice":
+                keyboard = create_keyboard(edit_options(data['quest'].cur_point.next_points))
+            else:
+                keyboard = ReplyKeyboardRemove()
+            await send_files(message, data['quest'].cur_point.msg, data['quest'].cur_point.files, keyboard)
+            if data['quest'].cur_point.type == "end": # who knows if this will happen
+                data['quest'].save(message.from_user.id, True)
+                await message.answer('Квест "' + data['quest'].name + '" закончен. '
+                                     'Количество баллов: ' + str(data['quest'].score) + ".",
+                                     reply_markup=ReplyKeyboardRemove())
+                await state.finish()
+        else:
+            if data['quest'].load(message.from_user.id):
+                await QuestStates.next()
+                if data['quest'].cur_point.type == "choice":
+                    keyboard = create_keyboard(edit_options(data['quest'].cur_point.next_points))
+                else:
+                    keyboard = ReplyKeyboardRemove()
+                await send_files(message, data['quest'].cur_point.msg, data['quest'].cur_point.files, keyboard)
+            else:
+                await message.answer('Не удалось возобновить прохождение.')
+                await state.finish()
 
 
 async def cancel_handler(message: types.Message, state: FSMContext):
@@ -472,24 +565,22 @@ async def skip_handler(message: types.Message, state: FSMContext):
     """
     async with state.proxy() as data:
         if 'quest' in data:
-            if 'skip' in data['quest'].cur_point.next_points:
-                (quest_ends, msg, files) = data['quest'].next_point('skip')
-                if data['quest'].cur_point.type == "open":
-                    await send_files(message, msg, files, ReplyKeyboardRemove())
-                elif data['quest'].cur_point.type == "choice":
-                    options = data['quest'].cur_point.next_points.copy()
-                    if 'skip' in options:
-                        del options['skip']
-                    if '' in options:
-                        del options['']
-                    keyboard = create_keyboard(options)
-                    await send_files(message, msg, files, keyboard)
-                if quest_ends == True:
-                    data['quest'].save(message.from_user.id, True)
-                    await state.finish()
-                    await message.answer('Квест "' + data['quest'].name + '" закончен. '
-                                         'Количество баллов: ' + str(data['quest'].score) + ".",
-                                          reply_markup=ReplyKeyboardRemove())
+            if data['quest'].cur_point.type == "open" or data['quest'].cur_point.type == "choice":
+                if 'skip' in data['quest'].cur_point.next_points:
+                    (quest_ends, msg, files) = data['quest'].next_point('skip')
+                    if data['quest'].cur_point.type == "choice":
+                        keyboard = create_keyboard(edit_options(data['quest'].cur_point.next_points))
+                        await send_files(message, msg, files, keyboard)
+                    else:
+                        await send_files(message, msg, files, ReplyKeyboardRemove())
+                    if quest_ends == True:
+                        data['quest'].save(message.from_user.id, True)
+                        await state.finish()
+                        await message.answer('Квест "' + data['quest'].name + '" закончен. '
+                                             'Количество баллов: ' + str(data['quest'].score) + ".",
+                                              reply_markup=ReplyKeyboardRemove())
+                else:
+                    await message.answer('Точка не поддерживает пропуск.')
             else:
                 await message.answer('Точка не поддерживает пропуск.')
         else:
@@ -503,17 +594,10 @@ async def quest_proc(message: types.Message, state: FSMContext):
     """
     async with state.proxy() as data:
         (quest_ends, msg, files) = data['quest'].next_point(message.text)
-        if data['quest'].cur_point.type == "open":
-            await send_files(message, msg, files, ReplyKeyboardRemove())
-        elif data['quest'].cur_point.type == "choice":
-            options = data['quest'].cur_point.next_points.copy()
-            if 'skip' in options:
-                del options['skip']
-            if '' in options:
-                del options['']
-            keyboard = create_keyboard(options)
+        if data['quest'].cur_point.type == "choice":
+            keyboard = create_keyboard(edit_options(data['quest'].cur_point.next_points))
             await send_files(message, msg, files, keyboard)
-        else: # movement
+        else:
             await send_files(message, msg, files, ReplyKeyboardRemove())
         if quest_ends == True:
             if msg == 'Ошибка в структуре квеста.' or msg == 'Время активности квеста зокончилось.':
@@ -544,5 +628,6 @@ def register_client_handlers(dp: Dispatcher):
     dp.register_message_handler(tip_handler, state='*', commands="tip")
     dp.register_message_handler(skip_handler, state='*', commands="skip")
     dp.register_message_handler(name_quest, state=QuestStates.naming)
+    dp.register_message_handler(load_quest, state=QuestStates.loading)
     dp.register_message_handler(quest_proc, state=QuestStates.session)
     dp.register_message_handler(warning)

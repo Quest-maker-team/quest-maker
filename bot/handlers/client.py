@@ -173,6 +173,8 @@ class QuestPoint:
         """Get next point.
         :param self: instance
         :param point_name: answer for next point
+        :param latitude: geoposition latitude
+        :param longitude: geoposition longitude
         :return score to add and next point if success
         :return None if there is no such answer
         :return (None, None) in case of movement failure
@@ -299,7 +301,9 @@ class Quest:
     def next_point(self, message, latitude=None, longitude=None):
         """Go to next point.
         :param self: instance
-        :param name: message from user
+        :param message: message from user
+        :param latitude: geoposition latitude
+        :param longitude: geoposition longitude
         :return (False, <message to send>, <list of files>) if quest need continue
         :return (True, <message to send>, <list of files>) if quest is over
         """
@@ -602,6 +606,12 @@ async def skip_handler(message: types.Message, state: FSMContext):
 
 
 async def point_proc(message: types.Message, state: FSMContext, latitude, longitude):
+    """Quest point processing.
+    :param message: message from user
+    :param state: state machine context
+    :param latitude: geoposition latitude
+    :param longitude: geoposition longitude
+    """
     async with state.proxy() as data:
         (quest_ends, msg, files) = data['quest'].next_point(message.text, latitude=latitude, longitude=longitude)
         if data['quest'].cur_point.type == "choice":
@@ -638,6 +648,10 @@ async def warning(message: types.Message):
 
 
 async def handle_location(message: types.Message, state: FSMContext):
+    """Location processing handler.
+    :param message: message from user
+    :param state: state machine context
+    """
     lat = message.location.latitude
     lon = message.location.longitude
     await point_proc(message, state, lat, lon)

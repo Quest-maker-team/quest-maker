@@ -11,8 +11,9 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.types import ReplyKeyboardRemove
 from keyboards import *
 
+from create_bot import bot
 from db.db import *
-
+from handlers.commands import *
 
 class Tip:
     """The type corresponding to the hint.
@@ -295,7 +296,7 @@ class Quest:
             return (True, "Ошибка в структуре квеста.", [])
 
         if not check_time_limits(self.time_start, self.time_limits):
-            return (True, "Время активности квеста зокончилось.", [])
+            return (True, "Время активности квеста закончилось.", [])
 
         (score_to_add, point) = self.cur_point.get_next(message)
         if self.cur_point.type == 'movement' and point is None:
@@ -328,7 +329,9 @@ async def cmd_start(message: types.Message):
     """Command start handler.
     :param message: message from user
     """
-    await message.answer('Это бот для игры в квесты, созданные при помощи сервиса QuestCreator.',
+    await set_commands(bot)
+    await message.answer('Это бот для игры в квесты, созданные при помощи сервиса QuestCreator.'
+        'Введите команду /quest для начала.',
         reply_markup=ReplyKeyboardRemove())
 
 
@@ -521,9 +524,9 @@ async def cancel_handler(message: types.Message, state: FSMContext):
             await message.answer('Квест "' + data['quest'].name + '" закончен. '
                                  'Количество баллов: ' + str(data['quest'].score) + ".",
                                  reply_markup=ReplyKeyboardRemove())
-            await state.finish()
         else:
             await message.answer('Выберите квест командой /quest.', reply_markup=ReplyKeyboardRemove())
+        await state.finish()
 
 
 async def tip_handler(message: types.Message, state: FSMContext):
@@ -539,7 +542,7 @@ async def tip_handler(message: types.Message, state: FSMContext):
                     reply_markup=ReplyKeyboardRemove())
             else:
                 await send_files(message, tip.msg, tip.files, ReplyKeyboardRemove())
-                await message.answer('Штраф за подсказку: ' + str(tip.fine) + ' баллов.')
+                await message.answer('Штраф за подсказку в баллах: ' + str(tip.fine) + ' .')
                 data['quest'].score -= tip.fine
         else:
             await message.answer('Выберите квест командой /quest.', reply_markup=ReplyKeyboardRemove())
@@ -600,7 +603,7 @@ async def quest_proc(message: types.Message, state: FSMContext):
         else:
             await send_files(message, msg, files, ReplyKeyboardRemove())
         if quest_ends == True:
-            if msg == 'Ошибка в структуре квеста.' or msg == 'Время активности квеста зокончилось.':
+            if msg == 'Ошибка в структуре квеста.' or msg == 'Время активности квеста закончилось.':
                 data['quest'].save(message.from_user.id, False)
             else:
                 data['quest'].save(message.from_user.id, True)

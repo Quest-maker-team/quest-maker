@@ -133,3 +133,4 @@ dmypy.json
 
 # Config files
 .ini
+bot/db_config.ini

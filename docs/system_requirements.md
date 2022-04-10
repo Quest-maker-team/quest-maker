@@ -28,4 +28,4 @@ There are 4 parts to define system requirements:
 Browser must support:
 + HTML5;
 + CSS3;
-+ JavaScript !!!VERSION!!!.
++ JavaScript 1.7 or higher.

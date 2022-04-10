@@ -15,6 +15,13 @@ from create_bot import bot
 from db.db import *
 from handlers.commands import *
 
+import geopy.distance
+
+
+"""message when user don't want to locate 'em"""
+no_geo_msg = "Я не хочу раскрывать своё положение, но добрался до места"
+
+
 class Tip:
     """The type corresponding to the hint.
     """
@@ -162,7 +169,7 @@ class QuestPoint:
         return res
 
 
-    def get_next(self, point_name):
+    def get_next(self, point_name, latitude=None, longitude=None):
         """Get next point.
         :param self: instance
         :param point_name: answer for next point
@@ -190,6 +197,12 @@ class QuestPoint:
         # it is assumed that the coordinates were obtained in point_name
         try:
             movement_info = get_movement(self.id)
+            if latitude is not None and longitude is not None:
+                dist = geopy.distance.geodesic(movement_info[1], (latitude, longitude)).m
+                if dist > movement_info[2]:
+                    return (None, None)
+            elif point_name != no_geo_msg:
+                return None
             if not check_time(movement_info[3], movement_info[4]):
                 return (0, None)
             # check whether the place has been reached with the required accuracy
@@ -590,16 +603,14 @@ async def skip_handler(message: types.Message, state: FSMContext):
             await message.answer('Выберите квест командой /quest.', reply_markup=ReplyKeyboardRemove())
 
 
-async def quest_proc(message: types.Message, state: FSMContext):
-    """Quest processing handler.
-    :param message: message from user
-    :param state: state machine context
-    """
+async def point_proc(message: types.Message, state: FSMContext, latitude, longitude):
     async with state.proxy() as data:
-        (quest_ends, msg, files) = data['quest'].next_point(message.text)
+        (quest_ends, msg, files) = data['quest'].next_point(message.text, latitude=latitude, longitude=longitude)
         if data['quest'].cur_point.type == "choice":
             keyboard = create_keyboard(edit_options(data['quest'].cur_point.next_points))
             await send_files(message, msg, files, keyboard)
+        elif data['quest'].cur_point.type == "movement":
+            await send_files(message, msg, files, create_movement_keyboard(no_geo_msg))
         else:
             await send_files(message, msg, files, ReplyKeyboardRemove())
         if quest_ends == True:
@@ -613,11 +624,25 @@ async def quest_proc(message: types.Message, state: FSMContext):
                                   reply_markup=ReplyKeyboardRemove())
 
 
+async def quest_proc(message: types.Message, state: FSMContext):
+    """Quest processing handler.
+    :param message: message from user
+    :param state: state machine context
+    """
+    await point_proc(message, state, None, None)
+
+
 async def warning(message: types.Message):
     """Warning message handler.
     :param message: message from user
     """
     await message.answer('Выберите квест командой /quest.')
+
+
+async def handle_location(message: types.Message, state: FSMContext):
+    lat = message.location.latitude
+    lon = message.location.longitude
+    await point_proc(message, state, lat, lon)
 
 
 def register_client_handlers(dp: Dispatcher):
@@ -634,3 +659,4 @@ def register_client_handlers(dp: Dispatcher):
     dp.register_message_handler(load_quest, state=QuestStates.loading)
     dp.register_message_handler(quest_proc, state=QuestStates.session)
     dp.register_message_handler(warning)
+    dp.register_message_handler(content_types=['location'], state=QuestStates.session)

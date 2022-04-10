@@ -16,6 +16,7 @@ After moderation all users can choose quest to play.
 ## More information
 + [Project advanteges and comparison](docs/analogues.md);
 + [Target platforms](docs/target_platforms.md);
++ [System requirements](docs/system_requirements.md);
 
 ## Staff
 + Baev Daniil

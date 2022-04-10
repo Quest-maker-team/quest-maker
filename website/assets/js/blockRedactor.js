@@ -94,7 +94,6 @@ export class BlockRedactor {
             default:
                 break;
         }
-
         modal.show();
     }
 }

@@ -13,7 +13,9 @@ After creation quest becomes unpublic and only selected users can play it.
 To make quest public and visible in global list admin review is required.
 After moderation all users can choose quest to play.
 
-To see project advanteges and comparison see [doc](docs/analogues.md).
+## More information
++ [Project advanteges and comparison](docs/analogues.md);
++ [Target platforms](docs/target_platforms.md);
 
 ## Staff
 + Baev Daniil

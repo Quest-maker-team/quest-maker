@@ -169,7 +169,7 @@ def add_file(e_type_str, e_id, file_id):
         return 'Wrong file id', 400
 
     e_type = EntityType.from_str(e_type_str)
-    if e_type not in (EntityType.QUEST, EntityType.QUESTION, EntityType.ANSWER, EntityType.HINT):
+    if e_type not in (EntityType.QUEST, EntityType.QUESTION, EntityType.HINT):
         return 'Bad Request', 400
 
     entity = g.container.get(e_type, e_id)

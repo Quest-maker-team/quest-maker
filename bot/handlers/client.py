@@ -603,7 +603,7 @@ async def quest_proc(message: types.Message, state: FSMContext):
         else:
             await send_files(message, msg, files, ReplyKeyboardRemove())
         if quest_ends == True:
-            if msg == 'Ошибка в структуре квеста.' or msg == 'Время активности квеста зокончилось.':
+            if msg == 'Ошибка в структуре квеста.' or msg == 'Время активности квеста закончилось.':
                 data['quest'].save(message.from_user.id, False)
             else:
                 data['quest'].save(message.from_user.id, True)

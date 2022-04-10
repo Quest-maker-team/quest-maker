@@ -10,7 +10,9 @@ There are 4 parts to define system requirements:
 ### Server
 + Python 3.8 or higher;
 + PostgreSQL 14 or higher;
-+ Internet connection.
++ 1 Gb RAM and 1 thread (if there are a lot of users more RAM and threads for uninterrupted work);
++ Internet connection;
++ Production server must have web-server that suppors WSGI for regular server work.
 ### Chat
 + Telegram;
 + Geolocation determination for quests with movements for best experience.
@@ -18,9 +20,10 @@ There are 4 parts to define system requirements:
 ## Service
 ### Server
 + Python 3.8 or higher;
-+ Flask 2.0.3 or higher;
 + PostgreSQL 14 or higher;
-+ Internet connection.
++ 1 Gb RAM and 1 thread (if there are a lot of users more RAM and threads for uninterrupted work);
++ Internet connection;
++ Production server must have web-server that suppors WSGI for regular server work.
 ### Website
 Browser must support:
 + HTML5;

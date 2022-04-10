@@ -361,6 +361,8 @@ class Quest(QuestEntity):
         """
         g.questions = {}  # save mapped questions to process loops
         quest_info = db.get_quest(quest_id)
+        if not quest_info:
+            return None
         quest = Quest()
         quest.__id_in_db = quest_id
         quest.quest_id = quest_id

@@ -1,8 +1,8 @@
 from .quest import Quest, Question, Place, Hint, Answer, Movement, File, update_from_dict
 from .entities_container import EntityType, EntitiesContainer
+from flask_login import current_user, login_required
 
 from flask import Blueprint, jsonify, request, g
-from flask_login import current_user, login_required
 
 import pickle
 import os
@@ -13,7 +13,7 @@ api = Blueprint('api', __name__)
 @api.before_request
 @login_required
 def before_request():
-    author_id = current_user.get_id()
+    author_id = current_user.author['author_id']
     path = f'quest_containers/{author_id}'
     if os.path.exists(path):
         with open(path, 'rb') as file:
@@ -23,8 +23,9 @@ def before_request():
 
 
 @api.after_request
+@login_required
 def after_request(response):
-    author_id = current_user.get_id()
+    author_id = current_user.author['author_id']
     path = f'quest_containers/{author_id}'
     if 'container' in g:
         if g.container.empty():
@@ -307,7 +308,7 @@ def remove_question_answer_link(question_id, answer_id):
 
 @api.route('/save/<int:quest_id>', methods=['POST'])
 def save_quest(quest_id):
-    author_id = current_user.get_id()
+    author_id = current_user.author['author_id']
     quest = g.container.get(EntityType.QUEST, quest_id)
     if not quest:
         return 'Wrong quest id', 400

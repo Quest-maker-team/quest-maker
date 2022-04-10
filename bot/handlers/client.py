@@ -659,4 +659,4 @@ def register_client_handlers(dp: Dispatcher):
     dp.register_message_handler(load_quest, state=QuestStates.loading)
     dp.register_message_handler(quest_proc, state=QuestStates.session)
     dp.register_message_handler(warning)
-    dp.register_message_handler(content_types=['location'], state=QuestStates.session)
+    dp.register_message_handler(handle_location, content_types=['location'], state=QuestStates.session)

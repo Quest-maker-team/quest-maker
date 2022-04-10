@@ -69,6 +69,7 @@ export class Render{
             let tableElement = document.createElement("li");
             tableElement.innerHTML = answer.text;
             tableElement.className = "list-group-item";
+            tableElement.id = "answer" + answer.answer_option_id;
             answerTable.append(tableElement);
             instance.addEndpoint(tableElement, {anchor: ["Right", "Left"]}, sourceEndpoint);
         }
@@ -95,6 +96,6 @@ export class Render{
         Render.renderStart(quest.data.questions.find(question => question.type === "start"), instance, sourceEndpoint);
         Render.renderFinish(quest.data.questions.find(question => question.type === "end"), instance, targetEndpoint);
         Render.renderOpenQuestion(quest, quest.data.questions.find(question => question.type === "open"), instance, sourceEndpoint, targetEndpoint);
-        Render.renderMovement(quest, quest.data.questions.find(question => question.question_id == 11), instance, sourceEndpoint, targetEndpoint);
+        Render.renderMovement(quest, quest.data.questions.find(question => question.type === "movement"), instance, sourceEndpoint, targetEndpoint);
     }
 }

@@ -1,0 +1,28 @@
+* `quest`:
+  * `title`
+  * `tags`
+  * `hidden`
+  * `description`
+  * `password`
+  * `time_open`
+  * `time_close`
+  * `lead_time`
+* `question`:
+  * `type`
+  * `text`
+* `hint`:
+  * `text`
+  * `fine`
+* `answer_option`:
+  * `text`
+  * `points`
+* `movement`:
+  * There are no available attributes 
+* `file`:
+  * `type`
+  * `url`
+* `place`:
+  * `coords`
+  * `radius`
+  * `time_open`
+  * `time_close`

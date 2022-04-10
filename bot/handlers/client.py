@@ -15,6 +15,10 @@ from create_bot import bot
 from db.db import *
 from handlers.commands import *
 
+import geopy.distance
+import re
+
+
 class Tip:
     """The type corresponding to the hint.
     """
@@ -87,6 +91,9 @@ def check_time_limits(time_start, time_limits):
 
 
 class QuestPoint:
+    """message when user don't want to locate 'em"""
+    no_geo_msg = "Я на месте, геоданных не дам"
+
     """Quest point representation type.
     """
     def __init__(self, id, type, msg):
@@ -162,10 +169,12 @@ class QuestPoint:
         return res
 
 
-    def get_next(self, point_name):
+    def get_next(self, point_name, latitude=None, longitude=None):
         """Get next point.
         :param self: instance
         :param point_name: answer for next point
+        :param latitude: geoposition latitude
+        :param longitude: geoposition longitude
         :return score to add and next point if success
         :return None if there is no such answer
         :return (None, None) in case of movement failure
@@ -187,13 +196,17 @@ class QuestPoint:
                 point_info[1].load_files()
                 return (point_info[0], point_info[1])
         # movement
-        # it is assumed that the coordinates were obtained in point_name
         try:
             movement_info = get_movement(self.id)
+            if latitude is not None and longitude is not None:
+                coords = re.findall("\d+.\d+", movement_info[1])
+                dist = geopy.distance.geodesic((float(coords[0]), float(coords[1])), (latitude, longitude)).m
+                if dist > movement_info[2]:
+                    return (0, None)
+            elif point_name != QuestPoint.no_geo_msg:
+                return (0, None)
             if not check_time(movement_info[3], movement_info[4]):
                 return (0, None)
-            # check whether the place has been reached with the required accuracy
-            #...
             question_info = get_question_by_id(movement_info[0])
             point = QuestPoint(question_info[0], question_info[2], question_info[1])
             point.load_next_points()
@@ -285,10 +298,12 @@ class Quest:
         return True
 
 
-    def next_point(self, message):
+    def next_point(self, message, latitude=None, longitude=None):
         """Go to next point.
         :param self: instance
-        :param name: message from user
+        :param message: message from user
+        :param latitude: geoposition latitude
+        :param longitude: geoposition longitude
         :return (False, <message to send>, <list of files>) if quest need continue
         :return (True, <message to send>, <list of files>) if quest is over
         """
@@ -298,7 +313,7 @@ class Quest:
         if not check_time_limits(self.time_start, self.time_limits):
             return (True, "Время активности квеста закончилось.", [])
 
-        (score_to_add, point) = self.cur_point.get_next(message)
+        (score_to_add, point) = self.cur_point.get_next(message, latitude, longitude)
         if self.cur_point.type == 'movement' and point is None:
             if score_to_add != None:
                 return (False, "Неверное место или время.", [])
@@ -590,16 +605,20 @@ async def skip_handler(message: types.Message, state: FSMContext):
             await message.answer('Выберите квест командой /quest.', reply_markup=ReplyKeyboardRemove())
 
 
-async def quest_proc(message: types.Message, state: FSMContext):
-    """Quest processing handler.
+async def point_proc(message: types.Message, state: FSMContext, latitude, longitude):
+    """Quest point processing.
     :param message: message from user
     :param state: state machine context
+    :param latitude: geoposition latitude
+    :param longitude: geoposition longitude
     """
     async with state.proxy() as data:
-        (quest_ends, msg, files) = data['quest'].next_point(message.text)
+        (quest_ends, msg, files) = data['quest'].next_point(message.text, latitude=latitude, longitude=longitude)
         if data['quest'].cur_point.type == "choice":
             keyboard = create_keyboard(edit_options(data['quest'].cur_point.next_points))
             await send_files(message, msg, files, keyboard)
+        elif data['quest'].cur_point.type == "movement":
+            await send_files(message, msg, files, create_movement_keyboard(QuestPoint.no_geo_msg))
         else:
             await send_files(message, msg, files, ReplyKeyboardRemove())
         if quest_ends == True:
@@ -613,11 +632,29 @@ async def quest_proc(message: types.Message, state: FSMContext):
                                   reply_markup=ReplyKeyboardRemove())
 
 
+async def quest_proc(message: types.Message, state: FSMContext):
+    """Quest processing handler.
+    :param message: message from user
+    :param state: state machine context
+    """
+    await point_proc(message, state, None, None)
+
+
 async def warning(message: types.Message):
     """Warning message handler.
     :param message: message from user
     """
     await message.answer('Выберите квест командой /quest.')
+
+
+async def handle_location(message: types.Message, state: FSMContext):
+    """Location processing handler.
+    :param message: message from user
+    :param state: state machine context
+    """
+    lat = message.location.latitude
+    lon = message.location.longitude
+    await point_proc(message, state, lat, lon)
 
 
 def register_client_handlers(dp: Dispatcher):
@@ -634,3 +671,4 @@ def register_client_handlers(dp: Dispatcher):
     dp.register_message_handler(load_quest, state=QuestStates.loading)
     dp.register_message_handler(quest_proc, state=QuestStates.session)
     dp.register_message_handler(warning)
+    dp.register_message_handler(handle_location, content_types=['location'], state=QuestStates.session)

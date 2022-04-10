@@ -13,7 +13,7 @@ There are 4 parts to define system requirements:
 + Internet connection.
 ### Chat
 + Telegram;
-+ Geoposition for quests with movements for best experience.
++ Geolocation determination for quests with movements for best experience.
 
 ## Service
 ### Server

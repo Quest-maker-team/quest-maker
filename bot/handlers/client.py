@@ -18,10 +18,6 @@ from handlers.commands import *
 import geopy.distance
 
 
-"""message when user don't want to locate 'em"""
-no_geo_msg = "Я не хочу раскрывать своё положение, но добрался до места"
-
-
 class Tip:
     """The type corresponding to the hint.
     """
@@ -94,6 +90,9 @@ def check_time_limits(time_start, time_limits):
 
 
 class QuestPoint:
+    """message when user don't want to locate 'em"""
+    no_geo_msg = "Я не хочу раскрывать своё положение, но добрался до места"
+
     """Quest point representation type.
     """
     def __init__(self, id, type, msg):
@@ -201,7 +200,7 @@ class QuestPoint:
                 dist = geopy.distance.geodesic(movement_info[1], (latitude, longitude)).m
                 if dist > movement_info[2]:
                     return (None, None)
-            elif point_name != no_geo_msg:
+            elif point_name != QuestPoint.o_geo_msg:
                 return None
             if not check_time(movement_info[3], movement_info[4]):
                 return (0, None)
@@ -610,7 +609,7 @@ async def point_proc(message: types.Message, state: FSMContext, latitude, longit
             keyboard = create_keyboard(edit_options(data['quest'].cur_point.next_points))
             await send_files(message, msg, files, keyboard)
         elif data['quest'].cur_point.type == "movement":
-            await send_files(message, msg, files, create_movement_keyboard(no_geo_msg))
+            await send_files(message, msg, files, create_movement_keyboard(QuestPoint.no_geo_msg))
         else:
             await send_files(message, msg, files, ReplyKeyboardRemove())
         if quest_ends == True:

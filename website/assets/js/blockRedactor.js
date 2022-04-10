@@ -10,12 +10,12 @@ export class BlockRedactor {
     static addAnswerForOpenQuestion(form, answer){
         form.innerHTML +=
             "<div class='col-8'>"+
-                "<input type=\"text\" class=\"form-control\" value=" + answer.text + ">" +
+                "<input type=\"text\" class=\"form-control\" id=\"answerText\" value=" + answer.text + ">" +
             "</div>" +
             "<div class=\"col-3\">" +
                 "<div class='input-group'>" +
                     "<span class=\"input-group-text\"> Очки </span>" +
-                    "<input type=\"text\" class=\"form-control\" value=" + answer.points + ">" +
+                    "<input type=\"text\" class=\"form-control\" id=\"answerPoints\" value=" + answer.points + ">" +
                 "</div>" +
             "</div>" +
             "<div class='col-1'>" +
@@ -52,6 +52,8 @@ export class BlockRedactor {
             question.text = document.getElementById("formControlTextarea").value;
             document.getElementById(question.question_id).getElementsByClassName("card-text")[0].textContent =
                 question.text;
+            let answerTable = document.getElementById(question.question_id).getElementsByTagName("li");
+
         };
     }
 
@@ -84,6 +86,7 @@ export class BlockRedactor {
             default:
                 break;
         }
+
         modal.show();
     }
 }

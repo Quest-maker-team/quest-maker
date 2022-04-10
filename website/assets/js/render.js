@@ -30,24 +30,22 @@ export class Render{
         deleteButton.style.top = "0";
         deleteButton.style.right = "0";
         deleteButton.onclick = () => {
-            if (answerElements !== undefined)
-            for (let answerElement of answerElements) {
-                instance.deleteConnectionsForElement(answerElement);
-                instance.selectEndpoints({element: answerElement}).deleteAll();
-                delete instance.getManagedElements()[answerElement.id];
+            if (answerElements !== undefined) {
+                for (let answerElement of answerElements) {
+                    instance.deleteConnectionsForElement(answerElement);
+                    instance.selectEndpoints({element: answerElement}).deleteAll();
+                    delete instance.getManagedElements()[answerElement.id];
+                }
             }
             instance.deleteConnectionsForElement(block);
 
             instance.selectEndpoints({element: block}).deleteAll();
             delete instance.getManagedElements()[block.id];
             block.parentElement.removeChild(block);
-            quest.deleteQuestion(block.id);
+            let questions = quest.data.questions;
+            questions.splice(questions.indexOf(questions.find(question => question.question_id == block.id)), 1);
         };
         block.append(deleteButton);
-    }
-
-    static addAnswerTable(){
-
     }
 
     static renderStart(question, instance, sourceEndpoint){
@@ -75,7 +73,7 @@ export class Render{
             instance.addEndpoint(tableElement, {anchor: ["Right", "Left"]}, sourceEndpoint);
         }
        
-        this.addDeleteButton(quest, block, instance, answerTable.childNodes);
+        Render.addDeleteButton(quest, block, instance, answerTable.childNodes);
 
         instance.addEndpoint(block, {anchor: "Top"}, targetEndpoint);
 
@@ -84,7 +82,8 @@ export class Render{
 
     static  renderMovement(quest, question, instance, sourceEndpoint, targetEndpoint){
         let block = Render.renderBlockBase(question, "15rem", "Movement");
-        this.addDeleteButton(quest, block, instance);
+
+        Render.addDeleteButton(quest, block, instance);
 
         instance.addEndpoint(block, {anchor: "Top"}, targetEndpoint);
         instance.addEndpoint(block, {anchor: "Bottom"}, sourceEndpoint);

@@ -86,8 +86,8 @@ export class BlockRedactor {
     }
 
     static createMovementRedactor(form, question){
-
-        this.addTextRedactor(form, "Перемещение", question.text);
+        
+        BlockRedactor.addTextRedactor(form, "Перемещение", question.text);
         form.innerHTML+=
         '<div class="z-depth-1-half map-container" style="height: 500px" id="map"></div>';
         let myMap;
@@ -146,16 +146,16 @@ export class BlockRedactor {
         form.innerHTML = "";
         switch (question.type) {
             case "start":
-                this.createStartRedactor(form, question);
+                BlockRedactor.createStartRedactor(form, question);
                 break;
             case "end":
-                this.createFinishRedactor(form, question);
+                BlockRedactor.createFinishRedactor(form, question);
                 break;
             case "open":
-                this.createOpenQuestionRedactor(form, question);
+                BlockRedactor.createOpenQuestionRedactor(form, question);
                 break;
             case "movement":
-                this.createMovementRedactor(form, question);
+                BlockRedactor.createMovementRedactor(form, question);
                 break;
             default:
                 break;

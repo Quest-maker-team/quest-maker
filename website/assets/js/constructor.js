@@ -49,12 +49,26 @@ export function createNewBlock(type, text, renderFunction){
    });
    console.log(quest.data.questions.slice(-1)[0]);
    renderFunction(quest, quest.data.questions.slice(-1)[0], instance, sourceEndpoint, targetEndpoint);
+   return quest.data.questions.slice(-1)[0];
 }
 
 let quest = new Quest(TestJSON);
 
  document.getElementById("addMBtn").onclick = () => {
     createNewBlock("movement", "Новое перемещение", Render.renderMovement);
+    quest.questions.slice(-1)[0].movements.push({
+        "movement_id": -1,
+        "next_question_id": -1,
+        "place": {
+            "coords": "(0.0,0.0)",
+            "place_id": -1,
+            "radius": 0,
+            "time_close": "Sun, 12 Aug 2001 19:00:00 GMT",
+            "time_open": "Sun, 12 Aug 2001 09:00:00 GMT"
+        }
+    }
+    );
+
 }
 
 document.getElementById("addQBtn").onclick = () => {

@@ -193,7 +193,6 @@ class QuestPoint:
                 point_info[1].load_files()
                 return (point_info[0], point_info[1])
         # movement
-        # it is assumed that the coordinates were obtained in point_name
         try:
             movement_info = get_movement(self.id)
             if latitude is not None and longitude is not None:
@@ -204,8 +203,6 @@ class QuestPoint:
                 return None
             if not check_time(movement_info[3], movement_info[4]):
                 return (0, None)
-            # check whether the place has been reached with the required accuracy
-            #...
             question_info = get_question_by_id(movement_info[0])
             point = QuestPoint(question_info[0], question_info[2], question_info[1])
             point.load_next_points()

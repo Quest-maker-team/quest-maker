@@ -49,19 +49,19 @@ export class Render{
     }
 
     static renderStart(question, instance, sourceEndpoint){
-        let block = this.renderBlockBase(question, "10rem", "Start");
+        let block = this.renderBlockBase(question, "10rem", "Начало");
         instance.manage(block, block.id);
         instance.addEndpoint(block, sourceEndpoint);
     }
 
     static renderFinish(question, instance, targetEndpoint){
-        let block = this.renderBlockBase(question, "10rem", "Finish");
+        let block = this.renderBlockBase(question, "10rem", "Конец");
         instance.manage(block, block.id);
         instance.addEndpoint(block, targetEndpoint);
     }
 
     static renderOpenQuestion(quest, question, instance, sourceEndpoint, targetEndpoint){
-        let block = Render.renderBlockBase(question, "15rem", "Open");
+        let block = Render.renderBlockBase(question, "15rem", "Открытый вопрос");
         let answerTable = document.createElement("ul");
         answerTable.className = "list-group list-group-flush";
         block.append(answerTable);
@@ -82,7 +82,7 @@ export class Render{
     }
 
     static  renderMovement(quest, question, instance, sourceEndpoint, targetEndpoint){
-        let block = Render.renderBlockBase(question, "15rem", "Movement");
+        let block = Render.renderBlockBase(question, "15rem", "Перемещение");
 
         Render.addDeleteButton(quest, block, instance);
 

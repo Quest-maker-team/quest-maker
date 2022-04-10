@@ -30,7 +30,7 @@ something like this: `14/main (port 5432): online`.
   and enter command `\password postgres`. Then type password you want.
 
 ### Launch init script
-* Enter `QuestMaker/website`. Then set `FLASK_APP` (see `README.md` for website).
+* Enter `QuestMaker/website`. Then set `FLASK_APP` (see [README.md](../website/README.md) for website).
 * Enter command `flask init-db`.
 
 Congratulations! You've created local PostgreSQL 

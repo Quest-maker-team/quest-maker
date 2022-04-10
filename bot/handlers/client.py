@@ -295,7 +295,7 @@ class Quest:
             return (True, "Ошибка в структуре квеста.", [])
 
         if not check_time_limits(self.time_start, self.time_limits):
-            return (True, "Время активности квеста зокончилось.", [])
+            return (True, "Время активности квеста закончилось.", [])
 
         (score_to_add, point) = self.cur_point.get_next(message)
         if self.cur_point.type == 'movement' and point is None:
@@ -328,7 +328,8 @@ async def cmd_start(message: types.Message):
     """Command start handler.
     :param message: message from user
     """
-    await message.answer('Это бот для игры в квесты, созданные при помощи сервиса QuestCreator.',
+    await message.answer('Это бот для игры в квесты, созданные при помощи сервиса QuestCreator.'
+        'Введите команду /quest для начала.',
         reply_markup=ReplyKeyboardRemove())
 
 

@@ -16,6 +16,7 @@ from db.db import *
 from handlers.commands import *
 
 import geopy.distance
+import re
 
 
 class Tip:
@@ -91,7 +92,7 @@ def check_time_limits(time_start, time_limits):
 
 class QuestPoint:
     """message when user don't want to locate 'em"""
-    no_geo_msg = "Я не хочу раскрывать своё положение, но добрался до места"
+    no_geo_msg = "Я на месте, геоданных не дам"
 
     """Quest point representation type.
     """
@@ -196,10 +197,11 @@ class QuestPoint:
         try:
             movement_info = get_movement(self.id)
             if latitude is not None and longitude is not None:
-                dist = geopy.distance.geodesic(movement_info[1], (latitude, longitude)).m
+                coords = re.findall("\d+.\d+", movement_info[1])
+                dist = geopy.distance.geodesic((float(coords[0]), float(coords[1])), (latitude, longitude)).m
                 if dist > movement_info[2]:
-                    return (None, None)
-            elif point_name != QuestPoint.o_geo_msg:
+                    return (0, None)
+            elif point_name != QuestPoint.no_geo_msg:
                 return None
             if not check_time(movement_info[3], movement_info[4]):
                 return (0, None)
@@ -294,7 +296,7 @@ class Quest:
         return True
 
 
-    def next_point(self, message):
+    def next_point(self, message, latitude=None, longitude=None):
         """Go to next point.
         :param self: instance
         :param name: message from user
@@ -307,7 +309,7 @@ class Quest:
         if not check_time_limits(self.time_start, self.time_limits):
             return (True, "Время активности квеста закончилось.", [])
 
-        (score_to_add, point) = self.cur_point.get_next(message)
+        (score_to_add, point) = self.cur_point.get_next(message, latitude, longitude)
         if self.cur_point.type == 'movement' and point is None:
             if score_to_add != None:
                 return (False, "Неверное место или время.", [])

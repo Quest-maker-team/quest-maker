@@ -30,40 +30,38 @@ export class Render{
         deleteButton.style.top = "0";
         deleteButton.style.right = "0";
         deleteButton.onclick = () => {
-            if (answerElements !== undefined)
-            for (let answerElement of answerElements) {
-                instance.deleteConnectionsForElement(answerElement);
-                instance.selectEndpoints({element: answerElement}).deleteAll();
-                delete instance.getManagedElements()[answerElement.id];
+            if (answerElements !== undefined) {
+                for (let answerElement of answerElements) {
+                    instance.deleteConnectionsForElement(answerElement);
+                    instance.selectEndpoints({element: answerElement}).deleteAll();
+                    delete instance.getManagedElements()[answerElement.id];
+                }
             }
             instance.deleteConnectionsForElement(block);
 
             instance.selectEndpoints({element: block}).deleteAll();
             delete instance.getManagedElements()[block.id];
             block.parentElement.removeChild(block);
-            quest.deleteQuestion(block.id);
+            let questions = quest.data.questions;
+            questions.splice(questions.indexOf(questions.find(question => question.question_id == block.id)), 1);
         };
         block.append(deleteButton);
     }
 
-    static addAnswerTable(){
-
-    }
-
     static renderStart(question, instance, sourceEndpoint){
-        let block = this.renderBlockBase(question, "10rem", "Start");
+        let block = this.renderBlockBase(question, "10rem", "Начало");
         instance.manage(block, block.id);
         instance.addEndpoint(block, sourceEndpoint);
     }
 
     static renderFinish(question, instance, targetEndpoint){
-        let block = this.renderBlockBase(question, "10rem", "Finish");
+        let block = this.renderBlockBase(question, "10rem", "Конец");
         instance.manage(block, block.id);
         instance.addEndpoint(block, targetEndpoint);
     }
 
     static renderOpenQuestion(quest, question, instance, sourceEndpoint, targetEndpoint){
-        let block = Render.renderBlockBase(question, "15rem", "Open");
+        let block = Render.renderBlockBase(question, "15rem", "Открытый вопрос");
         let answerTable = document.createElement("ul");
         answerTable.className = "list-group list-group-flush";
         block.append(answerTable);
@@ -71,11 +69,12 @@ export class Render{
             let tableElement = document.createElement("li");
             tableElement.innerHTML = answer.text;
             tableElement.className = "list-group-item";
+            tableElement.id = "answer" + answer.answer_option_id;
             answerTable.append(tableElement);
             instance.addEndpoint(tableElement, {anchor: ["Right", "Left"]}, sourceEndpoint);
         }
-        console.log(answerTable.childNodes);
-        this.addDeleteButton(quest, block, instance, answerTable.childNodes);
+
+        Render.addDeleteButton(quest, block, instance, answerTable.childNodes);
 
         instance.addEndpoint(block, {anchor: "Top"}, targetEndpoint);
 
@@ -83,8 +82,9 @@ export class Render{
     }
 
     static  renderMovement(quest, question, instance, sourceEndpoint, targetEndpoint){
-        let block = Render.renderBlockBase(question, "15rem", "Movement");
-        this.addDeleteButton(quest, block, instance);
+        let block = Render.renderBlockBase(question, "15rem", "Перемещение");
+
+        Render.addDeleteButton(quest, block, instance);
 
         instance.addEndpoint(block, {anchor: "Top"}, targetEndpoint);
         instance.addEndpoint(block, {anchor: "Bottom"}, sourceEndpoint);
@@ -96,6 +96,6 @@ export class Render{
         Render.renderStart(quest.data.questions.find(question => question.type === "start"), instance, sourceEndpoint);
         Render.renderFinish(quest.data.questions.find(question => question.type === "end"), instance, targetEndpoint);
         Render.renderOpenQuestion(quest, quest.data.questions.find(question => question.type === "open"), instance, sourceEndpoint, targetEndpoint);
-        Render.renderMovement(quest, quest.data.questions.find(question => question.question_id == 11), instance, sourceEndpoint, targetEndpoint);
+        Render.renderMovement(quest, quest.data.questions.find(question => question.type === "movement"), instance, sourceEndpoint, targetEndpoint);
     }
 }

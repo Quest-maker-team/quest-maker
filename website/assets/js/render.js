@@ -74,7 +74,7 @@ export class Render{
             answerTable.append(tableElement);
             instance.addEndpoint(tableElement, {anchor: ["Right", "Left"]}, sourceEndpoint);
         }
-       
+        console.log(answerTable.childNodes);
         this.addDeleteButton(quest, block, instance, answerTable.childNodes);
 
         instance.addEndpoint(block, {anchor: "Top"}, targetEndpoint);

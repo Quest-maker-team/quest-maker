@@ -204,7 +204,7 @@ class QuestPoint:
                 if dist > movement_info[2]:
                     return (0, None)
             elif point_name != QuestPoint.no_geo_msg:
-                return None
+                return (0, None)
             if not check_time(movement_info[3], movement_info[4]):
                 return (0, None)
             question_info = get_question_by_id(movement_info[0])

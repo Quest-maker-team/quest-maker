@@ -8,8 +8,8 @@ There are 4 parts to define system requirements:
 
 ## Bot
 ### Server
-+ Python3;
-+ PostgreSQL;
++ Python 3.8 or higher;
++ PostgreSQL 14 or higher;
 + Internet connection.
 ### Chat
 + Telegram;
@@ -17,9 +17,9 @@ There are 4 parts to define system requirements:
 
 ## Service
 ### Server
-+ Python3;
-+ Flask;
-+ PostgreSQL;
++ Python 3.8 or higher;
++ Flask 2.0.3 or higher;
++ PostgreSQL 14 or higher;
 + Internet connection.
 ### Website
 Browser must support:

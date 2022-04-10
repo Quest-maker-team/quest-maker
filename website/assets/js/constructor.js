@@ -35,9 +35,9 @@ export function createNewBlock(type, text, renderFunction){
     quest.data.questions.push( {
         "answer_options": [
             {
-                "next_question_id": 11,
-                "points": 10.0,
-                "text": "1764—1775"
+                "next_question_id": undefined,
+                "points": 0,
+                "text": "Ответ"
             }
         ], 
        "files": [],
@@ -53,11 +53,11 @@ export function createNewBlock(type, text, renderFunction){
 
 let quest = new Quest(TestJSON);
 
- document.getElementById("addMBtn").onclick = function () {
+ document.getElementById("addMBtn").onclick = () => {
     createNewBlock("movement", "Новое перемещение", Render.renderMovement);
 }
 
-document.getElementById("addQBtn").onclick = function () {
+document.getElementById("addQBtn").onclick = () => {
     createNewBlock("open", "Новый открытый вопрос", Render.renderOpenQuestion);
 }
 

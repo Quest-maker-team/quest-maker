@@ -10,13 +10,13 @@ export class BlockRedactor {
     static addAnswerForOpenQuestion(form, answer){
         form.innerHTML +=
             "<div class='col-8'>"+
-                "<input type=\"text\" class=\"form-control\" id=\"answerText" + answer.answer_option_id + "\"" +
+                "<input type=\"text\" class=\"form-control\" id=\"answerText\"" +
                 " value=" + answer.text + ">" +
             "</div>" +
             "<div class=\"col-3\">" +
                 "<div class=\"input-group\">" +
                     "<span class=\"input-group-text\"> Очки </span>" +
-                    "<input type=\"text\" class=\"form-control\" id=\"answerPoints" + answer.answer_option_id + "\"" +
+                    "<input type=\"text\" class=\"form-control\" id=\"answerPoints\"" +
                     " value=" + answer.points + ">" +
                 "</div>" +
             "</div>" +
@@ -54,23 +54,13 @@ export class BlockRedactor {
             question.text = document.getElementById("formControlTextarea").value;
             document.getElementById(question.question_id).getElementsByClassName("card-text")[0].textContent =
                 question.text;
-            //let answerTable = document.getElementById(question.question_id).getElementsByTagName("li");
-            /*for (let answerTableElement of answerTable) {
-                //console.log(answerTableElement);
-                //console.log(answerTableElement.id);
-                let answerId = answerTableElement.id.slice("answer".length);
-                answerTableElement.innerText = document.getElementById("answerText" + answerId).value;
-                let answer = question.answer_options.find(answer => answer.answer_option_id == answerId);
-                answer.text = document.getElementById("answerText" + answerId).value;
-                answer.points = document.getElementById("answerPoints" + answerId).value;
-            }*/
             for (let answer of question.answer_options) {
                 let answerId = answer.answer_option_id;
-                answer.text = document.getElementById("answerText" + answerId).value;
-                answer.points = document.getElementById("answerPoints" + answerId).value;
+                answer.text = document.getElementById("answerText").value;
+                answer.points = document.getElementById("answerPoints").value;
 
                 document.getElementById("answer" + answerId).innerText =
-                    document.getElementById("answerText" + answerId).value;
+                    document.getElementById("answerText").value;
             }
         };
     }

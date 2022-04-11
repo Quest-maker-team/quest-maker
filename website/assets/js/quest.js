@@ -77,4 +77,24 @@ export class Quest{
             xmlhttp.send(question);
         });
     }
+
+    save(){
+        let url = 'api/save/' + this.data.quest_id;
+        return new Promise((resolve, reject) => {
+            let xmlhttp = new XMLHttpRequest();
+            xmlhttp.open("POST", url, true);
+
+            xmlhttp.onreadystatechange = () => {
+                if (xmlhttp.readyState === XMLHttpRequest.DONE) {
+                    if (xmlhttp.status === 200) {
+                        console.log("resolve");
+                        resolve(xmlhttp.responseText);
+                    } else {
+                        reject(xmlhttp.status);
+                    }
+                }
+            };
+            xmlhttp.send();
+        });
+    }
 }

@@ -79,7 +79,7 @@ export function createNewBlock(type, text, renderFunction){
             "time_open": "Sun, 12 Aug 2001 09:00:00 GMT"
         }
     });
-    Quest.pushQuestion(quest, questionId);
+    Quest.pushMovement(quest, questionId, maxId);
 }
 
 document.getElementById("addQBtn").onclick = () => {

@@ -405,7 +405,7 @@ def remove_question_movement_link(question_id, movement_id):
         return 'No link', 400
 
 
-@api.route('/question/<int:question_id>/answer/<int:answer_id>', methods=['DELETE'])
+@api.route('/question/<int:question_id>/answer_option/<int:answer_id>', methods=['DELETE'])
 def remove_question_answer_link(question_id, answer_id):
     """
     Disconnect question and answer to this question

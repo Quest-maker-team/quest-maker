@@ -57,12 +57,16 @@ All reviewers must approve changes. After that last reviewer or pull request aut
 In the end of pull request name must be `#<ZenHub isssue number>`.
 
 ## Development tools
-+ <a href="https://www.python.org"><b>Python</b></a> 3.8 and later for bot and website backend
-+ <a href="https://flask.palletsprojects.com/en/2.0.x"><b>Flask</b></a> framework for website backend
-+ <a href="https://docs.aiogram.dev/en/latest"><b>aiogram</b></a> framework for telegram bot
-+ <a href="https://devdocs.io/html/"><b>HTML</b></a> for website markup
-+ <a href="https://devdocs.io/css/"><b>CSS</b></a> for styling website
-+ <a href="https://devdocs.io/javascript/"><b>JavaScript</b></a> for webside frontend scripts
++ [**Python 3.8**](https://www.python.org) and later for bot and website backend
++ [**Flask**](https://flask.palletsprojects.com/en/2.0.x) framework for website backend
++ [**aiogram**](https://docs.aiogram.dev/en/latest) framework for telegram bot
++ [**HTML**](https://devdocs.io/html/) for website markup
++ [**CSS**](https://devdocs.io/css) for styling website
++ [**JavaScript**](https://devdocs.io/javascript/) for webside frontend scripts
++ [**Node package manager**](https://www.npmjs.com/) for installing all front-end tools
++ [**Bootstrap**](https://getbootstrap.com/) front-end toolkit
++ [**jsPlumb**](https://docs.jsplumbtoolkit.com/community/) libs for visually connect elements on web pages, using SVG
++ [**Webpack**](https://webpack.js.org/) static module bundler for modern JavaScript applications
 
 ## Code style
 ### Python backend

@@ -27,14 +27,15 @@ let targetEndpoint = {
     anchor: [ 0.5, 0, 0, -1 ],
 };
 
+let quest;
+Quest.loadQuest(1).then(newQuest =>{
+    quest = newQuest;
+     Render.render(quest, instance, sourceEndpoint, targetEndpoint)
+    });
 
-Quest.loadQuest(1).then(quest => Render.render(quest, instance, sourceEndpoint, targetEndpoint));
 
-//console.log();
-/*
 
 export function createNewBlock(type, text, renderFunction){
-    let quest = Quest.getQuest();
     console.log(text);
     let max = quest.data.questions.reduce((acc, curr) => acc.question_id > curr.question_id ? acc : curr);
     let newBlockId = max.question_id + 1;
@@ -59,7 +60,6 @@ export function createNewBlock(type, text, renderFunction){
    return quest.data.questions.slice(-1)[0];
 }
  document.getElementById("addMBtn").onclick = () => {
-    let quest = Quest.getQuest();
     let movements = quest.data.questions.filter(item => item.type == "movement");
     console.log(movements);
     let maxMovement = movements.reduce((acc, curr) =>
@@ -87,4 +87,4 @@ export function createNewBlock(type, text, renderFunction){
 document.getElementById("addQBtn").onclick = () => {
     createNewBlock("open", "Новый открытый вопрос", Render.renderOpenQuestion);
 
-}*/
+}

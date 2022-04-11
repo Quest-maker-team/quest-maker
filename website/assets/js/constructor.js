@@ -27,15 +27,13 @@ let targetEndpoint = {
     anchor: [ 0.5, 0, 0, -1 ],
 };
 
-let quest;
 Quest.loadQuest(1).then(newQuest =>{
-    quest = newQuest;
-     Render.render(quest, instance, sourceEndpoint, targetEndpoint)
-    });
+    let quest = newQuest;
+    Render.render(quest, instance, sourceEndpoint, targetEndpoint);
+    return quest;
+});
 
-
-
-export function createNewBlock(type, text, renderFunction){
+/*export function createNewBlock(type, text, renderFunction){
     console.log(text);
     let max = quest.data.questions.reduce((acc, curr) => acc.question_id > curr.question_id ? acc : curr);
     let newBlockId = max.question_id + 1;
@@ -79,12 +77,10 @@ export function createNewBlock(type, text, renderFunction){
             "time_close": "Sun, 12 Aug 2001 19:00:00 GMT",
             "time_open": "Sun, 12 Aug 2001 09:00:00 GMT"
         }
-    }
-    );
-
+    });
 }
 
 document.getElementById("addQBtn").onclick = () => {
     createNewBlock("open", "Новый открытый вопрос", Render.renderOpenQuestion);
-
 }
+*/

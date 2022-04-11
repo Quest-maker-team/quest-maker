@@ -157,6 +157,10 @@ export class BlockRedactor {
             case "movement":
                 BlockRedactor.createMovementRedactor(form, question);
                 break;
+            case "choice":
+                //TODO: change this to function for "choice"
+                BlockRedactor.createOpenQuestionRedactor(form, question);
+                break;
             default:
                 break;
         }

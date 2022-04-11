@@ -1,3 +1,5 @@
+import {Quest} from "./quest";
+
 export class BlockRedactor {
     static addTextRedactor(form, label, text){
         form.innerHTML +=
@@ -10,13 +12,13 @@ export class BlockRedactor {
     static addAnswerForOpenQuestion(form, answer){
         form.innerHTML +=
             "<div class='col-8'>"+
-                "<input type=\"text\" class=\"form-control\" id=\"answerText\"" +
+                "<input type=\"text\" class=\"form-control\" id=\"answerText" + answer.answer_option_id + "\"" +
                 " value=" + answer.text + ">" +
             "</div>" +
             "<div class=\"col-3\">" +
                 "<div class=\"input-group\">" +
                     "<span class=\"input-group-text\"> Очки </span>" +
-                    "<input type=\"text\" class=\"form-control\" id=\"answerPoints\"" +
+                    "<input type=\"text\" class=\"form-control\" id=\"answerPoints"+ answer.answer_option_id + "\"" +
                     " value=" + answer.points + ">" +
                 "</div>" +
             "</div>" +
@@ -51,6 +53,10 @@ export class BlockRedactor {
             question.text = document.getElementById("formControlTextarea").value;
             document.getElementById(question.question_id).getElementsByClassName("card-text")[0].textContent =
                 question.text;
+            Quest.updateQuestion(question.question_id, JSON.stringify({
+                    type: question.type,
+                    text: question.text
+                })).then(() => console.log('success'));
         };
     }
 
@@ -60,6 +66,10 @@ export class BlockRedactor {
             question.text = document.getElementById("formControlTextarea").value;
             document.getElementById(question.question_id).getElementsByClassName("card-text")[0].textContent =
                 question.text;
+            Quest.updateQuestion(question.question_id, JSON.stringify({
+                    type: question.type,
+                    text: question.text
+                })).then(() => console.log('success'));
         };
     }
 
@@ -76,11 +86,16 @@ export class BlockRedactor {
                 question.text;
             for (let answer of question.answer_options) {
                 let answerId = answer.answer_option_id;
-                answer.text = document.getElementById("answerText").value;
-                answer.points = document.getElementById("answerPoints").value;
+                answer.text = document.getElementById("answerText" + answerId).value;
+                answer.points = document.getElementById("answerPoints" + answerId).value;
 
                 document.getElementById("answer" + answerId).innerText =
-                    document.getElementById("answerText").value;
+                    document.getElementById("answerText" + answerId).value;
+                Quest.updateAnswer(answerId, JSON.stringify({
+                    points: answer.points,
+                    text: answer.text
+                })).then(response =>  console.log(response))
+                .catch(error => console.error(error));
             }
         };
     }

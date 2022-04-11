@@ -36,28 +36,45 @@ export class Quest{
         });
     }
 
-    showQuest(){
-        let containerElement = document.getElementById("container");
+    static updateAnswer(id, answer){
+        let url = 'api/answer/' + id;
+        return new Promise((resolve, reject) => {
+            let xmlhttp = new XMLHttpRequest();
+            xmlhttp.open("PUT", url, true);
 
-        let instance = newInstance({
-            container: containerElement,
+            xmlhttp.onreadystatechange = () => {
+                if (xmlhttp.readyState === XMLHttpRequest.DONE) {
+                    if (xmlhttp.status === 200) {
+                        console.log("resolve");
+                        resolve(xmlhttp.responseText);
+                    } else {
+                        reject(xmlhttp.status);
+                    }
+                }
+            };
+            console.log(answer);
+            xmlhttp.send(answer);
         });
+    }
 
-        let sourceEndpoint = {
-            endpoint: { type: "Dot", options: { radius: 5 } },
-            connector: { type: "Flowchart", options: { cornerRadius: 2 } },
-            source: true,
-        };
+    static updateQuestion(id, question){
+        let url = 'api/question/' + id;
+        return new Promise((resolve, reject) => {
+            let xmlhttp = new XMLHttpRequest();
+            xmlhttp.open("PUT", url, true);
 
-        let targetEndpoint = {
-            endpoint: { type: "Rectangle" },
-            maxConnections: -1,
-            source: false,
-            target: true,
-            connectionsDetachable: true,
-            anchor: [ 0.5, 0, 0, -1 ],
-        };
-
-        Render.render(this, instance, sourceEndpoint, targetEndpoint);
+            xmlhttp.onreadystatechange = () => {
+                if (xmlhttp.readyState === XMLHttpRequest.DONE) {
+                    if (xmlhttp.status === 200) {
+                        console.log("resolve");
+                        resolve(xmlhttp.responseText);
+                    } else {
+                        reject(xmlhttp.status);
+                    }
+                }
+            };
+            console.log(question);
+            xmlhttp.send(question);
+        });
     }
 }

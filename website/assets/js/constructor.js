@@ -27,7 +27,13 @@ let targetEndpoint = {
     anchor: [ 0.5, 0, 0, -1 ],
 };
 
-export function createNewBlock(type, text, renderFunction){
+Quest.loadQuest(1).then(newQuest =>{
+    let quest = newQuest;
+    Render.render(quest, instance, sourceEndpoint, targetEndpoint);
+    return quest;
+});
+
+/*export function createNewBlock(type, text, renderFunction){
     console.log(text);
     let max = quest.data.questions.reduce((acc, curr) => acc.question_id > curr.question_id ? acc : curr);
     let newBlockId = max.question_id + 1;
@@ -39,7 +45,7 @@ export function createNewBlock(type, text, renderFunction){
                 "points": 0,
                 "text": "Ответ"
             }
-        ], 
+        ],
        "files": [],
        "hints": [],
        "movements": [],
@@ -49,16 +55,32 @@ export function createNewBlock(type, text, renderFunction){
    });
    console.log(quest.data.questions.slice(-1)[0]);
    renderFunction(quest, quest.data.questions.slice(-1)[0], instance, sourceEndpoint, targetEndpoint);
+   return quest.data.questions.slice(-1)[0];
 }
-
-let quest = new Quest(TestJSON);
-
  document.getElementById("addMBtn").onclick = () => {
+    let movements = quest.data.questions.filter(item => item.type == "movement");
+    console.log(movements);
+    let maxMovement = movements.reduce((acc, curr) =>
+    acc.movements[0].movement_id >= curr.movements[0].movement_id  ? acc : curr);
+    console.log(maxMovement == undefined);
+    let maxId = (maxMovement != undefined ? maxMovement.movements[0].movement_id+1 : 1);
+    console.log(maxId);
     createNewBlock("movement", "Новое перемещение", Render.renderMovement);
+    console.log(quest.data.questions);
+    quest.data.questions.slice(-1)[0].movements.push({
+        "movement_id": maxId,
+        "next_question_id": undefined,
+        "place": {
+            "coords": "(0.0,0.0)",
+            "place_id": undefined,
+            "radius": 0,
+            "time_close": "Sun, 12 Aug 2001 19:00:00 GMT",
+            "time_open": "Sun, 12 Aug 2001 09:00:00 GMT"
+        }
+    });
 }
 
 document.getElementById("addQBtn").onclick = () => {
     createNewBlock("open", "Новый открытый вопрос", Render.renderOpenQuestion);
 }
-
-Render.Render(quest, instance, sourceEndpoint, targetEndpoint);
+*/

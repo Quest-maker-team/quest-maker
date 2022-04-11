@@ -25,8 +25,9 @@ let targetEndpoint = {
     connectionsDetachable: true,
     anchor: [ 0.5, 0, 0, -1 ],
 };
+
 Quest.loadQuest(2).then(newQuest =>{
-     quest = newQuest;
+    let quest = newQuest;
     Render.render(quest, instance, sourceEndpoint, targetEndpoint);
     /*document.getElementById("save").onclick = () => {
         quest.save().then(() => console.log("save"));

@@ -39,7 +39,7 @@ class EntityType:
             return EntityType.QUEST
         elif e_type_str == 'question':
             return EntityType.QUESTION
-        elif e_type_str == 'answer':
+        elif e_type_str == 'answer_option':
             return EntityType.ANSWER
         elif e_type_str == 'hint':
             return EntityType.HINT

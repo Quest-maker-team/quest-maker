@@ -25,6 +25,28 @@ export class BlockRedactor {
             "</div>"
     }
 
+    static addMovementForMovementBlock(form, question){
+        form.innerHTML +=
+            "<div class='col-8'>"+
+                "<div class='input-group'>" +
+                    "<span class=\"input-group-text\"> Координаты </span>" +
+                    "<input type=\"text\" class=\"form-control\" id=\"moveCoords\" value=" + question.movements[0].place.coords + ">" +
+                "</div>"+
+            "</div>"+
+            "<div class='col-8'>"+
+                "<div class='input-group'>" +
+                    "<span class=\"input-group-text\"> Радиус(м) </span>" +
+                    "<input type=\"text\" class=\"form-control\" id=\"moveRadius\"  value=" +question.movements[0].place.radius + ">" +
+                  "</div>"+
+            "</div>"+ 
+            "<div class=\"col-8\">" +
+                "<div class='input-group'>" +
+                    "<span class=\"input-group-text\"> Очки </span>" +
+                    "<input type=\"text\" class=\"form-control\" id=\"movePoints\"  value=" + question.answer_options[0].points + ">" +
+                "</div>" +
+            "</div>";
+    }
+
     static createStartRedactor(form, question){
         this.addTextRedactor(form, "Приветственное сообщение:", question.text);
         document.getElementById("update").onclick = () => {

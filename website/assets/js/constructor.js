@@ -27,6 +27,12 @@ let targetEndpoint = {
     anchor: [ 0.5, 0, 0, -1 ],
 };
 
+
+Quest.loadQuest(1).then(quest => Render.render(quest, instance, sourceEndpoint, targetEndpoint));
+
+//console.log();
+/*
+
 export function createNewBlock(type, text, renderFunction){
     console.log(text);
     let max = quest.data.questions.reduce((acc, curr) => acc.question_id > curr.question_id ? acc : curr);
@@ -51,14 +57,31 @@ export function createNewBlock(type, text, renderFunction){
    renderFunction(quest, quest.data.questions.slice(-1)[0], instance, sourceEndpoint, targetEndpoint);
 }
 
+
 let quest = new Quest(TestJSON);
+
 
  document.getElementById("addMBtn").onclick = () => {
     createNewBlock("movement", "Новое перемещение", Render.renderMovement);
+
+    console.log(quest.data.questions);
+    quest.data.questions.slice(-1)[0].movements.push({
+        "movement_id": maxId,
+        "next_question_id": undefined,
+        "place": {
+            "coords": "(0.0,0.0)",
+            "place_id": undefined,
+            "radius": 0,
+            "time_close": "Sun, 12 Aug 2001 19:00:00 GMT",
+            "time_open": "Sun, 12 Aug 2001 09:00:00 GMT"
+        }
+    });
 }
 
 document.getElementById("addQBtn").onclick = () => {
     createNewBlock("open", "Новый открытый вопрос", Render.renderOpenQuestion);
+
 }
 
 Render.Render(quest, instance, sourceEndpoint, targetEndpoint);
+}*/

@@ -3,13 +3,18 @@ import {consume} from "@jsplumb/browser-ui";
 
 export class Render{
     static renderBlockBase(question, width, title, position){
+        //console.log("renderBlock");
+        //console.log(width);
+        //console.log(title);
+        console.log(position);
         let block = document.createElement("div");
         block.id = question.question_id;
         block.className = "position-absolute border-2 card";
-        block.style.width = width;
-        block.style.top = position[0];
-        block.style.left = position[1];
-
+        block.style.width = width.toString();
+        block.style.top = position[0].toString();
+        block.style.left = position[1].toString();
+        //console.log("renderBlock");
+        //console.log(question);
         let blockBody = document.createElement("div");
         blockBody.className = "card-body";
         blockBody.innerHTML = "<h5 class=\"card-title text-center\">" + title + "</h5>" +

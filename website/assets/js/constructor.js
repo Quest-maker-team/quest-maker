@@ -5,7 +5,6 @@ import {Quest} from "./quest";
 import { Render } from "./render";
 import {TestJSON} from "./testJSON";
 
-Quest.createQuest();
 let containerElement = document.getElementById("container");
 
 let instance = newInstance({

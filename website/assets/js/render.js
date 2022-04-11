@@ -93,6 +93,8 @@ export class Render{
     }
    
     static Render(quest, instance, sourceEndpoint, targetEndpoint) {
+        console.log("start render")
+        console.log(quest.data)
         Render.renderStart(quest.data.questions.find(question => question.type === "start"), instance, sourceEndpoint);
         Render.renderFinish(quest.data.questions.find(question => question.type === "end"), instance, targetEndpoint);
         Render.renderOpenQuestion(quest, quest.data.questions.find(question => question.type === "open"), instance, sourceEndpoint, targetEndpoint);

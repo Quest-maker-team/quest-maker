@@ -26,14 +26,14 @@ let targetEndpoint = {
     connectionsDetachable: true,
     anchor: [ 0.5, 0, 0, -1 ],
 };
-
+let quest;
 Quest.loadQuest(1).then(newQuest =>{
-    let quest = newQuest;
+     quest = newQuest;
     Render.render(quest, instance, sourceEndpoint, targetEndpoint);
     return quest;
 });
 
-/*export function createNewBlock(type, text, renderFunction){
+export function createNewBlock(type, text, renderFunction){
     console.log(text);
     let max = quest.data.questions.reduce((acc, curr) => acc.question_id > curr.question_id ? acc : curr);
     let newBlockId = max.question_id + 1;
@@ -41,8 +41,9 @@ Quest.loadQuest(1).then(newQuest =>{
     quest.data.questions.push( {
         "answer_options": [
             {
+                "answer_option_id": undefined,
                 "next_question_id": undefined,
-                "points": 0,
+                "points": 0.0,
                 "text": "Ответ"
             }
         ],
@@ -54,8 +55,8 @@ Quest.loadQuest(1).then(newQuest =>{
        "type": type
    });
    console.log(quest.data.questions.slice(-1)[0]);
-   renderFunction(quest, quest.data.questions.slice(-1)[0], instance, sourceEndpoint, targetEndpoint);
-   return quest.data.questions.slice(-1)[0];
+   renderFunction(quest, quest.data.questions.slice(-1)[0], instance, sourceEndpoint, targetEndpoint, "absolute");
+   return newBlockId;
 }
  document.getElementById("addMBtn").onclick = () => {
     let movements = quest.data.questions.filter(item => item.type == "movement");
@@ -65,7 +66,7 @@ Quest.loadQuest(1).then(newQuest =>{
     console.log(maxMovement == undefined);
     let maxId = (maxMovement != undefined ? maxMovement.movements[0].movement_id+1 : 1);
     console.log(maxId);
-    createNewBlock("movement", "Новое перемещение", Render.renderMovement);
+    let questionId = createNewBlock("movement", "Новое перемещение", Render.renderMovement);
     console.log(quest.data.questions);
     quest.data.questions.slice(-1)[0].movements.push({
         "movement_id": maxId,
@@ -78,9 +79,10 @@ Quest.loadQuest(1).then(newQuest =>{
             "time_open": "Sun, 12 Aug 2001 09:00:00 GMT"
         }
     });
+    Quest.pushQuestion(quest, questionId);
 }
 
 document.getElementById("addQBtn").onclick = () => {
-    createNewBlock("open", "Новый открытый вопрос", Render.renderOpenQuestion);
+    let questionId =  createNewBlock("open", "Новый открытый вопрос", Render.renderOpenQuestion);
+    Quest.pushQuestion(quest, questionId);
 }
-*/

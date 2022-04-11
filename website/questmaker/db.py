@@ -469,18 +469,20 @@ def set_author(author):
             return False
 
 
-def set_quest(quest, author_email):
+def set_quest(quest, author_id):
     """
     Add row to table quest in database from Quest object and author email
     :param quest: quest to load in database
-    :param author_email: author email
+    :param author_id: author id
     :return: quest id
     """
     with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+        if quest.__id_in_db is not None:
+            cursor.execute('DELETE FROM quests WHERE quest_id = %s', (quest.__id_in_db, ))
         cursor.execute('INSERT INTO quests (title, author_id, description, password, '
                        'time_open, time_close, lead_time, cover_url, hidden) '
                        'VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING quest_id',
-                       (quest.title, get_author_id_by_email(author_email), quest.description,
+                       (quest.title, author_id, quest.description,
                         quest.password, quest.time_open, quest.time_close, quest.lead_time,
                         quest.cover_url, str(quest.hidden).upper()))
         return cursor.fetchone()['quest_id']

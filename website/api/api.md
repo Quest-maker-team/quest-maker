@@ -1,187 +1,91 @@
 # API description
 For simplicity, answers can contain only this status codes:
 * `200 OK` if success;
-* `400 Bad Request` if there is request syntax error;
+* `400 Bad Request` if there is request syntax or logic error (
+* body contains error message)
+  );
 * `500 Internal Server Error` if server error.
 
 ## GET
-`GET api/quest/{quest_id}`
+* `GET api/db/quest/{quest_id}`
 
-Return JSON with information about quest.
+    Load quest from database and make it available to edit.
+Return JSON with information about quest ([example](example.md)).
 
-JSON contains fields as same as table [quests](../../docs/image/db.png),
-but with 
-field `start_qustion_id` and array `tags`, array 
-and also arrays `questions`, `answer_options`, `movements`
-and `files` with info about related entities
-(**but with values instead of values ids, e.g. `q_type` 
-instead of `q_type_id`**).
+* `GET api/draft/quest/{quest_id}`
+    Load draft quest from user's draft quests. `quest_id` is
+    id in special container, all ids store in table draft_quests.
+Return JSON the same as for database quest.
 
-If quest is public, JSON has `password` field with empty string.
-
-`quest` `question`, `hint`, `answer` objects also contain array
-`files` of file objects.
-
-`question` objects contain arrays `hints`, 
-`answer_option_ids`, `movements_ids`.
-
-`hint` objects contain fields `hint_text`, `fine`
-and array `file` of file objects
-
-`movement` objects contain array `places` of place objects.
-
-Returned JSON example:
-```json
-{
-  "quest_id": 0,
-  "title": "Example",
-  "author": "some author",
-  "description": "This is example quest",
-  "tags": ["example", "test"],
-  "password": "12345abc",
-  "hidden": true,
-  "files": [
-    {
-      "f_id": 1, 
-      "url_for_file": "www.files.com/files/228.jpg",
-      "f_type": "image"
-    }
-  ],
-  "time_open": "2011-01-01 00:00:00",
-  "time_close": "2022-01-01 00:00:00",
-  "lead_time": "6 months",
-  "start_question_id": 0,
-  "questions": [
-    {
-      "question_id": 0,
-      "question_text": "",
-      "q_type": "start",
-      "answer_options_ids": [0],
-      "movements_ids": [],
-      "files": [],
-      "hints": []
-    },
-    {
-      "question_id": 1,
-      "question_text": "first question",
-      "q_type": "choice",
-      "answer_options_ids": [1],
-      "movements_ids": [],
-      "files": [],
-      "hints": [
-        {
-          "hint_id": 1,
-          "hint_text": "hint",
-          "fine": 5,
-          "files": []
-        }
-      ]
-    },
-    {
-      "question_id": 2,
-      "question_text": "",
-      "q_type": "end",
-      "answer_option_ids": [],
-      "movement_ids": [],
-      "files": [],
-      "hints": []
-    }
-  ],
-  "answer_options": [
-    {
-      "option_id": 0,
-      "option_text": "",
-      "points": 0,
-      "next_question_id": 1
-    },
-    {
-      "option_id": 1,
-      "option_text": "right answer",
-      "points": 10,
-      "next_question_id": 2
-    }
-  ]
-}
-```
-   
 ## POST
-Create new entity with params encountered in JSON.
-Return JSON with id of created entity.
+* Create new entity with params encountered in JSON 
+  (**body must contain at least empty JSON**). 
+  [List of available JSON attributes](available_attrs.md).
 
-###Quest is created especially:
+  General schema:
+  `POST api/{entity}`, where `entity` is:
+  * `quest`
+  * `question`
+  * `hint`
+  * `answer_option`
+  * `movement`
+  * `place`
+  * `file`
 
-`POST api/quest`
+  `POST api/quest` return JSON like
+    ```json
+    {
+      "quest_id": 0,
+      "start_question_id": 0,
+      "first_answer_id": 0,
+      "end_question_id": 1
+    } 
+    ```
+  Other return JSON with id of created entity, e.g.:
+  ```json
+  {
+    "answer_option_id": 23
+  }
+  ```
+  
+* Save quest to database and delete from drafts:
 
-Returned JSON also contains first answer id
+    `api/save/{quest_id}`
 
-### Other according to general schema: 
-`api/to/{to_id}/what/[?id=what_id]`
+### PUT
+* Update entity attributes:
 
-(what_id if it has already been created, so without JSON body)
+    `PUT api/entity/{entity_id}`
+    
+    Request body must contain JSON with updating 
+attributes ([list of available JSON attributes](available_attrs.md)).
+Returns `200 OK` if success or status code with error message.
 
-#### Question
-* `POST api/answer_option/{answer_option_id}/question/[?id={question_id}]`
+* Add link between entities
+  (add `entity_what` to `entity_to`):
+    `api/entity_to/{to_id}/entity_what/{what_id}`
 
-or
-
-* `POST api/movement/{movement_id}/question/[?id={question_id}]`
-#### Hint
-* `POST api/question/{question_id}/hint/[?id={hint_id}]`
-#### File
-* `POST api/quest|question|answer|hint/{id}/file/[?id={file_id}]`
-#### Answer option
-* `POST api/question/{question_id}/answer_option/[?id={answer_option_id}]`
-#### Movement
-* `POST api/answer/{answer_id}/movement/[?id={movement_id}]`
-#### Place
-* `POST api/movement/{movement_id}/place/[?id={place_id}]`
-
-Example:
-request `POST api/question/1/answer_option` with body
-```json
-{
-  "option_text": "answer",
-  "points": 10
-}
-```
-adds answer to the question with `id` = 1. If success,
-the server answer will have status code `200 OK` and body
-```json
-{
-  "answer_option_id": 7
-}
-```
-`7` is created answer option id.
-
-## PUT
-Update entity (add or change fields).
-
-General schema:
-`PUT api/entity/{entity_id}`
-
-with body that contains JSON with fields, that will be changed.
-
-Example:
-`PUT api/answer_option/7`
-with body
-```json
-{
-  "option_text": "new text"
-}
-```
-will change option text in answer option with `id` = 7.
-
+    (what_id is id of entity created before with `POST` request).
+    
+    It's possible to add:
+    * `question` to `answer_option`
+    * `question` to `movement`
+    * `file` to `quest`, `question`, `hint`
+    * `answer_option` to `question`
+    * `movement` to `question`
+    * `hint` to `question`
+    * `place` to `movement`
+  
 ## DELETE
 Delete entity.
 
 General schema: `DELETE api/entity/{entity_id}`.
 
-* If the entity is quest, all information will be deleted.
-* If the entity is question then related answers, hints and
-movements will be deleted.
+* If the entity is quest, all graph will be deleted.
+* If the entity is question then related hint and files will be deleted.
 * If the entity is  movement then related place 
 will be deleted.
-* If the entity is answer or movement, quest graph
+* If the entity is question, answer or movement, quest graph
 can become disconnected.
-* With deletion of quest, questions or hints related files 
+* With deletion of quest, question or hint related files 
 will be deleted too.

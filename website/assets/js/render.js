@@ -139,7 +139,7 @@ export class Render{
                 instance.connect({
                     source: instance.selectEndpoints({element: document.getElementById(question.question_id)}).get(1),
                     target: instance.selectEndpoints({
-                        element: document.getElementById(question.answer_options[0].next_question_id)}).get(0)
+                        element: document.getElementById(question.movements[0].next_question_id)}).get(0)
                 });
             }
             else if (question.type !== "end"){

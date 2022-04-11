@@ -63,6 +63,10 @@ In the end of pull request name must be `#<ZenHub isssue number>`.
 + <a href="https://devdocs.io/html/"><b>HTML</b></a> for website markup
 + <a href="https://devdocs.io/css/"><b>CSS</b></a> for styling website
 + <a href="https://devdocs.io/javascript/"><b>JavaScript</b></a> for webside frontend scripts
++ <a href="https://www.npmjs.com/"><b>Node package manager<b></a> for installing all front-end tools
++ <a href="https://getbootstrap.com/"><b>Bootstrap</b></a> front-end toolkit
++ <a href="https://docs.jsplumbtoolkit.com/community/lib/anchors"><b>jsPlumb</b></a> libs for visually connect elements on web pages, using SVG
++ <a href="https://webpack.js.org/"><b>Webpack<b></a> a static module bundler for modern JavaScript applications
 
 ## Code style
 ### Python backend

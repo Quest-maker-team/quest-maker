@@ -55,13 +55,21 @@ export function createNewBlock(type, text, renderFunction){
 let quest = new Quest(TestJSON);
 
  document.getElementById("addMBtn").onclick = () => {
+    let movements = quest.data.questions.filter(item => item.type == "movement");
+    console.log(movements);
+    let maxMovement = movements.reduce((acc, curr) => 
+    acc.movements[0].movement_id >= curr.movements[0].movement_id  ? acc : curr);
+    console.log(maxMovement == undefined);
+    let maxId = (maxMovement != undefined ? maxMovement.movements[0].movement_id+1 : 1);
+    console.log(maxId);
     createNewBlock("movement", "Новое перемещение", Render.renderMovement);
-    quest.questions.slice(-1)[0].movements.push({
-        "movement_id": -1,
-        "next_question_id": -1,
+    console.log(quest.data.questions);
+    quest.data.questions.slice(-1)[0].movements.push({
+        "movement_id": maxId,
+        "next_question_id": undefined,
         "place": {
             "coords": "(0.0,0.0)",
-            "place_id": -1,
+            "place_id": undefined,
             "radius": 0,
             "time_close": "Sun, 12 Aug 2001 19:00:00 GMT",
             "time_open": "Sun, 12 Aug 2001 09:00:00 GMT"

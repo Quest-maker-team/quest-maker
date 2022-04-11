@@ -73,7 +73,7 @@ export class Render{
             answerTable.append(tableElement);
             instance.addEndpoint(tableElement, {anchor: ["Right", "Left"]}, sourceEndpoint);
         }
-       
+
         Render.addDeleteButton(quest, block, instance, answerTable.childNodes);
 
         instance.addEndpoint(block, {anchor: "Top"}, targetEndpoint);
@@ -91,8 +91,8 @@ export class Render{
 
         return block;
     }
-   
-    static Render(quest, instance, sourceEndpoint, targetEndpoint) {
+
+    static render(quest, instance, sourceEndpoint, targetEndpoint) {
         Render.renderStart(quest.data.questions.find(question => question.type === "start"), instance, sourceEndpoint);
         Render.renderFinish(quest.data.questions.find(question => question.type === "end"), instance, targetEndpoint);
         Render.renderOpenQuestion(quest, quest.data.questions.find(question => question.type === "open"), instance, sourceEndpoint, targetEndpoint);

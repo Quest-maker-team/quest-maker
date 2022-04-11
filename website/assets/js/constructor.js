@@ -1,9 +1,8 @@
 import { newInstance } from "@jsplumb/browser-ui";
 import { FlowchartConnector } from "@jsplumb/connector-flowchart";
-//import { Render } from "./render"
 import {Quest} from "./quest";
 import { Render } from "./render";
-import {TestJSON} from "./testJSON";
+import { EVENT_CONNECTION_DETACHED, EVENT_CONNECTION } from "@jsplumb/core";
 
 let containerElement = document.getElementById("container");
 
@@ -34,6 +33,35 @@ Quest.loadQuest(2).then(newQuest =>{
         quest.save().then(() => console.log("save"));
     }*/
     return quest;
+}).then(quest => {
+    instance.bind(EVENT_CONNECTION, (connection) => {
+        console.log("connect");
+        console.log(connection);
+        let source = connection.source;
+        let target = connection.target;
+        let typeTarget = "question";
+        let typeSource;
+        let sourceId = source.id;
+        if (source.id.includes("answer")) {
+            console.log("answer");
+            typeSource = "answer_options";
+            sourceId = source.id.slice("answer".length);
+        }
+        else {
+            console.log(quest.data.questions.find(question => question.question_id == sourceId));
+            typeSource = quest.data.questions.find(question => question.question_id == sourceId).type;
+            if (typeSource === "movement")
+                typeSource = "place";
+            else
+                typeSource = "question";
+        }
+        Quest.connect(typeSource, typeTarget, sourceId, target.id).then(() => console.log("success"));
+    });
+    instance.bind(EVENT_CONNECTION_DETACHED, (connection) => {
+        console.log("disconnect");
+        console.log(connection);
+    });
+
 });
 
 /*export function createNewBlock(type, text, renderFunction){

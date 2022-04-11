@@ -26,6 +26,7 @@ export class BlockRedactor {
                 "<button class=\"btn btn-danger\">-</button>" +
             "</div>"
     }
+
     static addMovementForMovementBlock(form, question){
         form.innerHTML +=
             "<div class='col-8'>"+
@@ -47,6 +48,7 @@ export class BlockRedactor {
                 "</div>" +
             "</div>";
     }
+
     static createStartRedactor(form, question){
         this.addTextRedactor(form, "Приветственное сообщение:", question.text);
         document.getElementById("update").onclick = () => {
@@ -79,7 +81,13 @@ export class BlockRedactor {
         for (let answer of question.answer_options) {
             this.addAnswerForOpenQuestion(form, answer);
         }
-        form.innerHTML += "<div class='col-auto'><button type='button' class='btn btn-primary'>Добавить ответ</button></div>";
+        form.innerHTML +=
+            "<div class='col-auto'><button type='button' class='btn btn-primary' id='addAnswer'>" +
+                "Добавить ответ" +
+            "</button></div>";
+        document.getElementById("addAnswer").onclick = () => {
+
+        }
         document.getElementById("update").onclick = () => {
             question.text = document.getElementById("formControlTextarea").value;
             document.getElementById(question.question_id).getElementsByClassName("card-text")[0].textContent =
@@ -94,8 +102,7 @@ export class BlockRedactor {
                 Quest.updateAnswer(answerId, JSON.stringify({
                     points: answer.points,
                     text: answer.text
-                })).then(response =>  console.log(response))
-                .catch(error => console.error(error));
+                })).then(response =>  console.log(response));
             }
         };
     }

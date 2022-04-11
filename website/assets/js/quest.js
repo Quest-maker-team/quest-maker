@@ -78,6 +78,48 @@ export class Quest{
         });
     }
 
+    static connect(type1, type2, id1, id2){
+        let url = 'api/' + type1 + '/' + id1 + '/' + type2 + '/' + id2;
+
+        return new Promise((resolve, reject) => {
+            let xmlhttp = new XMLHttpRequest();
+            xmlhttp.open("PUT", url, true);
+
+            xmlhttp.onreadystatechange = () => {
+                if (xmlhttp.readyState === XMLHttpRequest.DONE) {
+                    if (xmlhttp.status === 200) {
+                        console.log("resolve");
+                        resolve(xmlhttp.responseText);
+                    } else {
+                        reject(xmlhttp.status);
+                    }
+                }
+            };
+            xmlhttp.send();
+        });
+    }
+
+    static disconnect(){
+        let url = 'api/' + type1 + '/' + id1 + '/' + type2 + '/' + id2;
+
+        return new Promise((resolve, reject) => {
+            let xmlhttp = new XMLHttpRequest();
+            xmlhttp.open("DELETE", url, true);
+
+            xmlhttp.onreadystatechange = () => {
+                if (xmlhttp.readyState === XMLHttpRequest.DONE) {
+                    if (xmlhttp.status === 200) {
+                        console.log("resolve");
+                        resolve(xmlhttp.responseText);
+                    } else {
+                        reject(xmlhttp.status);
+                    }
+                }
+            };
+            xmlhttp.send();
+        });
+    }
+
     save(){
         let url = 'api/save/' + this.data.quest_id;
         return new Promise((resolve, reject) => {

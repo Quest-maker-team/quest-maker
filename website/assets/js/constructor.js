@@ -26,7 +26,7 @@ let targetEndpoint = {
     anchor: [ 0.5, 0, 0, -1 ],
 };
 
-Quest.loadQuest(2).then(newQuest =>{
+Quest.loadQuest(2).then(newQuest => {
     let quest = newQuest;
     Render.render(quest, instance, sourceEndpoint, targetEndpoint);
     return quest;

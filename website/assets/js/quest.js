@@ -6,6 +6,30 @@ export class Quest{
        this.data = data;
     }
 
+    static makeRequest(method, url, data){
+        return new Promise(function (resolve, reject) {
+            let xmlhttp = new XMLHttpRequest();
+            xmlhttp.open(method, url);
+            xmlhttp.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
+
+            xmlhttp.onreadystatechange = () => {
+                if (xmlhttp.readyState === XMLHttpRequest.DONE) {
+                    if (xmlhttp.status === 200) {
+                        resolve(xmlhttp.response);
+                    } else {
+                        //console.log("fail to load");
+                        reject(xmlhttp.status);
+                    }
+                }
+            };
+
+            if (data !== undefined)
+                xmlhttp.send(data);
+            else
+                xmlhttp.send();
+        });
+    }
+    
     static makePostRequest(url, data){
         return new Promise(function (resolve, reject) {
             let xmlhttp = new XMLHttpRequest();
@@ -31,72 +55,9 @@ export class Quest{
         });
     }
 
-    static makeGetRequest(url) {
-        return new Promise(function (resolve, reject) {
-            let xmlhttp = new XMLHttpRequest();
-            xmlhttp.open("GET", url);
-
-            xmlhttp.onreadystatechange = () => {
-                if (xmlhttp.readyState === XMLHttpRequest.DONE) {
-                    if (xmlhttp.status === 200) {
-                        resolve(xmlhttp.response);
-                    } else {
-                        //console.log("fail to load");
-                        reject(xmlhttp.status);
-                    }
-                }
-            };
-
-            xmlhttp.send();
-            //console.log("GET");
-        });
-    }
-
-    static makePutRequest(url, data) {
-        return new Promise((resolve, reject) => {
-            let xmlhttp = new XMLHttpRequest();
-            xmlhttp.open("PUT", url, true);
-            //console.log(url);
-            //console.log(data);
-            xmlhttp.onreadystatechange = () => {
-                if (xmlhttp.readyState === XMLHttpRequest.DONE) {
-                    if (xmlhttp.status === 200) {
-                        console.log("resolve");
-                        resolve(xmlhttp.responseText);
-                    } else {
-                        reject(xmlhttp.status);
-                    }
-                }
-            };
-            if (data !== undefined)
-                xmlhttp.send(data);
-            else
-                xmlhttp.send();
-        });
-    }
-
-    static makeDeleteRequest(url) {
-        return new Promise((resolve, reject) => {
-            let xmlhttp = new XMLHttpRequest();
-            xmlhttp.open("PUT", url, true);
-            //console.log(url);
-            xmlhttp.onreadystatechange = () => {
-                if (xmlhttp.readyState === XMLHttpRequest.DONE) {
-                    if (xmlhttp.status === 200) {
-                        console.log("resolve");
-                        resolve(xmlhttp.responseText);
-                    } else {
-                        reject(xmlhttp.status);
-                    }
-                }
-            };
-            xmlhttp.send();
-        });
-    }
-
     static loadQuest(id){
         let url = '/api/db/quest/' + id.toString();
-        return Quest.makeGetRequest(url).then(data => {
+        return Quest.makeRequest("GET", url).then(data => {
             console.log("success");
             return new Quest(JSON.parse(data));
         });
@@ -104,22 +65,22 @@ export class Quest{
 
     static updateAnswer(id, answer){
         let url = 'api/answer/' + id;
-        return Quest.makePutRequest(url, answer);
+        return Quest.makeRequest("PUT", url, answer);
     }
 
     static updateQuestion(id, question){
         let url = 'api/question/' + id;
-        return Quest.makePutRequest(url, question);
+        return Quest.makeRequest("PUT", url, question);
     }
 
     static connect(type1, type2, id1, id2){
         let url = 'api/' + type1 + '/' + id1 + '/' + type2 + '/' + id2;
-        return Quest.makePutRequest(url);
+        return Quest.makeRequest("PUT", url);
     }
 
     static disconnect(type1, type2, id1, id2){
         let url = 'api/' + type1 + '/' + id1 + '/' + type2 + '/' + id2;
-        return Quest.makeDeleteRequest(url);
+        return Quest.makeRequest("DELETE", url);
     }
 
     save(){

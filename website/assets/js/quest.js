@@ -1,5 +1,4 @@
 import {newInstance} from "@jsplumb/browser-ui";
-//import { Render } from "./render"
 import {Render} from "./render";
 
 export class Quest{
@@ -24,6 +23,7 @@ export class Quest{
             xmlhttp.send();
         });
     }
+
     static makePostRequest(url, json, resolve){
         return new Promise(function (resolve, reject) {
             let xmlhttp = new XMLHttpRequest();
@@ -156,6 +156,7 @@ export class Quest{
             xmlhttp.send();
         });
     }
+
     static pushQuestion(quest, id){
         let url = '/api/';
         let questionToSend  = quest.data.questions.find(question => question.question_id===id);
@@ -180,6 +181,7 @@ export class Quest{
         });    
                 
     }
+
     static pushMovement(quest, id, moveId){
         let url = '/api/';
         let questionToSend  = quest.data.questions.find(question => question.question_id===id);

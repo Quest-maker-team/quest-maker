@@ -108,7 +108,6 @@ export class BlockRedactor {
     }
 
     static createMovementRedactor(form, question){
-
         BlockRedactor.addTextRedactor(form, "Перемещение", question.text);
         form.innerHTML+=
         '<div class="z-depth-1-half map-container" style="height: 500px" id="map"></div>';

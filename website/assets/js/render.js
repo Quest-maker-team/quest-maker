@@ -3,9 +3,6 @@ import {consume} from "@jsplumb/browser-ui";
 
 export class Render{
     static renderBlockBase(question, width, title, position){
-        //console.log("renderBlock");
-        //console.log(width);
-        //console.log(title);
         console.log(position);
         let block = document.createElement("div");
         block.id = question.question_id;
@@ -13,8 +10,6 @@ export class Render{
         block.style.width = width.toString();
         block.style.top = position[0].toString();
         block.style.left = position[1].toString();
-        //console.log("renderBlock");
-        //console.log(question);
         let blockBody = document.createElement("div");
         blockBody.className = "card-body";
         blockBody.innerHTML = "<h5 class=\"card-title text-center\">" + title + "</h5>" +
@@ -91,7 +86,7 @@ export class Render{
         return block;
     }
 
-    static  renderMovement(quest, question, instance, sourceEndpoint, targetEndpoint, position){
+    static renderMovement(quest, question, instance, sourceEndpoint, targetEndpoint, position){
         let block = Render.renderBlockBase(question, "15rem", "Перемещение", position);
 
         Render.addDeleteButton(quest, block, instance);
@@ -127,6 +122,7 @@ export class Render{
                 break;
             }
         }
+        //Connect
         for (let question of quest.data.questions) {
             if (question.type === "start") {
                 instance.connect({

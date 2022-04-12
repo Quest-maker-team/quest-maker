@@ -29,11 +29,11 @@ let targetEndpoint = {
 Quest.loadQuest(2).then(newQuest =>{
     let quest = newQuest;
     Render.render(quest, instance, sourceEndpoint, targetEndpoint);
+    return quest;
+}).then(quest => {
     /*document.getElementById("save").onclick = () => {
         quest.save().then(() => console.log("save"));
     }*/
-    return quest;
-}).then(quest => {
     instance.bind(EVENT_CONNECTION, (connection) => {
         console.log("connect");
         console.log(connection);

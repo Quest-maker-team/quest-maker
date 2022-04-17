@@ -4,9 +4,9 @@
   "version": "0.3.0",
   "private": "true",
   "scripts": {
-    "build": "set NODE_ENV='production' && webpack --progress --color",
+    "build": "set NODE_ENV=production && webpack --progress --color",
     "start": "concurrently -n \"WEBPACK,FLASK\" -c \"bgBlue.bold,bgMagenta.bold\" \"npm run webpack-dev\" \"npm run flask-server\"",
-    "webpack-dev": "set NODE_ENV='debug' && webpack",
+    "webpack-dev": "set NODE_ENV=debug && webpack",
     "flask-server": "flask run",
     "lint": "eslint \"assets/js/*.js\""
   },
@@ -32,6 +32,7 @@
     "eslint": "^8.13.0",
     "eslint-config-google": "^0.14.0",
     "file-loader": "^6.2.0",
+    "ignore-emit-webpack-plugin": "^2.0.6",
     "mini-css-extract-plugin": "^2.6.0",
     "node-sass": "^7.0.1",
     "postcss": "^8.4.12",

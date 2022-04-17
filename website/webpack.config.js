@@ -6,34 +6,11 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const { CleanWebpackPlugin }  = require('clean-webpack-plugin');
 const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
-
-// Get local IP Address
-let os = require('os');
-let interfaces = os.networkInterfaces();
-let addresses = [];
-for (let k in interfaces) {
-    for (let k2 in interfaces[k]) {
-        let address = interfaces[k][k2];
-        if (address.family === 'IPv4' && !address.internal) {
-            addresses.push(address.address);
-        }
-    }
-}
-
-ip_address = addresses[0]
+const { IgnoreEmitPlugin } = require('ignore-emit-webpack-plugin');
 
 // take debug mode from the environment
-const debug = (process.env.NODE_ENV !== 'production');
-const hashType = debug ? '[hash]': '[contentHash]';
-console.log(debug);
-let publicHost
-
-if (ip_address !== undefined) {
-    publicHost = debug ? 'http://' + ip_address + ':2992' : '';
-}
-else {
-    publicHost = debug ? 'http://0.0.0.0:2992' : '';
-}
+const debug = (process.env.NODE_ENV.trim() !== 'production');
+const hashType = debug ? '[fullhash]': '[contenthash]';
 
 module.exports = {
   // configuration
@@ -41,20 +18,31 @@ module.exports = {
   mode: debug ? 'development' : 'production',
   context: __dirname,
   entry: {
-    main_js: path.join(__dirname, 'assets', 'js', 'constructor.js'),
+    constructor_js: path.join(__dirname, 'assets', 'js', 'constructor.js'),
+    jquery_js: path.join(__dirname, 'assets', 'js', 'jquery','jquery.min.js'),
+    bootstrap_js: path.join(__dirname, 'assets', 'js', 'bootstrap','bootstrap.bundle.min.js'),
+    bootstrap_css: path.join(__dirname, 'assets', 'css', 'bootstrap','bootstrap.min.css'),
+    index_css: path.join(__dirname, 'assets', 'css', 'index.css'),
+    forms_css: path.join(__dirname, 'assets', 'css', 'forms.css'),
+    roboto_css: path.join(__dirname, 'assets', 'css', 'roboto.css'),
+    style_css: path.join(__dirname, 'assets', 'css', 'style.css'),
   },
   output: {
     path: path.resolve(__dirname, 'questmaker', 'static'),
-    publicPath: `${publicHost}/static/`,
+    publicPath: '/static/',
     filename: "js/[name]." + hashType + ".js",
-    chunkFilename: "js/[name]." + hashType + ".chunk.js"
+    chunkFilename: "js/[name]." + hashType + ".chunk.js",
+    assetModuleFilename: 'fonts/[name][hash][ext]',
   },
   optimization: {
-    // minimize: true,
     minimizer: [
-      new CssMinimizerPlugin(),
+      new CssMinimizerPlugin({
+        test: /\.css$/i,
+        exclude: /bootstrap/,
+      }),
       new TerserPlugin({
-        test: /\.js(\?.*)?$/i,
+        test: /\.js$/i,
+        exclude: /(bootstrap|jquery)_js\.[^\.]*\.js$/i,
       }),
     ],
   },
@@ -62,11 +50,10 @@ module.exports = {
     rules: [
         {
           test: /\.js$/,
-          //exclude: /node_modules/,
           use: 'babel-loader',
         },
         {
-          test: /\.(?:ico|gif|png|jpg|jpeg|svg|woff(2)?|eot|ttf|otf)$/i,
+          test: /\.(?:ico|gif|png|jpg|jpeg|svg)$/i,
           use: [
             {
               loader: 'file-loader',
@@ -77,9 +64,25 @@ module.exports = {
           ],
         },
         {
+          test: /\.(woff|woff2|eot|ttf|otf)$/i,
+          type: 'asset/resource',
+        },
+        {
             test: /\.(scss|css)$/,
+            exclude: /bootstrap/,
             use: [MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader', 'sass-loader'],
         },
+        {
+          test: /bootstrap[^\.]*(\.[^\.]*)*.css$/,
+          use: [
+            {
+              loader: 'file-loader',
+              options: {
+                name: 'css/[name].' + hashType + '.css',
+              },
+            },
+          ],
+      },
     ],
   },
   plugins: [
@@ -89,6 +92,7 @@ module.exports = {
         '!manifest.json',
     ],
     }),
+    new IgnoreEmitPlugin(/(?<=.*_css\s*).*?(?=\s*js)/gs),
     new MiniCssExtractPlugin({ filename: 'css/[name].' + hashType + '.css', }),
     new WebpackManifestPlugin({ publicPath:"/static/" }),
   ],

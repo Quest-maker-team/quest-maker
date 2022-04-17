@@ -2,15 +2,15 @@
 <html>
 <head>
     <title>{{ title }}</title>
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+    <link rel="icon" type="image/x-icon" href="{{ webpack_url_for('img/favicon.ico') }}">
     <meta charset="utf-8">
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrup/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ webpack_url_for('css/bootstrap.min.css') }}">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/roboto.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <script src="{{ url_for('static', filename='script/jquery/jquery.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ webpack_url_for('roboto_css.css') }}">
+    <link rel="stylesheet" href="{{ webpack_url_for('style_css.css') }}">
+    <script src="{{ webpack_url_for('jquery_js.js') }}"></script>
     {% block styles %}
     {% endblock %}
 </head>
@@ -23,6 +23,6 @@
     {% endblock %}
     {% block script %}
     {% endblock %}
-    <script src="{{ url_for('static', filename='script/bootstrup/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ webpack_url_for('bootstrap_js.js') }}"></script>
 </body>
 </html>

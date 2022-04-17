@@ -2,15 +2,22 @@
 {% set active_page = active_page|default('constructor') -%}
 
 {% block content %}
+
+<script src="https://api-maps.yandex.ru/2.1/?apikey=57bad925-98eb-4a1e-8bf9-78a2f0a99e22&lang=ru_RU" type="text/javascript"></script>
     <main class="min-vh-100 min-vw-100 position-relative d-flex">
-        <div class="position-absolute d-flex min-vw-100 min-vh-100 flex-fill" style="top: 88px;">
-            <div class="mt-2 position-relative" id="container">
-                <ul class="section-nav">
+        <div class="position-absolute d-flex min-vw-100 min-vh-100">
+            <div class="col-1" style="box-sizing: border-box; padding-top: 88px">
+                <div class="p-2">
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal">
                         +
                     </button>
-                </ul>
-                <!-- Модальное окно-->
+                </div>
+            </div>
+            <div class="mt-2 position-relative" id="container" style="top: 88px;">
+                <!-- Container for block rendered -->
+            </div>
+
+            <!-- Модальное окно-->
                 <div class="modal fade" id="modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
                       <div class="modal-content">
@@ -32,8 +39,30 @@
                       </div>
                     </div>
                 </div>
+
+            <div class="modal fade" id="redactor" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="staticBackdropLabel">Редактировать</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+         
+                      <form id="redactorForm" class="row g-3 p-2">
+                    
+                      </form>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="update">Сохранить</button>
+                  </div>
+                </div>
+              </div>
             </div>
         </div>
+
+
     </main>
 {% endblock %}
 
@@ -41,5 +70,5 @@
 {% endblock %}
 
 {% block script %}
-    <script id="main_js" src="{{ webpack_url_for('main_js.js') }}"></script>
+    <script id="main_js" src="{{ webpack_url_for('constructor_js.js') }}"></script>
 {% endblock %}

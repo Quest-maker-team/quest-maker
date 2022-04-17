@@ -1,35 +1,63 @@
+import {newInstance} from "@jsplumb/browser-ui";
+//import { Render } from "./render"
+import {Render} from "./render";
+
 export class Quest{
     constructor(data) {
-        this.data = data;
+       this.data = data;
     }
 
-    DeleteQuestion(id, questions){
-        questions.splice(questions.indexOf(questions.find(question => question.question_id == id)), 1);
+    static makeLoadRequest(url){
+        return new Promise(function (resolve, reject) {
+            let xmlhttp = new XMLHttpRequest();
+
+            xmlhttp.onreadystatechange = () => {
+                if (xmlhttp.readyState === XMLHttpRequest.DONE) {
+                    if (xmlhttp.status === 200) {
+                        resolve(xmlhttp.responseText);
+                    } else {
+                        reject(xmlhttp.status);
+                    }
+                }
+            };
+            xmlhttp.open("GET", url, true);
+            xmlhttp.send();
+        });
     }
 
-    AddDeleteButton(block, instance, answerElements){
-        let deleteButton = document.createElement("button");
-        deleteButton.id = "btn" + block.id;
-        deleteButton.className = "btn-close btn-danger";
-        deleteButton.style.position = "absolute";
-        deleteButton.style.top = "0";
-        deleteButton.style.right = "0";
-        deleteButton.onclick = () => {
-            console.log(answerElements !== undefined);
-            if (answerElements !== undefined)
-            for (let answerElement of answerElements) {
-                console.log(answerElement);
-                instance.deleteConnectionsForElement(answerElement);
-                instance.selectEndpoints({element: answerElement}).deleteAll();
-                delete instance.getManagedElements()[answerElement.id];
-            }
-            instance.deleteConnectionsForElement(block);
+    static loadQuest(id){
+        let url = '/api/db/quest/' + id.toString();
 
-            instance.selectEndpoints({element: block}).deleteAll();
-            delete instance.getManagedElements()[block.id];
-            block.parentElement.removeChild(block);
-            this.DeleteQuestion(block.id, this.data.questions);
+        return new Promise((resolve, reject) => {
+            resolve(this.makeLoadRequest(url).then(data => {
+                console.log("success");
+                return new Quest(JSON.parse(data));
+            }));
+        });
+    }
+
+    showQuest(){
+        let containerElement = document.getElementById("container");
+
+        let instance = newInstance({
+            container: containerElement,
+        });
+
+        let sourceEndpoint = {
+            endpoint: { type: "Dot", options: { radius: 5 } },
+            connector: { type: "Flowchart", options: { cornerRadius: 2 } },
+            source: true,
         };
-        block.append(deleteButton);
+
+        let targetEndpoint = {
+            endpoint: { type: "Rectangle" },
+            maxConnections: -1,
+            source: false,
+            target: true,
+            connectionsDetachable: true,
+            anchor: [ 0.5, 0, 0, -1 ],
+        };
+
+        Render.render(this, instance, sourceEndpoint, targetEndpoint);
     }
 }

@@ -304,32 +304,32 @@ class Quest:
         :param message: message from user
         :param latitude: geoposition latitude
         :param longitude: geoposition longitude
-        :return (False, <message to send>, <list of files>) if quest need continue
-        :return (True, <message to send>, <list of files>) if quest is over
+        :return (False, <message to send>, <list of files>, <point id>) if quest need continue
+        :return (True, <message to send>, <list of files>, 0) if quest is over
         """
         if self.cur_point is None:
-            return (True, "Ошибка в структуре квеста.", [])
+            return (True, "Ошибка в структуре квеста.", [], 0)
 
         if not check_time_limits(self.time_start, self.time_limits):
-            return (True, "Время активности квеста закончилось.", [])
+            return (True, "Время активности квеста закончилось.", [], 0)
 
         (score_to_add, point) = self.cur_point.get_next(message, latitude, longitude)
         if self.cur_point.type == 'movement' and point is None:
             if score_to_add != None:
-                return (False, "Неверное место или время.", [])
+                return (False, "Неверное место или время.", [], 0)
             else:
-                return (True, "Ошибка в структуре квеста.", [])
+                return (True, "Ошибка в структуре квеста.", [], 0)
         self.score += score_to_add
         if point is None:
-            return (False, "Неправильный ответ.", [])
+            return (False, "Неправильный ответ.", [], 0)
         
         if point.type == 'end':
-            return (True, point.msg, point.files)
+            return (True, point.msg, point.files, 0)
         elif (point.type == 'open' or point.type == 'choice') and point.next_points is None:
-            return (True, "Ошибка в структуре квеста.", [])
+            return (True, "Ошибка в структуре квеста.", [], 0)
         
         self.cur_point = point
-        return (False, point.msg, point.files)
+        return (False, point.msg, point.files, point.id)
 
 
 class QuestStates(StatesGroup):
@@ -585,7 +585,7 @@ async def skip_handler(message: types.Message, state: FSMContext):
         if 'quest' in data:
             if data['quest'].cur_point.type == "open" or data['quest'].cur_point.type == "choice":
                 if 'skip' in data['quest'].cur_point.next_points:
-                    (quest_ends, msg, files) = data['quest'].next_point('skip')
+                    (quest_ends, msg, files, id) = data['quest'].next_point('skip')
                     if data['quest'].cur_point.type == "choice":
                         keyboard = create_keyboard(edit_options(data['quest'].cur_point.next_points))
                         await send_files(message, msg, files, keyboard)
@@ -613,12 +613,15 @@ async def point_proc(message: types.Message, state: FSMContext, latitude, longit
     :param longitude: geoposition longitude
     """
     async with state.proxy() as data:
-        (quest_ends, msg, files) = data['quest'].next_point(message.text, latitude=latitude, longitude=longitude)
+        (quest_ends, msg, files, id) = data['quest'].next_point(message.text, latitude=latitude, longitude=longitude)
         if data['quest'].cur_point.type == "choice":
             keyboard = create_keyboard(edit_options(data['quest'].cur_point.next_points))
             await send_files(message, msg, files, keyboard)
         elif data['quest'].cur_point.type == "movement":
             await send_files(message, msg, files, create_movement_keyboard(QuestPoint.no_geo_msg))
+            movement_info = get_movement(id)
+            coords = re.findall("\d+.\d+", movement_info[1])
+            await bot.send_location(message.chat.id, coords[0], coords[1])
         else:
             await send_files(message, msg, files, ReplyKeyboardRemove())
         if quest_ends == True:

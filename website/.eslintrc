@@ -1,0 +1,7 @@
+{
+    "parser": "@babel/eslint-parser",
+    "extends": ["google"],
+    "rules": {
+      "linebreak-style": 0
+    }
+  }

@@ -141,4 +141,8 @@ quest_containers/
 node_modules/
 package-lock.json
 
-
+# Frontend build
+static/js/
+static/img/
+static/css/
+static/fonts/

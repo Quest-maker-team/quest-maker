@@ -3,7 +3,13 @@ import { FlowchartConnector } from "@jsplumb/connector-flowchart";
 //import { Render } from "./render"
 import {Quest} from "./quest";
 import { Render } from "./render";
-import {TestJSON} from "./testJSON";
+
+// load static images
+require.context(
+    '../', // context folder
+    true, // include subdirectories
+    /\.(svg|png|jpe?g|gif|ico)(\?.*)?$/i, // RegExp
+);
 
 let containerElement = document.getElementById("container");
 

@@ -19,11 +19,11 @@ After moderation all users can choose quest to play.
 + [System requirements](docs/system_requirements.md);
 
 ## Staff
-+ Baev Daniil
-+ Vorotnikov Andrey
-+ Pavlov Ilya
-+ Chevykalov Grigory
-+ Shvarts Aleksandr
++ [Baev Daniil](https://github.com/BaevDaniil)
++ [Vorotnikov Andrey](https://github.com/aVorotnikov)
++ [Pavlov Ilya](https://github.com/IlyaP01)
++ [Chevykalov Grigory](https://github.com/gchevykalov)
++ [Shvarts Aleksandr](https://github.com/AleksandrShvartz)
 
 ## Rules for git workflow
 `main` branch is a main project branch. Contains current project version.

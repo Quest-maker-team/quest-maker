@@ -14,7 +14,7 @@ const hashType = debug ? '[fullhash]': '[contenthash]';
 
 module.exports = {
   // configuration
-  // watch: true,
+  watch: true,
   mode: debug ? 'development' : 'production',
   context: __dirname,
   entry: {
@@ -42,7 +42,6 @@ module.exports = {
       }),
       new TerserPlugin({
         test: /\.js$/i,
-        exclude: /(bootstrap|jquery)_js\.[^\.]*\.js$/i,
       }),
     ],
   },

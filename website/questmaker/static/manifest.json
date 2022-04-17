@@ -1,3 +1,8 @@
 {
-  "main_js.js": "/static/script/main_js.d9fbc1d8d2b7a1bf597b.js"
+  "main_js.css": "/static/css/main_js.bc8f88dcf91223f82637.css",
+  "main_js.js": "/static/js/main_js.bc8f88dcf91223f82637.js",
+  "img/telegram_scrin_on_phone.jpg": "/static/img/telegram_scrin_on_phone.c8d918b54cc9a541a09f523b33beeca3.jpg",
+  "img/img1.jpg": "/static/img/img1.d726711a429f6db14fb54fa81420ccaa.jpg",
+  "img/profile_defolt.png": "/static/img/profile_defolt.7058d8507900218215d7f274f23fa4f9.png",
+  "img/favicon.ico": "/static/img/favicon.3c12d881b58b8d3c3a244b67e5c425b4.ico"
 }

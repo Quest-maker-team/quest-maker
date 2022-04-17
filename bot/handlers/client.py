@@ -657,6 +657,17 @@ async def handle_location(message: types.Message, state: FSMContext):
     await point_proc(message, state, lat, lon)
 
 
+async def cmd_help(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        if 'quest' in data:
+            await message.answer('Квест "' + data['quest'].name + '" уже запущен. '
+                                 'Чтобы закончить напишите /end, '
+                                 'чтобы получить количество баллов - /score, '
+                                 'чтобы получить подсказку - /tip, '
+                                 'чтобы попытаться пропустить точку - /skip.')
+        else:
+            await message.answer('Выберите квест.')
+
 def register_client_handlers(dp: Dispatcher):
     """Register message handlers.
     :param dp: dispatcher
@@ -667,6 +678,8 @@ def register_client_handlers(dp: Dispatcher):
     dp.register_message_handler(score_handler, state='*', commands="score")
     dp.register_message_handler(tip_handler, state='*', commands="tip")
     dp.register_message_handler(skip_handler, state='*', commands="skip")
+    dp.register_message_handler(skip_handler, state='*', commands="skip")
+    dp.register_message_handler(cmd_help, state='*', commands="help")
     dp.register_message_handler(name_quest, state=QuestStates.naming)
     dp.register_message_handler(load_quest, state=QuestStates.loading)
     dp.register_message_handler(quest_proc, state=QuestStates.session)

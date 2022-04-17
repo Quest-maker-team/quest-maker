@@ -16,11 +16,11 @@ After moderation all users can choose quest to play.
 To see project advanteges and comparison see [doc](docs/analogues.md).
 
 ## Staff
-+ Baev Daniil
-+ Vorotnikov Andrey
-+ Pavlov Ilya
-+ Chevykalov Grigory
-+ Shvarts Aleksandr
++ [Baev Daniil](https://github.com/BaevDaniil)
++ [Vorotnikov Andrey](https://github.com/aVorotnikov)
++ [Pavlov Ilya](https://github.com/IlyaP01)
++ [Chevykalov Grigory](https://github.com/gchevykalov)
++ [Shvarts Aleksandr](https://github.com/AleksandrShvartz)
 
 ## Rules for git workflow
 `main` branch is a main project branch. Contains current project version.

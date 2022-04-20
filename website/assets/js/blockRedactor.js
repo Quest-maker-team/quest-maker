@@ -1,3 +1,6 @@
+import {Quest} from "./quest";
+import { Modal } from "bootstrap";
+
 export class BlockRedactor {
     static addTextRedactor(form, label, text){
         form.innerHTML +=
@@ -10,13 +13,13 @@ export class BlockRedactor {
     static addAnswerForOpenQuestion(form, answer){
         form.innerHTML +=
             "<div class='col-8'>"+
-                "<input type=\"text\" class=\"form-control\" id=\"answerText\"" +
+                "<input type=\"text\" class=\"form-control\" id=\"answerText" + answer.answer_option_id + "\"" +
                 " value=" + answer.text + ">" +
             "</div>" +
             "<div class=\"col-3\">" +
                 "<div class=\"input-group\">" +
                     "<span class=\"input-group-text\"> Очки </span>" +
-                    "<input type=\"text\" class=\"form-control\" id=\"answerPoints\"" +
+                    "<input type=\"text\" class=\"form-control\" id=\"answerPoints"+ answer.answer_option_id + "\"" +
                     " value=" + answer.points + ">" +
                 "</div>" +
             "</div>" +
@@ -24,6 +27,7 @@ export class BlockRedactor {
                 "<button class=\"btn btn-danger\">-</button>" +
             "</div>"
     }
+
     static addMovementForMovementBlock(form, question){
         form.innerHTML +=
             "<div class='col-8'>"+
@@ -45,12 +49,17 @@ export class BlockRedactor {
                 "</div>" +
             "</div>";
     }
+
     static createStartRedactor(form, question){
         this.addTextRedactor(form, "Приветственное сообщение:", question.text);
         document.getElementById("update").onclick = () => {
             question.text = document.getElementById("formControlTextarea").value;
             document.getElementById(question.question_id).getElementsByClassName("card-text")[0].textContent =
                 question.text;
+            Quest.updateQuestion(question.question_id, JSON.stringify({
+                    type: question.type,
+                    text: question.text
+                })).then(() => console.log('success'));
         };
     }
 
@@ -60,6 +69,10 @@ export class BlockRedactor {
             question.text = document.getElementById("formControlTextarea").value;
             document.getElementById(question.question_id).getElementsByClassName("card-text")[0].textContent =
                 question.text;
+            Quest.updateQuestion(question.question_id, JSON.stringify({
+                    type: question.type,
+                    text: question.text
+                })).then(() => console.log('success'));
         };
     }
 
@@ -69,24 +82,33 @@ export class BlockRedactor {
         for (let answer of question.answer_options) {
             this.addAnswerForOpenQuestion(form, answer);
         }
-        form.innerHTML += "<div class='col-auto'><button type='button' class='btn btn-primary'>Добавить ответ</button></div>";
+        form.innerHTML +=
+            "<div class='col-auto'><button type='button' class='btn btn-primary' id='addAnswer'>" +
+                "Добавить ответ" +
+            "</button></div>";
+        document.getElementById("addAnswer").onclick = () => {
+            //TODO add function
+        }
         document.getElementById("update").onclick = () => {
             question.text = document.getElementById("formControlTextarea").value;
             document.getElementById(question.question_id).getElementsByClassName("card-text")[0].textContent =
                 question.text;
             for (let answer of question.answer_options) {
                 let answerId = answer.answer_option_id;
-                answer.text = document.getElementById("answerText").value;
-                answer.points = document.getElementById("answerPoints").value;
+                answer.text = document.getElementById("answerText" + answerId).value;
+                answer.points = document.getElementById("answerPoints" + answerId).value;
 
                 document.getElementById("answer" + answerId).innerText =
-                    document.getElementById("answerText").value;
+                    document.getElementById("answerText" + answerId).value;
+                Quest.updateAnswer(answerId, JSON.stringify({
+                    points: answer.points,
+                    text: answer.text
+                })).then(response =>  console.log(response));
             }
         };
     }
 
     static createMovementRedactor(form, question){
-
         BlockRedactor.addTextRedactor(form, "Перемещение", question.text);
         form.innerHTML+=
         '<div class="z-depth-1-half map-container" style="height: 500px" id="map"></div>';
@@ -141,7 +163,7 @@ export class BlockRedactor {
     }
 
     static showRedactor(question){
-        let modal = new bootstrap.Modal(document.getElementById("redactor"));
+        let modal = new Modal(document.getElementById("redactor"));
         let form = document.getElementById("redactorForm");
         form.innerHTML = "";
         switch (question.type) {

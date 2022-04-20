@@ -3,13 +3,13 @@ import {consume} from "@jsplumb/browser-ui";
 
 export class Render{
     static renderBlockBase(question, width, title, position){
+        console.log(position);
         let block = document.createElement("div");
         block.id = question.question_id;
         block.className = "position-absolute border-2 card";
-        block.style.width = width;
-        block.style.top = position[0];
-        block.style.left = position[1];
-
+        block.style.width = width.toString();
+        block.style.top = position[0].toString();
+        block.style.left = position[1].toString();
         let blockBody = document.createElement("div");
         blockBody.className = "card-body";
         blockBody.innerHTML = "<h5 class=\"card-title text-center\">" + title + "</h5>" +
@@ -86,7 +86,7 @@ export class Render{
         return block;
     }
 
-    static  renderMovement(quest, question, instance, sourceEndpoint, targetEndpoint, position){
+    static renderMovement(quest, question, instance, sourceEndpoint, targetEndpoint, position){
         let block = Render.renderBlockBase(question, "15rem", "Перемещение", position);
 
         Render.addDeleteButton(quest, block, instance);
@@ -122,6 +122,7 @@ export class Render{
                 break;
             }
         }
+        //Connect
         for (let question of quest.data.questions) {
             if (question.type === "start") {
                 instance.connect({
@@ -134,7 +135,7 @@ export class Render{
                 instance.connect({
                     source: instance.selectEndpoints({element: document.getElementById(question.question_id)}).get(1),
                     target: instance.selectEndpoints({
-                        element: document.getElementById(question.answer_options[0].next_question_id)}).get(0)
+                        element: document.getElementById(question.movements[0].next_question_id)}).get(0)
                 });
             }
             else if (question.type !== "end"){

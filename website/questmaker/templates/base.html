@@ -21,8 +21,9 @@
     {% endblock %}
     {% block footer %}
     {% endblock %}
+
     {% block script %}
+        <script src="{{ webpack_url_for('bootstrap_js.js') }}"></script>
     {% endblock %}
-    <script src="{{ webpack_url_for('bootstrap_js.js') }}"></script>
 </body>
 </html>

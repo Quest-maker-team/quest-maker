@@ -58,7 +58,7 @@ def load_test_db_command():
     """
     Allows to load test database from command line
     """
-    with current_app.open_resource('tests/museum.sql') as f:
+    with current_app.open_resource('tests/excursion.sql') as f:
         with get_db(), get_db().cursor() as cursor:
             cursor.execute(f.read().decode('utf8'))
             cursor.execute('SELECT * FROM quests')
@@ -477,8 +477,8 @@ def set_quest(quest, author_id):
     :return: quest id
     """
     with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-        if quest.__id_in_db is not None:
-            cursor.execute('DELETE FROM quests WHERE quest_id = %s', (quest.__id_in_db, ))
+        if quest.id_in_db is not None:
+            cursor.execute('DELETE FROM quests WHERE quest_id = %s', (quest.id_in_db, ))
         cursor.execute('INSERT INTO quests (title, author_id, description, password, '
                        'time_open, time_close, lead_time, cover_url, hidden) '
                        'VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING quest_id',

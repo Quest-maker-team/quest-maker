@@ -297,6 +297,8 @@ class Question(QuestEntity):
         question.question_id = question_id
         question.text = question_info['question_text']
         question.type = question_info['q_type_name']
+        question.pos_x = question_info['pos_x']
+        question.pos_y = question_info['pos_y']
 
         question.files = [File(file['f_type_name'], file['url_for_file'], question)
                           for file in db.get_question_files(question_id)]
@@ -329,13 +331,17 @@ class Question(QuestEntity):
         self.answers = []
         self.movements = []
         self.parents = []
+        self.pos_x = 0
+        self.pos_y = 0
 
     def to_dict(self):
         return {'question_id': self.question_id, 'type': self.type, 'text': self.text,
                 'files': [file.to_dict() for file in self.files],
                 'hints': [hint.to_dict() for hint in self.hints],
                 'answer_options': [ans.to_dict() for ans in self.answers],
-                'movements': [move.to_dict() for move in self.movements]}
+                'movements': [move.to_dict() for move in self.movements],
+                'pos_x': self.pos_x,
+                'pos_y': self.pos_y}
 
     def remove_from_graph(self):
         for parent in self.parents:
@@ -348,7 +354,7 @@ class Question(QuestEntity):
         self.hints = []
 
     def available_attrs(self):
-        return 'type', 'text'
+        return 'type', 'text', 'pos_x', 'pos_y'
 
 
 class Quest(QuestEntity):

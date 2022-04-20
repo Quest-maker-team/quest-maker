@@ -290,7 +290,7 @@ def get_question(question_id):
     :return: dictionary with q_type_name instead of q_type_id
     """
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-        cursor.execute('SELECT question_text, q_type_name FROM questions '
+        cursor.execute('SELECT question_text, q_type_name, pos_x, pos_y FROM questions '
                        'JOIN question_types USING (q_type_id) '
                        'WHERE question_id = %s', (question_id,))
         return cursor.fetchone()

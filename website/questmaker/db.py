@@ -407,6 +407,24 @@ def get_place(place_id):
         return cursor.fetchone()
 
 
+def get_file_types():
+    """
+    Load list of supported file types
+    """
+    with get_db().cursor() as cursor:
+        cursor.execute('SELECT f_type_name FROM file_types')
+        return [row[0] for row in cursor.fetchall()]
+
+
+def get_question_types():
+    """
+    Load list of supported question types
+    """
+    with get_db().cursor() as cursor:
+        cursor.execute('SELECT q_type_name FROM question    _types')
+        return [row[0] for row in cursor.fetchall()]
+
+
 def set_file(file, cursor):
     """
     Add rows to table files in database.

@@ -87,7 +87,7 @@ export class BlockRedactor {
                 "Добавить ответ" +
             "</button></div>";
         document.getElementById("addAnswer").onclick = () => {
-
+            //TODO add function
         }
         document.getElementById("update").onclick = () => {
             question.text = document.getElementById("formControlTextarea").value;

@@ -1,4 +1,5 @@
 import {Quest} from "./quest";
+import { Modal } from "bootstrap";
 
 export class BlockRedactor {
     static addTextRedactor(form, label, text){
@@ -162,7 +163,7 @@ export class BlockRedactor {
     }
 
     static showRedactor(question){
-        let modal = new bootstrap.Modal(document.getElementById("redactor"));
+        let modal = new Modal(document.getElementById("redactor"));
         let form = document.getElementById("redactorForm");
         form.innerHTML = "";
         switch (question.type) {

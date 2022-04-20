@@ -78,7 +78,9 @@ CREATE TABLE questions (
     question_id SERIAL PRIMARY KEY,
     quest_id INTEGER NOT NULL REFERENCES quests (quest_id) ON DELETE CASCADE,
     question_text TEXT,
-    q_type_id INTEGER NOT NULL REFERENCES question_types (q_type_id) ON DELETE RESTRICT
+    q_type_id INTEGER NOT NULL REFERENCES question_types (q_type_id) ON DELETE RESTRICT,
+    pos_x INTEGER DEFAULT 0,
+    pox_y INTEGER DEFAULT 0
 );
 
 DROP TABLE IF EXISTS hints CASCADE;

@@ -2,12 +2,12 @@
 {% set active_page = active_page|default('index') -%}
 
 {% block styles %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+    <link rel="stylesheet" href="{{ webpack_url_for('index_css.css') }}">
 {% endblock %}
 
 {% block content %}
     <header class="mask d-flex flex-column align-items-center justify-content-center min-vh-100 header"
-             style="background-image: url({{ url_for('static', filename='img/telegram_scrin_on_phone.jpg') }});">
+             style="background-image: url({{ webpack_url_for('img/telegram_scrin_on_phone.jpg') }});">
             <div class="min-vh-100 w-75 position-relative">
                 <div class="position-absolute end-0 top-50 col-8">
                     <div class="text-light">
@@ -37,7 +37,7 @@
                             <!-- Media -->
                             <div class="mb-5 mb-md-0" style="max-width: 80%">
                                 <!-- Image -->
-                                <img class="img-fluid" src="{{ url_for('static', filename='img/' + img ) }}" alt="...">
+                                <img class="img-fluid" src="{{ webpack_url_for('img/' + img) }}" alt="...">
                             </div>
                         </div>
                         <div class="col-md-5 align-self-center mx-auto">
@@ -55,7 +55,4 @@
             </section>
         {% endfor %}
     </main>
-{% endblock %}
-{% block script %}
-    <!-- <script src="{{ url_for('static', filename='script/index.js') }}"></script> -->
 {% endblock %}

@@ -4,6 +4,13 @@ import {Quest} from "./quest";
 import { Render } from "./render";
 import { EVENT_CONNECTION_DETACHED, EVENT_CONNECTION } from "@jsplumb/core";
 
+// load static images
+require.context(
+    '../', // context folder
+    true, // include subdirectories
+    /\.(svg|png|jpe?g|gif|ico)(\?.*)?$/i, // RegExp
+);
+
 let containerElement = document.getElementById("container");
 
 let instance = newInstance({

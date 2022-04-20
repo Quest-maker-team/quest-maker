@@ -61,7 +61,7 @@ Return JSON the same as for database quest.
 attributes ([list of available JSON attributes](available_attrs.md)).
 Returns `200 OK` if success or status code with error message.
 
-* Add link between entities
+* Add connection between entities
   (add `entity_what` to `entity_to`):
     `api/entity_to/{to_id}/entity_what/{what_id}`
 
@@ -77,15 +77,25 @@ Returns `200 OK` if success or status code with error message.
     * `place` to `movement`
   
 ## DELETE
-Delete entity.
+* Delete entity.
 
-General schema: `DELETE api/entity/{entity_id}`.
+  General schema: `DELETE api/entity/{entity_id}`.
 
-* If the entity is quest, all graph will be deleted.
-* If the entity is question then related hint and files will be deleted.
-* If the entity is  movement then related place 
-will be deleted.
-* If the entity is question, answer or movement, quest graph
-can become disconnected.
-* With deletion of quest, question or hint related files 
-will be deleted too.
+  * If the entity is quest, all graph will be deleted.
+  * If the entity is question then related hint and files will be deleted.
+  * If the entity is  movement then related place 
+  will be deleted.
+  * If the entity is question, answer or movement, quest graph
+  can become disconnected.
+  * With deletion of quest, question or hint related files 
+  will be deleted too.
+
+* Delete connection
+  * `DELETE api/answer_option/{answer_id}/question` - 
+  delete next question for answer
+  * `DELETE api/mvoement/{movement_id}/question` - 
+  delete next question for movement
+  * `DELETE api/question/{question_id}/movement/{movement_id}`-
+  delete movement with `movement_id` from question's movements
+  * `DELETE api/question/{question_id}/answer_option/{answer_id}`-
+  delete answer with `answer_id` from question's answers

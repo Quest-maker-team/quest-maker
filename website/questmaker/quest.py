@@ -291,6 +291,9 @@ class Question(QuestEntity):
         """
         question_info = db.get_question(question_id)
         question = Question()
+        if 'questions' not in g:
+            g.questions = {}  # save mapped questions to process loops
+        g.questions[question_id] = question  # save ref to question to avoid loop creating
         question.question_id = question_id
         question.text = question_info['question_text']
         question.type = question_info['q_type_name']
@@ -315,9 +318,6 @@ class Question(QuestEntity):
             for move in question.movements:
                 move.parent = question
 
-        if 'questions' not in g:
-            g.questions = {}  # save mapped questions to process loops
-        g.questions[question_id] = question  # save ref to question to avoid loop creating
         return question
 
     def __init__(self):

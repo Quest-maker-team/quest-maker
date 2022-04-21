@@ -58,6 +58,7 @@ export class Render {
         answer.id = 'answer_option' + question.answer_options[0].answer_option_id;
         block.append(answer);
 
+        instance.manage(block);
         instance.addEndpoint(answer, sourceEndpoint);
         return block;
     }
@@ -131,15 +132,11 @@ export class Render {
         }
         // Connect
         for (const question of quest.data.questions) {
-            if (question.type === 'start') {
+            if (question.type === 'movement') {
                 instance.connect({
-                    source: instance.selectEndpoints({element: document.getElementById(question.question_id)}).get(0),
-                    target: instance.selectEndpoints({
-                        element: document.getElementById(question.answer_options[0].next_question_id)}).get(0),
-                });
-            } else if (question.type === 'movement') {
-                instance.connect({
-                    source: instance.selectEndpoints({element: document.getElementById(question.question_id)}).get(1),
+                    source: instance.selectEndpoints({
+                        element: document.getElementById('movement' + question.movements[0].movement_id)
+                    }).get(0),
                     target: instance.selectEndpoints({
                         element: document.getElementById(question.movements[0].next_question_id)}).get(0),
                 });

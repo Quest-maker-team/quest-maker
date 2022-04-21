@@ -31,6 +31,13 @@ CREATE TABLE quests (
     hidden BOOLEAN NOT NULL
 );
 
+DROP TABLE IF EXISTS drafts;
+CREATE TABLE drafts (
+    draft_id SERIAL PRIMARY KEY,
+    author_id INTEGER NOT NULL REFERENCES authors (author_id) ON DELETE CASCADE,
+    container BYTEA
+);
+
 DROP TABLE IF EXISTS places CASCADE;
 CREATE TABLE places (
     place_id SERIAL PRIMARY KEY,

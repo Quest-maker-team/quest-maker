@@ -66,7 +66,7 @@ export class Quest {
     }
 
     static updateAnswer(id, answer) {
-        const url = 'api/answer/' + id;
+        const url = 'api/answer_option/' + id;
         return Quest.makeRequest('PUT', url, answer);
     }
 

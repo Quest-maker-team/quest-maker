@@ -44,15 +44,14 @@ Quest.loadQuest(2).then((newQuest) => {
 
     instance.bind(EVENT_CONNECTION, (connection) => {
         let sourceIdSplit = connection.source.id.match(/([a-z]*_?[a-z]*)([0-9]*)/);
-        console.log(sourceIdSplit);
-
         Quest.connect(sourceIdSplit[1], 'question', sourceIdSplit[2], connection.target.id).then(() =>
             console.log('connect success'));
     });
 
     instance.bind(EVENT_CONNECTION_DETACHED, (connection) => {
-        console.log('disconnect');
-        console.log(connection);
+        let sourceIdSplit = connection.source.id.match(/([a-z]*_?[a-z]*)([0-9]*)/);
+        Quest.disconnect(sourceIdSplit[1], 'question', sourceIdSplit[2]).then(() =>
+            console.log('disconnect success'));
     });
     return quest;
 }).then((quest) => {

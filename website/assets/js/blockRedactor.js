@@ -33,19 +33,22 @@ export class BlockRedactor {
             '<div class=\'col-8\'>'+
                 '<div class=\'input-group\'>' +
                     '<span class="input-group-text"> Координаты </span>' +
-                    '<input type="text" class="form-control" id="moveCoords" value=' + question.movements[0].place.coords + '>' +
+                    '<input type="text" class="form-control" id="moveCoords" ' +
+                            'value=' + question.movements[0].place.coords + '>' +
                 '</div>'+
             '</div>'+
             '<div class=\'col-8\'>'+
                 '<div class=\'input-group\'>' +
                     '<span class="input-group-text"> Радиус(м) </span>' +
-                    '<input type="text" class="form-control" id="moveRadius"  value=' +question.movements[0].place.radius + '>' +
+                    '<input type="text" class="form-control" id="moveRadius"  ' +
+                            'value=' +question.movements[0].place.radius + '>' +
                   '</div>'+
             '</div>'+
             '<div class="col-8">' +
                 '<div class=\'input-group\'>' +
                     '<span class="input-group-text"> Очки </span>' +
-                    '<input type="text" class="form-control" id="movePoints"  value=' + question.answer_options[0].points + '>' +
+                    '<input type="text" class="form-control" id="movePoints"  ' +
+                        'value=' + question.answer_options[0].points + '>' +
                 '</div>' +
             '</div>';
     }

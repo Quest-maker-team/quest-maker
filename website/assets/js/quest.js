@@ -95,7 +95,10 @@ export class Quest {
         const questionToSend = quest.data.questions.find((question) => question.question_id===id);
 
         new Promise((resolve, reject) => {
-            resolve(Quest.makePostRequest(url+'question', {'type': questionToSend.type, 'text': questionToSend.text}).then((data) => {
+            resolve(Quest.makePostRequest(url+'question', {
+                'type': questionToSend.type,
+                'text': questionToSend.text
+            }).then((data) => {
                 console.log(data);
                 console.log(id === data['question_id']);
                 quest.data.questions.find((question) => question.question_id===id).question_id = data['question_id'];
@@ -103,7 +106,10 @@ export class Quest {
             }).then((data)=>{
                 for (let i = 0; i < questionToSend.answer_options.length; i++) {
                     new Promise((resolve, reject) => {
-                        resolve(Quest.makePostRequest(url+'answer_option', {'text': questionToSend.answer_options[i].text, 'points': questionToSend.answer_options[i].points}).then((data) => {
+                        resolve(Quest.makePostRequest(url+'answer_option', {
+                            'text': questionToSend.answer_options[i].text,
+                            'points': questionToSend.answer_options[i].points
+                        }).then((data) => {
                             console.log(data);
                             quest.data.questions.find((question) => question.question_id===id).answer_options[i].answer_option_id = data['answer_option_id'];
                         }));
@@ -118,7 +124,10 @@ export class Quest {
         const questionToSend = quest.data.questions.find((question) => question.question_id===id);
         console.log('A');
         new Promise((resolve, reject) => {
-            resolve(Quest.makePostRequest(url+'question', {'type': questionToSend.type, 'text': questionToSend.text}).then((data) => {
+            resolve(Quest.makePostRequest(url+'question', {
+                'type': questionToSend.type,
+                'text': questionToSend.text
+            }).then((data) => {
                 console.log('AA');
                 console.log(data);
                 console.log(id === data['question_id']);

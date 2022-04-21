@@ -1,5 +1,5 @@
 import {Quest} from "./quest";
-import { Modal } from "bootstrap";
+import * as bootstrap from 'bootstrap';
 
 export class BlockRedactor {
     static addTextRedactor(form, label, text){

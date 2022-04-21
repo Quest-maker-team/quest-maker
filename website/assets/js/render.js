@@ -6,7 +6,7 @@ export class Render {
         console.log(position);
         const block = document.createElement('div');
         block.id = question.question_id;
-        block.className = 'position-absolute border-2 card';
+        block.className = 'position-absolute card border-2';
         block.style.width = width.toString();
         block.style.top = position[0].toString();
         block.style.left = position[1].toString();
@@ -53,14 +53,17 @@ export class Render {
 
     static renderStart(question, instance, sourceEndpoint, position) {
         const block = this.renderBlockBase(question, '10rem', 'Начало', position);
-        instance.manage(block, block.id);
-        instance.addEndpoint(block, sourceEndpoint);
+
+        const answer = document.createElement("div");
+        answer.id = 'answer_option' + question.answer_options[0].answer_option_id;
+        block.append(answer);
+
+        instance.addEndpoint(answer, sourceEndpoint);
         return block;
     }
 
     static renderFinish(question, instance, targetEndpoint, position) {
         const block = this.renderBlockBase(question, '10rem', 'Конец', position);
-        instance.manage(block, block.id);
         instance.addEndpoint(block, targetEndpoint);
         return block;
     }
@@ -74,7 +77,7 @@ export class Render {
             const tableElement = document.createElement('li');
             tableElement.innerHTML = answer.text;
             tableElement.className = 'list-group-item';
-            tableElement.id = 'answer' + answer.answer_option_id;
+            tableElement.id = 'answer_option' + answer.answer_option_id;
             answerTable.append(tableElement);
             instance.addEndpoint(tableElement, {anchor: ['Right', 'Left']}, sourceEndpoint);
         }
@@ -91,8 +94,12 @@ export class Render {
 
         Render.addDeleteButton(quest, block, instance);
 
+        const answer = document.createElement("div");
+        answer.id = 'movement' + question.movements[0].movement_id;
+        block.append(answer);
+
         instance.addEndpoint(block, {anchor: 'Top'}, targetEndpoint);
-        instance.addEndpoint(block, {anchor: 'Bottom'}, sourceEndpoint);
+        instance.addEndpoint(answer, {anchor: 'Bottom'}, sourceEndpoint);
 
         return block;
     }
@@ -140,7 +147,7 @@ export class Render {
                 for (const answer of question.answer_options) {
                     instance.connect({
                         source: instance.selectEndpoints({
-                            element: document.getElementById('answer' + answer.answer_option_id),
+                            element: document.getElementById('answer_option' + answer.answer_option_id),
                         }).get(0),
                         target: instance.selectEndpoints({
                             element: document.getElementById(answer.next_question_id),

@@ -80,8 +80,8 @@ export class Quest {
         return Quest.makeRequest('PUT', url);
     }
 
-    static disconnect(type1, type2, id1, id2) {
-        const url = 'api/' + type1 + '/' + id1 + '/' + type2 + '/' + id2;
+    static disconnect(type1, type2, id1) {
+        const url = 'api/' + type1 + '/' + id1 + '/' + type2;
         return Quest.makeRequest('DELETE', url);
     }
 

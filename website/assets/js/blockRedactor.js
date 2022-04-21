@@ -5,7 +5,7 @@ export class BlockRedactor {
     static addTextRedactor(form, label, text) {
         form.innerHTML +=
             '<label for="formControlTextarea" class="form-label">' + label + '</label>' +
-            '<textarea class="form-control" id="formControlTextarea" rows="3"> ' +
+            '<textarea class="form-control" id="formControlTextarea" rows="3">' +
             text +
             '</textarea>';
     }
@@ -14,13 +14,13 @@ export class BlockRedactor {
         form.innerHTML +=
             '<div class=\'col-8\'>'+
                 '<input type="text" class="form-control" id="answerText' + answer.answer_option_id + '"' +
-                ' value=' + answer.text + '>' +
+                ' value="' + answer.text + '">' +
             '</div>' +
             '<div class="col-3">' +
                 '<div class="input-group">' +
                     '<span class="input-group-text"> Очки </span>' +
                     '<input type="text" class="form-control" id="answerPoints'+ answer.answer_option_id + '"' +
-                    ' value=' + answer.points + '>' +
+                    ' value="' + answer.points + '">' +
                 '</div>' +
             '</div>' +
             '<div class="col-1">' +
@@ -101,7 +101,7 @@ export class BlockRedactor {
                 answer.text = document.getElementById('answerText' + answerId).value;
                 answer.points = document.getElementById('answerPoints' + answerId).value;
 
-                document.getElementById('answer' + answerId).innerText =
+                document.getElementById('answer_option' + answerId).innerText =
                     document.getElementById('answerText' + answerId).value;
                 Quest.updateAnswer(answerId, JSON.stringify({
                     points: answer.points,

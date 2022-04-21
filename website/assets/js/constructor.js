@@ -41,32 +41,17 @@ Quest.loadQuest(2).then((newQuest) => {
     /* document.getElementById("save").onclick = () => {
         quest.save().then(() => console.log("save"));
     }*/
+
     instance.bind(EVENT_CONNECTION, (connection) => {
-        console.log('connect');
-        console.log(connection);
-        const source = connection.source;
-        const target = connection.target;
-        const typeTarget = 'question';
-        let typeSource;
-        let sourceId = source.id;
-        if (source.id.includes('answer')) {
-            console.log('answer');
-            typeSource = 'answer_option';
-            sourceId = source.id.slice('answer'.length);
-        } else {
-            console.log(quest.data.questions.find((question) => question.question_id == sourceId));
-            typeSource = quest.data.questions.find((question) => question.question_id == sourceId).type;
-            if (typeSource === 'movement') {
-                typeSource = 'place';
-            } else {
-                typeSource = 'question';
-            }
-        }
-        Quest.connect(typeSource, typeTarget, sourceId, target.id).then(() => console.log('success'));
+        let sourceIdSplit = connection.source.id.match(/([a-z]*_?[a-z]*)([0-9]*)/);
+        Quest.connect(sourceIdSplit[1], 'question', sourceIdSplit[2], connection.target.id).then(() =>
+            console.log('connect success'));
     });
+
     instance.bind(EVENT_CONNECTION_DETACHED, (connection) => {
-        console.log('disconnect');
-        console.log(connection);
+        let sourceIdSplit = connection.source.id.match(/([a-z]*_?[a-z]*)([0-9]*)/);
+        Quest.disconnect(sourceIdSplit[1], 'question', sourceIdSplit[2]).then(() =>
+            console.log('disconnect success'));
     });
     return quest;
 }).then((quest) => {

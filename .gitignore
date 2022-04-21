@@ -142,7 +142,7 @@ node_modules/
 package-lock.json
 
 # Frontend build
-questmaker/static/js/
-questmaker/static/img/
-questmaker/static/css/
-questmaker/static/fonts/
+website/questmaker/static/js/
+website/questmaker/static/img/
+website/questmaker/static/css/
+website/questmaker/static/fonts/

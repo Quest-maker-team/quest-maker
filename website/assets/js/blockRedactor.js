@@ -14,13 +14,13 @@ export class BlockRedactor {
         form.innerHTML +=
             '<div class=\'col-8\'>'+
                 '<input type="text" class="form-control" id="answerText' + answer.answer_option_id + '"' +
-                ' value=' + answer.text + '>' +
+                ' value="' + answer.text + '">' +
             '</div>' +
             '<div class="col-3">' +
                 '<div class="input-group">' +
                     '<span class="input-group-text"> Очки </span>' +
                     '<input type="text" class="form-control" id="answerPoints'+ answer.answer_option_id + '"' +
-                    ' value=' + answer.points + '>' +
+                    ' value="' + answer.points + '">' +
                 '</div>' +
             '</div>' +
             '<div class="col-1">' +

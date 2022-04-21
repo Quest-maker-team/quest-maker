@@ -75,6 +75,8 @@ def create_quest():
     :return: json or error message
     """
     quest_dict = request.get_json(force=True)
+    if not Quest.check_creation_attrs(quest_dict.keys()):
+        return 'Not enough JSON attributes for creating', 400
     quest = Quest()
     rc = quest.create_from_dict(quest_dict)
     if not rc:
@@ -93,6 +95,8 @@ def create_question():
     :return: json with question id or error message
     """
     question_dict = request.get_json(force=True)
+    if not Question.check_creation_attrs(question_dict.keys()):
+        return 'Not enough JSON attributes for creating', 400
     question = Question()
     rc = update_from_dict(question, question_dict)
     if not rc:
@@ -147,6 +151,8 @@ def create_file():
     :return: json with file id or error message
     """
     file_dict = request.get_json(force=True)
+    if not File.check_creation_attrs(file_dict.keys()):
+        return 'Not enough JSON attributes for creating', 400
     file = File()
     rc = update_from_dict(file, file_dict)
     if not rc:
@@ -187,6 +193,8 @@ def create_answer():
     :return: json with answer id or error message
     """
     ans_dict = request.get_json(force=True)
+    if not Answer.check_creation_attrs(ans_dict.keys()):
+        return 'Not enough JSON attributes for creating', 400
     ans = Answer()
     rc = update_from_dict(ans, ans_dict)
     if not rc:
@@ -221,6 +229,8 @@ def create_movement():
     :return: json with answer id or error message
     """
     move_dict = request.get_json(force=True)
+    if not Movement.check_creation_attrs(move_dict.keys()):
+        return 'Not enough JSON attributes for creating', 400
     move = Movement()
     rc = update_from_dict(move, move_dict)
     if not rc:
@@ -255,6 +265,8 @@ def create_hint():
     :return: json with hint id or error message
     """
     hint_dict = request.get_json(force=True)
+    if not Hint.check_creation_attrs(hint_dict.keys()):
+        return 'Not enough JSON attributes for creating', 400
     hint = Hint()
     rc = update_from_dict(hint, hint_dict)
     if not rc:
@@ -289,6 +301,8 @@ def create_place():
     :return: json with place id or error message
     """
     place_dict = request.get_json(force=True)
+    if not Place.check_creation_attrs(place_dict.keys()):
+        return 'Not enough JSON attributes for creating', 400
     place = Place()
     rc = update_from_dict(place, place_dict)
     if not rc:

@@ -217,13 +217,12 @@ def get_quest(quest_id):
     """
     Load quest from table quests (with author name instead of author id)
     :param quest_id: quest id in database
-    :return: dictionary with table attrs as keys and key author instead of author_id
+    :return: dictionary with table attrs as keys
     """
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-        cursor.execute('SELECT title, authors.name AS author, description, quests.password AS password, '
+        cursor.execute('SELECT title, author_id, description, password, '
                        'time_open, time_close, lead_time, cover_url, hidden '
                        'FROM quests '
-                       'JOIN authors USING (author_id) '
                        'WHERE quest_id = %s', (quest_id,))
         return cursor.fetchone()
 
@@ -487,11 +486,10 @@ def set_author(author):
             return False
 
 
-def set_quest(quest, author_id):
+def set_quest(quest):
     """
     Add row to table quest in database from Quest object and author email
     :param quest: quest to load in database
-    :param author_id: author id
     :return: quest id
     """
     with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
@@ -500,7 +498,7 @@ def set_quest(quest, author_id):
         cursor.execute('INSERT INTO quests (title, author_id, description, password, '
                        'time_open, time_close, lead_time, cover_url, hidden) '
                        'VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING quest_id',
-                       (quest.title, author_id, quest.description,
+                       (quest.title, quest.author_id, quest.description,
                         quest.password, quest.time_open, quest.time_close, quest.lead_time,
                         quest.cover_url, str(quest.hidden).upper()))
         return cursor.fetchone()['quest_id']

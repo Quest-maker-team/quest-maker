@@ -18,9 +18,9 @@ def update_from_dict(entity, entity_dict):
     :param entity_dict: dictionary with new params
     :return: True if success else False
     """
-    for key, value in entity_dict.items():
-        if key in entity.available_attrs():
-            entity.__setattr__(key, value)
+    for attr, value in entity_dict.items():
+        if type(entity).check_valid_update_attr(attr, value):
+            entity.__setattr__(attr, value)
         else:
             return False
     return True
@@ -30,6 +30,7 @@ class QuestEntity(ABC):
     """
     Common class for all quest entities
     """
+
     @abstractmethod
     def to_dict(self):
         """
@@ -44,10 +45,19 @@ class QuestEntity(ABC):
         """
         pass
 
+    @staticmethod
     @abstractmethod
-    def available_attrs(self):
+    def check_valid_update_attr(attr, val):
         """
-        Attributes available to change from frontend
+        Check possibility to assign value to attribute
+        """
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def check_creation_attrs(attrs):
+        """
+        Check that list attrs contains necessary attributes to create new entity
         """
         pass
 
@@ -75,8 +85,17 @@ class File(QuestEntity):
         if self.parent and self in self.parent.files:
             self.parent.files.remove(self)
 
-    def available_attrs(self):
-        return 'type', 'url'
+    @staticmethod
+    def check_valid_update_attr(attr, val):
+        if attr == 'type':
+            return val in db.get_file_types()
+        elif attr == 'url':
+            return isinstance(val, str)
+        return False
+
+    @staticmethod
+    def check_creation_attrs(attrs):
+        return all([(attr in attrs) for attr in ['type', 'url']])
 
 
 class Author:
@@ -132,8 +151,17 @@ class Hint(QuestEntity):
         if self.parent and self in self.parent.hints:
             self.parent.hints.remove(self)
 
-    def available_attrs(self):
-        return 'text', 'fine'
+    @staticmethod
+    def check_valid_update_attr(attr, val):
+        if attr == 'text':
+            return isinstance(val, str)
+        if attr == 'fine':
+            return isinstance(val, (int, float))
+        return True
+
+    @staticmethod
+    def check_creation_attrs(attrs):
+        return all([(attr in attrs) for attr in ['text']])
 
 
 class Answer(QuestEntity):
@@ -185,8 +213,17 @@ class Answer(QuestEntity):
         if self.parent and self in self.parent.answers:
             self.parent.answers.remove(self)
 
-    def available_attrs(self):
-        return 'text', 'points'
+    @staticmethod
+    def check_valid_update_attr(attr, val):
+        if attr == 'points':
+            return isinstance(val, (int, float))
+        elif attr == 'text':
+            return isinstance(val, str)
+        return False
+
+    @staticmethod
+    def check_creation_attrs(attrs):
+        return all([(attr in attrs) for attr in ['text']])
 
 
 class Place(QuestEntity):
@@ -227,8 +264,20 @@ class Place(QuestEntity):
         if self.parent:
             self.parent.place = None
 
-    def available_attrs(self):
-        return 'coords', 'radius', 'time_open', 'time_close'
+    @staticmethod
+    def check_valid_update_attr(attr, val):
+        if attr == 'coords':
+            return isinstance(val, list) and len(val) == 2 and isinstance(val[0], float) and isinstance(val[1], float)
+        elif attr == 'radius':
+            return isinstance(val, (int, float))
+        elif attr == 'time_open' or attr == 'time_close':
+            # TODO: add time support
+            return False
+        return False
+
+    @staticmethod
+    def check_creation_attrs(attrs):
+        return all([(attr in attrs) for attr in ['coords', 'radius']])
 
 
 class Movement(QuestEntity):
@@ -277,8 +326,13 @@ class Movement(QuestEntity):
             self.parent.movements.remove(self)
         self.place = None
 
-    def available_attrs(self):
-        return ()
+    @staticmethod
+    def check_valid_update_attr(attr, val):
+        return False
+
+    @staticmethod
+    def check_creation_attrs(attrs):
+        return not attrs
 
 
 class Question(QuestEntity):
@@ -353,8 +407,19 @@ class Question(QuestEntity):
         self.files = []
         self.hints = []
 
-    def available_attrs(self):
-        return 'type', 'text', 'pos_x', 'pos_y'
+    @staticmethod
+    def check_valid_update_attr(attr, val):
+        if attr == 'type':
+            return val in db.get_question_types()
+        elif attr == 'pos_x' or attr == 'pos_y':
+            return isinstance(val, int)
+        elif attr == 'text':
+            return isinstance(val, str)
+        return False
+
+    @staticmethod
+    def check_creation_attrs(attrs):
+        return all([(attr in attrs) for attr in ['type']])
 
 
 class Quest(QuestEntity):
@@ -373,7 +438,7 @@ class Quest(QuestEntity):
         quest.__id_in_db = quest_id
         quest.quest_id = quest_id
         quest.title = quest_info['title']
-        quest.author = quest_info['author']
+        quest.author_id = quest_info['author_id']
         quest.description = quest_info['description']
         quest.password = quest_info['password']
         quest.time_open = quest_info['time_open']
@@ -394,7 +459,7 @@ class Quest(QuestEntity):
         self.__id_in_db = None
         self.quest_id = None
         self.title = None
-        self.author = None
+        self.author_id = None
         self.tags = []
         self.files = []
         self.hidden = False
@@ -407,11 +472,11 @@ class Quest(QuestEntity):
         self.first_question = None
         self.rating = {'one': 0, 'two': 0, 'three': 0, 'four': 0, 'five': 0}
 
-    def to_db(self, author_id):
+    def to_db(self):
         """
         Write data from Quest object to database
         """
-        quest_id = set_quest(self, author_id)
+        quest_id = set_quest(self)
         set_tags(self, quest_id)
         question_id = create_new_question(self.first_question, quest_id)
         questions = dict()
@@ -445,8 +510,20 @@ class Quest(QuestEntity):
     def remove_from_graph(self):
         pass
 
-    def available_attrs(self):
-        return 'title', 'tags', 'hidden', 'description', 'password', 'time_open', 'time_close', 'lead_time'
+    @staticmethod
+    def check_valid_update_attr(attr, val):
+        if attr in ['title', 'description', 'password']:
+            return isinstance(val, str)
+        elif attr == 'hidden':
+            return isinstance(val, bool)
+        elif attr in ['time_open', 'time_close', 'lead_time']:
+            # TODO: add time support
+            return False
+        return False
+
+    @staticmethod
+    def check_creation_attrs(attrs):
+        return all([(attr in attrs) for attr in ['title']])
 
     def create_from_dict(self, quest_dict):
         """
@@ -454,6 +531,8 @@ class Quest(QuestEntity):
         :param quest_dict: dictionary with quest params
         :return: True if success else False
         """
+        if 'title' not in quest_dict.keys():
+            return False
         rc = update_from_dict(self, quest_dict)
         if not rc:
             return False

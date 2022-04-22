@@ -2,7 +2,7 @@ import {BlockRedactor} from './blockRedactor';
 import {consume} from '@jsplumb/browser-ui';
 
 export class Render {
-    static renderBlockBase(question, width, title, position) {
+    static renderBlockBase(question, width, title, position, instance, sourceEndpoint) {
         console.log(position);
         const block = document.createElement('div');
         block.id = question.question_id;
@@ -18,7 +18,7 @@ export class Render {
         block.append(blockBody);
 
         block.ondblclick = () => {
-            BlockRedactor.showRedactor(question);
+            BlockRedactor.showRedactor(question, instance, sourceEndpoint);
         };
 
         document.getElementById('container').append(block);
@@ -68,18 +68,23 @@ export class Render {
         return block;
     }
 
+    static renderAnswer(answer, question, instance, sourceEndpoint) {
+        const tableElement = document.createElement('li');
+        tableElement.innerText = answer.text;
+        tableElement.className = 'list-group-item';
+        tableElement.id = 'answer_option' + answer.answer_option_id;
+        document.getElementById('anstab' + question.question_id).append(tableElement);
+        instance.addEndpoint(tableElement, {anchor: ['Right', 'Left']}, sourceEndpoint);
+    }
+
     static renderOpenQuestion(quest, question, instance, sourceEndpoint, targetEndpoint, position) {
-        const block = Render.renderBlockBase(question, '15rem', 'Открытый вопрос', position);
+        const block = Render.renderBlockBase(question, '15rem', 'Открытый вопрос', position, instance, sourceEndpoint);
         const answerTable = document.createElement('ul');
         answerTable.className = 'list-group list-group-flush';
+        answerTable.id = 'anstab' + question.question_id;
         block.append(answerTable);
         for (const answer of question.answer_options) {
-            const tableElement = document.createElement('li');
-            tableElement.innerHTML = answer.text;
-            tableElement.className = 'list-group-item';
-            tableElement.id = 'answer_option' + answer.answer_option_id;
-            answerTable.append(tableElement);
-            instance.addEndpoint(tableElement, {anchor: ['Right', 'Left']}, sourceEndpoint);
+            Render.renderAnswer(answer, question, instance, sourceEndpoint);
         }
 
         Render.addDeleteButton(quest, block, instance, answerTable.childNodes);

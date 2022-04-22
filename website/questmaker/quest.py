@@ -83,7 +83,8 @@ class File(QuestEntity):
 
     def remove_from_graph(self):
         if self.parent and self in self.parent.files:
-            self.parent.files.remove_entity(self)
+            self.parent.files.remove(self)
+            self.parent = None
 
     @staticmethod
     def check_valid_update_attr(attr, val):
@@ -149,7 +150,8 @@ class Hint(QuestEntity):
     def remove_from_graph(self):
         self.files = []
         if self.parent and self in self.parent.hints:
-            self.parent.hints.remove_entity(self)
+            self.parent.hints.remove(self)
+        self.parent = None
 
     @staticmethod
     def check_valid_update_attr(attr, val):
@@ -209,9 +211,11 @@ class Answer(QuestEntity):
 
     def remove_from_graph(self):
         if self.next_question and self in self.next_question.parents:
-            self.next_question.parents.remove_entity(self)
+            self.next_question.parents.remove(self)
         if self.parent and self in self.parent.answers:
-            self.parent.answers.remove_entity(self)
+            self.parent.answers.remove(self)
+        self.next_question = None
+        self.parent = None
 
     @staticmethod
     def check_valid_update_attr(attr, val):
@@ -263,6 +267,7 @@ class Place(QuestEntity):
     def remove_from_graph(self):
         if self.parent:
             self.parent.place = None
+        self.parent = None
 
     @staticmethod
     def check_valid_update_attr(attr, val):
@@ -316,15 +321,17 @@ class Movement(QuestEntity):
 
     def to_dict(self):
         return {'movement_id': self.movement_id,
-                'place': self.place.to_dict(),
+                'place': self.place.to_dict() if self.place else None,
                 'next_question_id': self.next_question.question_id if self.next_question is not None else None}
 
     def remove_from_graph(self):
         if self.next_question and self in self.next_question.parents:
-            self.next_question.parents.remove_entity(self)
+            self.next_question.parents.remove(self)
         if self.parent and self in self.parent.movements:
-            self.parent.movements.remove_entity(self)
+            self.parent.movements.remove(self)
         self.place = None
+        self.next_question = None
+        self.parent = None
 
     @staticmethod
     def check_valid_update_attr(attr, val):
@@ -404,8 +411,11 @@ class Question(QuestEntity):
             answer.parent = None
         for move in self.movements:
             move.parent = None
+        self.answers = []
+        self.movements = []
         self.files = []
         self.hints = []
+        self.parents = []
 
     @staticmethod
     def check_valid_update_attr(attr, val):

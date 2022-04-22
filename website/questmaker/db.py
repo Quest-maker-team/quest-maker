@@ -784,7 +784,7 @@ def update_draft(draft_id, container):
     Update draft container
     """
     with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-        cursor.execute('UPDATE drafts SET container = %s WHERE draft_id = %s', (draft_id, container))
+        cursor.execute('UPDATE drafts SET container = %s WHERE draft_id = %s', (container, draft_id))
 
 
 def remove_draft(draft_id):

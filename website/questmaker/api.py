@@ -38,7 +38,7 @@ def after_request(response):
     Serialize container with draft quests and write to db
     """
     if request.method == 'GET' or \
-            (request.method == 'POST' and request.endpoint not in ['quest', 'save/<int:draft_id>']):
+            (request.method == 'POST' and request.endpoint in ['api.create_quest', 'api.save_quest']):
         return response
     if 'container' in g and 'draft_id' in session:
         update_draft(session['draft_id'], pickle.dumps(g.container))
@@ -329,7 +329,7 @@ def create_place():
     rc = update_from_dict(place, place_dict)
     if not rc:
         return 'Wrong JSON attributes', 400
-    place.place_id = g.container.add_entity(EntityType.PLACE, place)
+    place.place_id = g.container.add_entity(place)
     return jsonify({'place_id': place.place_id})
 
 
@@ -344,7 +344,7 @@ def add_place(movement_id, place_id):
     place = g.container.get_entity(EntityType.PLACE, place_id)
     if not place:
         return 'Wrong place id', 400
-    movement = g.contaienr.get_entity(EntityType.MOVEMENT, movement_id)
+    movement = g.container.get_entity(EntityType.MOVEMENT, movement_id)
     if not movement:
         return 'Wrong movement id', 400
     movement.place = place
@@ -394,7 +394,7 @@ def remove_answer_question_link(answer_id):
     if not answer:
         return 'Wrong answer id', 400
     if answer.next_question:
-        answer.next_question.parents.remove_entity(answer)
+        answer.next_question.parents.remove(answer)
         answer.next_question = None
         return '', 200
     else:
@@ -412,7 +412,7 @@ def remove_movement_question_link(movement_id):
     if not movement:
         return 'Wrong movement id', 400
     if movement.next_question:
-        movement.next_question.parents.remove_entity(movement)
+        movement.next_question.parents.remove(movement)
         movement.next_question = None
         return '', 200
     else:
@@ -434,7 +434,7 @@ def remove_question_movement_link(question_id, movement_id):
     if not movement:
         return 'Wrong movement id', 400
     if movement in question.movements:
-        question.movements.remove_entity(movement)
+        question.movements.remove(movement)
         movement.parent = None
         return '', 200
     else:
@@ -456,7 +456,7 @@ def remove_question_answer_link(question_id, answer_id):
     if not answer:
         return 'Wrong movement id', 400
     if answer in question.answers:
-        question.answers.remove_entity(answer)
+        question.answers.remove(answer)
         answer.parent = None
         return '', 200
     else:

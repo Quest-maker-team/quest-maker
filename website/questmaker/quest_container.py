@@ -106,6 +106,8 @@ class QuestContainer:
         :param e_type: enum value type of entity
         :param e_id: entity id in container
         """
+        if e_type == EntityType.QUEST:
+            return self.quest
         if e_type in EntityType.get_types() and e_type != EntityType.QUEST and e_id in self.__entities[e_type].keys():
             return self.__entities[e_type][e_id]
         else:
@@ -139,6 +141,9 @@ class QuestContainer:
         :param e_type: enum value type of entity
         :param e_id: entity id in container
         """
+        if e_type == EntityType.QUEST:
+            return
+
         if e_id not in self.__entities[e_type].keys():
             return
 

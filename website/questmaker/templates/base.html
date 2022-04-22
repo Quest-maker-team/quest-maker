@@ -6,11 +6,10 @@
     <meta charset="utf-8">
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="{{ webpack_url_for('css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ webpack_url_for('general.css') }}">
 
     <link rel="stylesheet" href="{{ webpack_url_for('roboto_css.css') }}">
     <link rel="stylesheet" href="{{ webpack_url_for('style_css.css') }}">
-    <script src="{{ webpack_url_for('jquery_js.js') }}"></script>
     {% block styles %}
     {% endblock %}
 </head>
@@ -22,7 +21,7 @@
     {% block footer %}
     {% endblock %}
     {% block script %}
+        <script src="{{ webpack_url_for('general.js') }}"></script>
     {% endblock %}
-    <script src="{{ webpack_url_for('bootstrap_js.js') }}"></script>
 </body>
 </html>

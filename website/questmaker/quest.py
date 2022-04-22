@@ -435,7 +435,7 @@ class Quest(QuestEntity):
         if not quest_info:
             return None
         quest = Quest()
-        quest.__id_in_db = quest_id
+        quest.id_in_db = quest_id
         quest.quest_id = quest_id
         quest.title = quest_info['title']
         quest.author_id = quest_info['author_id']
@@ -456,7 +456,7 @@ class Quest(QuestEntity):
         return quest
 
     def __init__(self):
-        self.__id_in_db = None
+        self.id_in_db = None
         self.quest_id = None
         self.title = None
         self.author_id = None

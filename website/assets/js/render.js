@@ -2,11 +2,22 @@ import {BlockRedactor} from './blockRedactor';
 import {consume} from '@jsplumb/browser-ui';
 
 export class Render {
+    static createEndpoint(instance, elem, anchors, options){
+        let endpoint = instance.addEndpoint(elem, anchors, options);
+        //console.log(endpoint.endpoint);
+        elem.dispatchEvent(new CustomEvent('newEndpointCreating', {
+            bubbles: true,
+            detail: {
+                endpointElem: endpoint.endpoint.canvas,
+            }
+        }));
+    }
+
     static renderBlockBase(question, width, title, position) {
-        console.log(position);
+        //console.log(position);
         const block = document.createElement('div');
         block.id = question.question_id;
-        block.className = 'position-absolute card border-2';
+        block.className = 'position-absolute card border-2 panzoom-exclude';
         block.style.width = width.toString();
         block.style.top = position[0].toString();
         block.style.left = position[1].toString();
@@ -59,13 +70,15 @@ export class Render {
         block.append(answer);
 
         instance.manage(block);
-        instance.addEndpoint(answer, sourceEndpoint);
+        //instance.addEndpoint(answer, sourceEndpoint);
+        Render.createEndpoint(instance, answer, {}, sourceEndpoint);
         return block;
     }
 
     static renderFinish(question, instance, targetEndpoint, position) {
         const block = this.renderBlockBase(question, '10rem', 'Конец', position);
-        instance.addEndpoint(block, targetEndpoint);
+        //instance.addEndpoint(block, targetEndpoint);
+        Render.createEndpoint(instance, block, {}, targetEndpoint);
         return block;
     }
 
@@ -80,12 +93,14 @@ export class Render {
             tableElement.className = 'list-group-item';
             tableElement.id = 'answer_option' + answer.answer_option_id;
             answerTable.append(tableElement);
-            instance.addEndpoint(tableElement, {anchor: ['Right', 'Left']}, sourceEndpoint);
+            //instance.addEndpoint(tableElement, {anchor: ['Right', 'Left']}, sourceEndpoint);
+            Render.createEndpoint(instance, tableElement, {anchor: ['Right', 'Left']}, sourceEndpoint);
         }
 
         Render.addDeleteButton(quest, block, instance, answerTable.childNodes);
 
-        instance.addEndpoint(block, {anchor: 'Top'}, targetEndpoint);
+        //instance.addEndpoint(block, {anchor: 'Top'}, targetEndpoint);
+        Render.createEndpoint(instance, block, {anchor: 'Top'}, targetEndpoint);
 
         return block;
     }
@@ -99,8 +114,10 @@ export class Render {
         answer.id = 'movement' + question.movements[0].movement_id;
         block.append(answer);
 
-        instance.addEndpoint(block, {anchor: 'Top'}, targetEndpoint);
-        instance.addEndpoint(answer, {anchor: 'Bottom'}, sourceEndpoint);
+        //instance.addEndpoint(block, {anchor: 'Top'}, targetEndpoint);
+        //instance.addEndpoint(answer, {anchor: 'Bottom'}, sourceEndpoint);
+        Render.createEndpoint(instance, block, {anchor: 'Top'}, targetEndpoint);
+        Render.createEndpoint(instance, answer, {anchor: 'Bottom'}, sourceEndpoint);
 
         return block;
     }

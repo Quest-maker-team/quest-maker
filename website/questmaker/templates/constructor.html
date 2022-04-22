@@ -6,7 +6,7 @@
 <script src="https://api-maps.yandex.ru/2.1/?apikey=57bad925-98eb-4a1e-8bf9-78a2f0a99e22&lang=ru_RU" type="text/javascript"></script>
     <main class="min-vh-100 min-vw-100 position-relative d-flex">
         <div class="position-absolute d-flex min-vw-100 min-vh-100">
-            <div class="col-1" style="box-sizing: border-box; padding-top: 88px">
+            <div class="col-1 position-fixed" style="box-sizing: border-box; padding-top: 88px">
                 <div class="p-2">
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal">
                         +
@@ -16,7 +16,7 @@
                     </button>-->
                 </div>
             </div>
-            <div class="mt-2 position-relative" id="container" style="top: 88px;">
+            <div class="position-absolute top-0 start-0 min-vh-100 min-vw-100" id="container">
                 <!-- Container for block rendered -->
             </div>
 

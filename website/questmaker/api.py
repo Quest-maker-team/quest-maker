@@ -18,7 +18,7 @@ def before_request():
     """
     author_id = current_user.author['author_id']
     if request.method == 'GET' or \
-            (request.method == 'POST' and request.endpoint not in ['quest', 'save/<int:draft_id>']):
+            (request.method == 'POST' and request.endpoint in ['api.create_quest', 'api.save_quest']):
         return
     if 'draft_id' in session:
         draft = get_draft(session['draft_id'])

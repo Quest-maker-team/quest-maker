@@ -420,7 +420,7 @@ def get_question_types():
     Load list of supported question types
     """
     with get_db().cursor() as cursor:
-        cursor.execute('SELECT q_type_name FROM question    _types')
+        cursor.execute('SELECT q_type_name FROM question_types')
         return [row[0] for row in cursor.fetchall()]
 
 

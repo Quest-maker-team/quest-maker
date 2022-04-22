@@ -33,7 +33,7 @@ const targetEndpoint = {
     anchor: [0.5, 0, 0, -1],
 };
 
-Quest.loadQuest(2).then((newQuest) => {
+Quest.loadQuest(1).then((newQuest) => {
     const quest = newQuest;
     Render.render(quest, instance, sourceEndpoint, targetEndpoint);
     return quest;

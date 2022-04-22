@@ -19,7 +19,8 @@ Return JSON the same as for database quest.
 
 ## POST
 * Create new entity with params encountered in JSON 
-  (**body must contain at least empty JSON**). 
+  (**body must contain at least empty JSON, some 
+  entities have required attributes**). 
   [List of available JSON attributes](available_attrs.md).
 
   General schema:
@@ -60,7 +61,9 @@ Return JSON the same as for database quest.
     Request body must contain JSON with updating 
 attributes ([list of available JSON attributes](available_attrs.md)).
 Returns `200 OK` if success or status code with error message.
-
+    
+  **!!!To update quest, you may use any id, it doesn't matter.
+        Reason? There is no reason - it's hack. It will be fixed later!!!**
 * Add connection between entities
   (add `entity_what` to `entity_to`):
     `api/entity_to/{to_id}/entity_what/{what_id}`
@@ -70,7 +73,7 @@ Returns `200 OK` if success or status code with error message.
     It's possible to add:
     * `question` to `answer_option`
     * `question` to `movement`
-    * `file` to `quest`, `question`, `hint`
+    * `file` to `quest`, `question`, `hint`, **here you may also use any quest id**
     * `answer_option` to `question`
     * `movement` to `question`
     * `hint` to `question`
@@ -81,7 +84,7 @@ Returns `200 OK` if success or status code with error message.
 
   General schema: `DELETE api/entity/{entity_id}`.
 
-  * If the entity is quest, all graph will be deleted.
+  * **You can't delete quest this way**.
   * If the entity is question then related hint and files will be deleted.
   * If the entity is  movement then related place 
   will be deleted.

@@ -83,7 +83,7 @@ class File(QuestEntity):
 
     def remove_from_graph(self):
         if self.parent and self in self.parent.files:
-            self.parent.files.remove(self)
+            self.parent.files.remove_entity(self)
 
     @staticmethod
     def check_valid_update_attr(attr, val):
@@ -149,7 +149,7 @@ class Hint(QuestEntity):
     def remove_from_graph(self):
         self.files = []
         if self.parent and self in self.parent.hints:
-            self.parent.hints.remove(self)
+            self.parent.hints.remove_entity(self)
 
     @staticmethod
     def check_valid_update_attr(attr, val):
@@ -209,9 +209,9 @@ class Answer(QuestEntity):
 
     def remove_from_graph(self):
         if self.next_question and self in self.next_question.parents:
-            self.next_question.parents.remove(self)
+            self.next_question.parents.remove_entity(self)
         if self.parent and self in self.parent.answers:
-            self.parent.answers.remove(self)
+            self.parent.answers.remove_entity(self)
 
     @staticmethod
     def check_valid_update_attr(attr, val):
@@ -321,9 +321,9 @@ class Movement(QuestEntity):
 
     def remove_from_graph(self):
         if self.next_question and self in self.next_question.parents:
-            self.next_question.parents.remove(self)
+            self.next_question.parents.remove_entity(self)
         if self.parent and self in self.parent.movements:
-            self.parent.movements.remove(self)
+            self.parent.movements.remove_entity(self)
         self.place = None
 
     @staticmethod

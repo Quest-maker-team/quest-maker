@@ -757,3 +757,36 @@ def set_questions(used_files: list, question, quest_id: int, places: dict, quest
 
         else:
             return True
+
+
+def get_draft(draft_id):
+    """
+    Get draft quest by id
+    """
+    with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+        cursor.execute('SELECT author_id, container FROM drafts WHERE draft_id = %s', (draft_id,))
+        return cursor.fetchone()
+
+
+def write_draft(author_id, container):
+    """
+    Write draft to db
+    :return: id of the new draft
+    """
+    with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+        cursor.execute('INSERT INTO drafts(author_id, container) '
+                       'VALUES (%s, %s) RETURNING draft_id', (author_id, container))
+        return cursor.fetchone()['draft_id']
+
+
+def update_draft(draft_id, container):
+    """
+    Update draft container
+    """
+    with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+        cursor.execute('UPDATE drafts SET container = %s WHERE draft_id = %s', (draft_id, container))
+
+
+def remove_draft(draft_id):
+    with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+        cursor.execute('DELETE from drafts WHERE draft_id = %s', (draft_id, ))

@@ -1,11 +1,11 @@
 from .quest import Quest, Question, Place, Hint, Answer, Movement, File, update_from_dict
-from .entities_container import EntityType, EntitiesContainer
+from .quest_container import EntityType, QuestContainer
+from .db import get_draft, update_draft, write_draft, remove_draft
 from flask_login import current_user, login_required
 
-from flask import Blueprint, jsonify, request, g
+from flask import Blueprint, jsonify, request, g, session
 
 import pickle
-import os
 
 api = Blueprint('api', __name__)
 
@@ -14,32 +14,37 @@ api = Blueprint('api', __name__)
 @login_required
 def before_request():
     """
-    Check auth and load user's container with draft quests
+    Check auth and load user's container with draft quest
     """
     author_id = current_user.author['author_id']
-    path = f'quest_containers/{author_id}'
-    if os.path.exists(path):
-        with open(path, 'rb') as file:
-            g.container = pickle.load(file)
+    if request.method == 'GET' or \
+            (request.method == 'POST' and request.endpoint not in ['quest', 'save/<int:draft_id>']):
+        return
+    if 'draft_id' in session:
+        draft = get_draft(session['draft_id'])
+        if not draft:
+            return 'No draft with this id', 400
+        if draft['author_id'] != author_id:
+            return 'This is not your quest', 403
+        g.container = pickle.loads(bytes(draft['container']))
     else:
-        g.container = EntitiesContainer()
+        return 'You don\'t have loaded draft', 400
 
 
 @api.after_request
 @login_required
 def after_request(response):
     """
-    Serialize container with draft quests
+    Serialize container with draft quests and write to db
     """
-    author_id = current_user.author['author_id']
-    path = f'quest_containers/{author_id}'
-    if 'container' in g:
-        if g.container.empty():
-            if os.path.exists(path):
-                os.remove(path)
-        else:
-            with open(path, 'wb') as file:
-                pickle.dump(g.container, file)
+    if request.method == 'GET' or \
+            (request.method == 'POST' and request.endpoint not in ['quest', 'save/<int:draft_id>']):
+        return response
+    if 'container' in g and 'draft_id' in session:
+        update_draft(session['draft_id'], pickle.dumps(g.container))
+    elif 'container' in g and 'draft_id' not in session:
+        return 'Could not save changes. Perhaps cookies are disabled.', 400
+
     return response
 
 
@@ -53,18 +58,30 @@ def get_quest_from_db(quest_id):
     quest = Quest().from_db(quest_id)
     if not quest:
         return 'Wrong quest id', 400
-    g.container.add_quest(quest)
+    if quest.author_id != current_user.author['author_id']:
+        return 'This is not your quest', 403
+
+    container = QuestContainer()
+    container.add_quest(quest)
+    quest.quest_id = write_draft(current_user.author['author_id'], pickle.dumps(container))
+    session['draft_id'] = quest.quest_id
     return jsonify(quest.to_dict())
 
 
-@api.route('/draft/quest/<int:quest_id>', methods=['GET'])
-def get_quest_from_draft(quest_id):
+@api.route('/draft/quest/<int:draft_id>', methods=['GET'])
+def get_quest_from_draft(draft_id):
     """
     Get draft quest
-    :param quest_id: quest id in container
+    :param draft_id: draft id in drafts table
     :return: json with quest or error message
     """
-    quest = g.container.get(EntityType.QUEST, quest_id)
+    draft = get_draft(draft_id)
+    if not draft:
+        return 'Draft does not exist', 400
+    if draft['author_id'] != current_user.author['author_id']:
+        return 'This is not your quest', 403
+    quest = pickle.loads(bytes(draft['container'])).quest
+    session['draft_id'] = draft_id
     return jsonify(quest.to_dict()) if quest else ('Wrong quest id', 400)
 
 
@@ -81,7 +98,12 @@ def create_quest():
     rc = quest.create_from_dict(quest_dict)
     if not rc:
         return 'Wrong JSON attributes', 400
-    g.container.add_quest(quest)
+
+    container = QuestContainer()
+    container.add_quest(quest)
+    draft_id = write_draft(current_user.author['author_id'], pickle.dumps(container))
+    quest.quest_id = draft_id
+    session['draft_id'] = draft_id
     return jsonify({'quest_id': quest.quest_id,
                     'start_question_id': quest.first_question.question_id,
                     'first_answer_id': quest.first_question.answers[0].answer_option_id,
@@ -102,7 +124,7 @@ def create_question():
     if not rc:
         return 'Wrong JSON attributes', 400
 
-    question.question_id = g.container.add(question)
+    question.question_id = g.container.add_entity(question)
     return jsonify({'question_id': question.question_id})
 
 
@@ -114,10 +136,10 @@ def add_question_to_answer(answer_id, question_id):
     :param question_id: question id in container
     :return: status code
     """
-    answer = g.container.get(EntityType.ANSWER, answer_id)
+    answer = g.container.get_entity(EntityType.ANSWER, answer_id)
     if not answer:
         return 'Wrong answer id', 400
-    question = g.container.get(EntityType.QUESTION, question_id)
+    question = g.container.get_entity(EntityType.QUESTION, question_id)
     if not question:
         return 'Wrong question id', 400
     answer.next_question = question
@@ -133,10 +155,10 @@ def add_question_to_movement(movement_id, question_id):
     :param question_id: question id in container
     :return: status code
     """
-    movement = g.container.get(EntityType.MOVEMENT, movement_id)
+    movement = g.container.get_entity(EntityType.MOVEMENT, movement_id)
     if not movement:
         return 'Wrong movement id', 400
-    question = g.container.get(EntityType.QUESTION, question_id)
+    question = g.container.get_entity(EntityType.QUESTION, question_id)
     if not question:
         return 'Wrong question id', 400
     movement.next_question = question
@@ -157,7 +179,7 @@ def create_file():
     rc = update_from_dict(file, file_dict)
     if not rc:
         return 'Wrong JSON attributes', 400
-    file.file_id = g.container.add(file)
+    file.file_id = g.container.add_entity(file)
     return jsonify({'file_id': file.file_id})
 
 
@@ -170,7 +192,7 @@ def add_file(e_type_str, e_id, file_id):
     :param file_id: file id in container
     :return: status code
     """
-    file = g.container.get(EntityType.FILE, file_id)
+    file = g.container.get_entity(EntityType.FILE, file_id)
     if not file:
         return 'Wrong file id', 400
 
@@ -178,11 +200,11 @@ def add_file(e_type_str, e_id, file_id):
     if e_type not in (EntityType.QUEST, EntityType.QUESTION, EntityType.HINT):
         return 'Bad Request', 400
 
-    entity = g.container.get(e_type, e_id)
+    entity = g.container.get_entity(e_type, e_id)
     if not entity:
         return f'Wrong {e_type_str} id', 400
     entity.files.append(file)
-    file.parent = g.container.get(e_type, e_id)
+    file.parent = g.container.get_entity(e_type, e_id)
     return '', 200
 
 
@@ -199,7 +221,7 @@ def create_answer():
     rc = update_from_dict(ans, ans_dict)
     if not rc:
         return 'Wrong JSON attributes', 400
-    ans.answer_option_id = g.container.add(ans)
+    ans.answer_option_id = g.container.add_entity(ans)
     return jsonify({'answer_option_id': ans.answer_option_id})
 
 
@@ -211,10 +233,10 @@ def add_answer(question_id, answer_id):
     :param answer_id: answer id in container
     :return: status code
     """
-    answer = g.container.get(EntityType.ANSWER, answer_id)
+    answer = g.container.get_entity(EntityType.ANSWER, answer_id)
     if not answer:
         return 'Wrong answer id', 400
-    question = g.container.get(EntityType.QUESTION, question_id)
+    question = g.container.get_entity(EntityType.QUESTION, question_id)
     if not question:
         return 'Wrong question id', 400
     question.answers.append(answer)
@@ -235,7 +257,7 @@ def create_movement():
     rc = update_from_dict(move, move_dict)
     if not rc:
         return 'Wrong JSON attributes', 400
-    move.movement_id = g.container.add(move)
+    move.movement_id = g.container.add_entity(move)
     return jsonify({'movement_id': move.movement_id})
 
 
@@ -247,10 +269,10 @@ def add_movement(question_id, movement_id):
     :param question_id: place id in container
     :return: status code
     """
-    movement = g.container.get(EntityType.MOVEMENT, movement_id)
+    movement = g.container.get_entity(EntityType.MOVEMENT, movement_id)
     if not movement:
         return 'Wrong movement id', 400
-    question = g.container.get(EntityType.QUESTION, question_id)
+    question = g.container.get_entity(EntityType.QUESTION, question_id)
     if not question:
         return 'Wrong question id', 400
     question.movements.append(movement)
@@ -271,7 +293,7 @@ def create_hint():
     rc = update_from_dict(hint, hint_dict)
     if not rc:
         return 'Wrong JSON attributes', 400
-    hint.hint_id = g.container.add(hint)
+    hint.hint_id = g.container.add_entity(hint)
     return jsonify({'hint_id': hint.hint_id})
 
 
@@ -283,10 +305,10 @@ def add_hint(question_id, hint_id):
     :param hint_id: hint id in container
     :return: status code
     """
-    hint = g.container.get(EntityType.HINT, hint_id)
+    hint = g.container.get_entity(EntityType.HINT, hint_id)
     if not hint:
         return 'Wrong hint id', 400
-    question = g.container.get(EntityType.QUESTION, question_id)
+    question = g.container.get_entity(EntityType.QUESTION, question_id)
     if not question:
         return 'Wrong question id', 400
     question.hints.append(hint)
@@ -307,7 +329,7 @@ def create_place():
     rc = update_from_dict(place, place_dict)
     if not rc:
         return 'Wrong JSON attributes', 400
-    place.place_id = g.container.add(EntityType.PLACE, place)
+    place.place_id = g.container.add_entity(EntityType.PLACE, place)
     return jsonify({'place_id': place.place_id})
 
 
@@ -319,10 +341,10 @@ def add_place(movement_id, place_id):
     :param place_id: place id in container
     :return: status code
     """
-    place = g.container.get(EntityType.PLACE, place_id)
+    place = g.container.get_entity(EntityType.PLACE, place_id)
     if not place:
         return 'Wrong place id', 400
-    movement = g.contaienr.get(EntityType.MOVEMENT, movement_id)
+    movement = g.contaienr.get_entity(EntityType.MOVEMENT, movement_id)
     if not movement:
         return 'Wrong movement id', 400
     movement.place = place
@@ -342,7 +364,7 @@ def update_entity(e_type_str, e_id):
     e_type = EntityType.from_str(e_type_str)
     if e_type is None:
         return 'Bad Request', 400
-    rc = update_from_dict(g.container.get(e_type, e_id), e_dict)
+    rc = update_from_dict(g.container.get_entity(e_type, e_id), e_dict)
     return ('', 200) if rc else ('Wrong JSON attributes', 400)
 
 
@@ -357,7 +379,7 @@ def remove_entity(e_type_str, e_id):
     e_type = EntityType.from_str(e_type_str)
     if e_type is None:
         return 'Bad Request', 400
-    g.container.remove(e_type, e_id)
+    g.container.remove_entity(e_type, e_id)
     return '', 200
 
 
@@ -368,11 +390,11 @@ def remove_answer_question_link(answer_id):
     :param answer_id: answer id in container
     :return: status code
     """
-    answer = g.container.get(EntityType.ANSWER, answer_id)
+    answer = g.container.get_entity(EntityType.ANSWER, answer_id)
     if not answer:
         return 'Wrong answer id', 400
     if answer.next_question:
-        answer.next_question.parents.remove(answer)
+        answer.next_question.parents.remove_entity(answer)
         answer.next_question = None
         return '', 200
     else:
@@ -386,11 +408,11 @@ def remove_movement_question_link(movement_id):
     :param movement_id: movement id in container
     :return: status code
     """
-    movement = g.container.get(EntityType.MOVEMENT, movement_id)
+    movement = g.container.get_entity(EntityType.MOVEMENT, movement_id)
     if not movement:
         return 'Wrong movement id', 400
     if movement.next_question:
-        movement.next_question.parents.remove(movement)
+        movement.next_question.parents.remove_entity(movement)
         movement.next_question = None
         return '', 200
     else:
@@ -405,14 +427,14 @@ def remove_question_movement_link(question_id, movement_id):
     :param movement_id: movement id in container
     :return: status code
     """
-    question = g.container.get(EntityType.QUESTION, question_id)
+    question = g.container.get_entity(EntityType.QUESTION, question_id)
     if not question:
         return 'Wrong question id', 400
-    movement = g.container.get(EntityType.MOVEMENT, movement_id)
+    movement = g.container.get_entity(EntityType.MOVEMENT, movement_id)
     if not movement:
         return 'Wrong movement id', 400
     if movement in question.movements:
-        question.movements.remove(movement)
+        question.movements.remove_entity(movement)
         movement.parent = None
         return '', 200
     else:
@@ -427,31 +449,34 @@ def remove_question_answer_link(question_id, answer_id):
     :param answer_id: answer id in container
     :return: status code
     """
-    question = g.container.get(EntityType.QUESTION, question_id)
+    question = g.container.get_entity(EntityType.QUESTION, question_id)
     if not question:
         return 'Wrong question id', 400
-    answer = g.container.get(EntityType.ANSWER, answer_id)
+    answer = g.container.get_entity(EntityType.ANSWER, answer_id)
     if not answer:
         return 'Wrong movement id', 400
     if answer in question.answers:
-        question.answers.remove(answer)
+        question.answers.remove_entity(answer)
         answer.parent = None
         return '', 200
     else:
         return 'No link', 400
 
 
-@api.route('/save/<int:quest_id>', methods=['POST'])
-def save_quest(quest_id):
+@api.route('/save/<int:draft_id>', methods=['POST'])
+def save_quest(draft_id):
     """
-    Save quest in database and remove from draft
-    :param quest_id: quest_id in container
+    Save quest in database and remove from drafts
+    :param draft_id: draft_id in drafts
     :return: status code
     """
     author_id = current_user.author['author_id']
-    quest = g.container.get(EntityType.QUEST, quest_id)
-    if not quest:
-        return 'Wrong quest id', 400
-    quest.to_db(author_id)
-    g.container.remove(EntityType.QUEST, quest_id)
+    draft = get_draft(draft_id)
+    if not draft:
+        return 'No draft with this id', 400
+    if draft['author_id'] != author_id:
+        return 'This is not your quest', 403
+    container = pickle.loads(bytes(draft['container']))
+    container.quest.to_db(author_id)
+    remove_draft(draft_id)
     return '', 200

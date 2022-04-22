@@ -19,53 +19,49 @@
             <div class="position-absolute top-0 start-0 min-vh-100 min-vw-100" id="container">
                 <!-- Container for block rendered -->
             </div>
+        </div>
 
-            <!-- Модальное окно-->
-                <div class="modal fade" id="modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                    <div class="modal-dialog">
-                      <div class="modal-content">
-                        <div class="modal-header">
-                          <h5 class="modal-title" id="exampleModalLabel">Заголовок</h5>
-                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                          <p class="mb-5">Добавить новый блок?</p>
-                        </div>
-                        <div class="modal-footer">
-                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="addMBtn">
-                              Блок перемещения
-                          </button>
-                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="addQBtn">
-                              Блок вопроса
-                          </button>
-                        </div>
-                      </div>
+        <!-- Модальное окно-->
+        <div class="modal fade" id="modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Заголовок</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-5">Добавить новый блок?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="addMBtn">
+                            Блок перемещения
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="addQBtn">
+                            Блок вопроса
+                        </button>
                     </div>
                 </div>
-
-            <div class="modal fade" id="redactor" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-              <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title" id="staticBackdropLabel">Редактировать</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                  </div>
-                  <div class="modal-body">
-         
-                      <form id="redactorForm" class="row g-3 p-2">
-                    
-                      </form>
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="update">Сохранить</button>
-                  </div>
-                </div>
-              </div>
             </div>
         </div>
 
-
+        <div class="modal fade" id="redactor" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="staticBackdropLabel">Редактировать</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="redactorForm" class="row g-3 p-2">
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="update">Сохранить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
 {% endblock %}
 

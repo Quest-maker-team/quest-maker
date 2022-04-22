@@ -11,8 +11,11 @@ export class BlockRedactor {
             '</textarea>';
     }
 
-    static deleteAnswer(answer, question, instance) {
-        if (confirm('Вы действительно хотите удалить вариант ответа? Отменить действие будет не возможно.')) {
+    static deleteAnswer(answer, question, instance, withConfirm) {
+        let conf = true;
+        if (withConfirm)
+            conf = confirm('Вы действительно хотите удалить вариант ответа? Отменить действие будет не возможно.');
+        if (conf) {
             let index = 0;
             for (const ans of question.answer_options){
                 if (ans.answer_option_id === answer.answer_option_id)
@@ -33,11 +36,15 @@ export class BlockRedactor {
     static addAnswerForQuestion(element_id, answer, question, instance) {
         document.getElementById(element_id).insertAdjacentHTML('beforeend',
             '<div class="row pb-1" id="ansblock' + answer.answer_option_id + '">' +
-                '<div class="col-7">'+
+                '<div class="col-8">'+
                     '<input type="text" onkeydown="return (event.keyCode!=13);" class="form-control" id="answerText' +
                         answer.answer_option_id + '" value="' + answer.text + '">' +
+                    '<div class="invalid-feedback">' +
+                        'Не используйте "skip" или пустую строку в качестве ответов. ' +
+                        'Добавить возможность пропуска можно, установив соответствующий флаг.' +
+                    '</div>' +
                 '</div>' +
-                '<div class="col-4">' +
+                '<div class="col-3">' +
                     '<div class="input-group">' +
                         '<span class="input-group-text"> Очки </span>' +
                         '<input type="number" onkeydown="return (event.keyCode!=13);" class="form-control" ' +
@@ -61,7 +68,7 @@ export class BlockRedactor {
             '</div>'
         );
         document.getElementById('ansdel' + answer.answer_option_id).onclick = () => {
-            this.deleteAnswer(answer, question, instance);
+            this.deleteAnswer(answer, question, instance, true);
         }
     }
 
@@ -110,7 +117,7 @@ export class BlockRedactor {
         };
     }
 
-    static createOpenQuestionRedactor(form, question, instance, sourceEndpoint) {
+    static createOpenQuestionRedactor(form, question, instance, sourceEndpoint, modal) {
         this.addTextRedactor(form, 'Вопрос', question.text);
         form.insertAdjacentHTML('beforeend', 
             '<hr><label for="formControlTextarea" class="form-label">Ответы:</label>');
@@ -124,6 +131,7 @@ export class BlockRedactor {
             this.addAnswerForQuestion('OQanswers', answer, question, instance);
         }
 
+        let newAns = [];
         document.getElementById('addAnswer').onclick = () => {
             Quest.addAnswer(JSON.stringify({
                 points: 0,
@@ -137,9 +145,34 @@ export class BlockRedactor {
                 question.answer_options.push(answer);
                 this.addAnswerForQuestion('OQanswers', answer, question, instance);
                 Render.renderAnswer(answer, question, instance, sourceEndpoint);
+                newAns.push(answer);
             });
         };
+        document.getElementById('close').onclick = () => {
+            for (const ans of newAns){
+                BlockRedactor.deleteAnswer(ans, question, instance, false);
+            }
+        };
+        document.getElementById('xclose').onclick = () => {
+            for (const ans of newAns){
+                BlockRedactor.deleteAnswer(ans, question, instance, false);
+            }
+        };
         document.getElementById('update').onclick = () => {
+            let invalid = false;
+            for (const answer of question.answer_options) {
+                let ans = document.getElementById('answerText' + answer.answer_option_id);
+                if (ans.value === 'skip' || ans.value === '') {
+                    ans.className = 'form-control is-invalid';
+                    invalid = true;
+                }
+                else{
+                    ans.className = 'form-control';
+                }
+            }
+            if (invalid){
+                return false;
+            }
             question.text = document.getElementById('formControlTextarea').value;
             document.getElementById(question.question_id).getElementsByClassName('card-text')[0].textContent =
                 question.text;
@@ -162,6 +195,7 @@ export class BlockRedactor {
                     type: question.type,
                     text: question.text,
                 })).then(() => console.log('success'));
+                modal.hide();
             }
         };
     }
@@ -231,14 +265,14 @@ export class BlockRedactor {
             BlockRedactor.createFinishRedactor(form, question);
             break;
         case 'open':
-            BlockRedactor.createOpenQuestionRedactor(form, question, instance, sourceEndpoint);
+            BlockRedactor.createOpenQuestionRedactor(form, question, instance, sourceEndpoint, modal);
             break;
         case 'movement':
             BlockRedactor.createMovementRedactor(form, question);
             break;
         case 'choice':
             // TODO: change this to function for "choice"
-            BlockRedactor.createOpenQuestionRedactor(form, question, instance, sourceEndpoint);
+            BlockRedactor.createOpenQuestionRedactor(form, question, instance, sourceEndpoint, modal);
             break;
         default:
             break;

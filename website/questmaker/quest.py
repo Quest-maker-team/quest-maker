@@ -272,7 +272,8 @@ class Place(QuestEntity):
     @staticmethod
     def check_valid_update_attr(attr, val):
         if attr == 'coords':
-            return isinstance(val, list) and len(val) == 2 and isinstance(val[0], float) and isinstance(val[1], float)
+            return isinstance(val, list) and len(val) == 2 \
+                   and isinstance(val[0], (int, float)) and isinstance(val[1], (int, float))
         elif attr == 'radius':
             return isinstance(val, (int, float))
         elif attr == 'time_open' or attr == 'time_close':

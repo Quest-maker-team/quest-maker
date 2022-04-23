@@ -35,17 +35,17 @@ const targetEndpoint = {
 };
 
 
-//panzoom init
+// panzoom init
 const panzoom = Panzoom(containerElement, {
     canvas: true,
     maxScale: 5,
-    cursor: "default"
+    cursor: 'default',
 });
 
 // Panning and pinch zooming are bound automatically (unless disablePan is true).
 // There are several available methods for zooming
 // that can be bound on button clicks or mousewheel.
-//button.addEventListener('click', panzoom.zoomIn);
+// button.addEventListener('click', panzoom.zoomIn);
 containerElement.parentElement.addEventListener('wheel', panzoom.zoomWithWheel);
 
 containerElement.addEventListener('newEndpointCreating', (event) => {
@@ -61,10 +61,8 @@ containerElement.addEventListener('panzoomstart', (event) => {
 });
 
 containerElement.addEventListener('panzoomend', (event) => {
-    containerElement.parentElement.style.cursor = "default";
+    containerElement.parentElement.style.cursor = 'default';
 });
-
-
 
 
 Quest.loadQuest(1).then((newQuest) => {
@@ -77,19 +75,18 @@ Quest.loadQuest(1).then((newQuest) => {
     }*/
 
     instance.bind(EVENT_CONNECTION, (connection) => {
-        let sourceIdSplit = connection.source.id.match(/([a-z]*_?[a-z]*)([0-9]*)/);
+        const sourceIdSplit = connection.source.id.match(/([a-z]*_?[a-z]*)([0-9]*)/);
         Quest.connect(sourceIdSplit[1], 'question', sourceIdSplit[2], connection.target.id).then(() =>
             console.log('connect success'));
     });
 
     instance.bind(EVENT_CONNECTION_DETACHED, (connection) => {
-        let sourceIdSplit = connection.source.id.match(/([a-z]*_?[a-z]*)([0-9]*)/);
+        const sourceIdSplit = connection.source.id.match(/([a-z]*_?[a-z]*)([0-9]*)/);
         Quest.disconnect(sourceIdSplit[1], 'question', sourceIdSplit[2]).then(() =>
             console.log('disconnect success'));
     });
     return quest;
 }).then((quest) => {
-
     return quest;
 }).then((quest) => {
     const createNewBlock = function(type, text, renderFunction) {

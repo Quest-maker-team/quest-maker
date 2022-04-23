@@ -16,6 +16,7 @@ def create_keyboard(answers):
         kb_client.add(KeyboardButton(answer))
     return kb_client
 
+
 def create_movement_keyboard(refusal):
     """Function to create keyboard for movement.
     :param refusal: message when user don't want to locate 'em
@@ -25,4 +26,13 @@ def create_movement_keyboard(refusal):
     no_geo_button = KeyboardButton(refusal)
     kb_client = ReplyKeyboardMarkup(resize_keyboard=True)
     kb_client.row(geo_button, no_geo_button)  # in one row
+    return kb_client
+
+
+def create_opening_menu_keyboard():
+    """Function to create opening menu.
+    :return keyboard markup
+    """
+    kb_client = ReplyKeyboardMarkup(resize_keyboard=True)
+    kb_client.row(KeyboardButton("/quest"), KeyboardButton("/help"))  # in one row
     return kb_client

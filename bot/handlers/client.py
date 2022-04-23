@@ -345,9 +345,9 @@ async def cmd_start(message: types.Message):
     :param message: message from user
     """
     await set_commands(bot)
-    await message.answer('Это бот для игры в квесты, созданные при помощи сервиса QuestCreator.'
+    await message.answer('Это бот для игры в квесты, созданные при помощи сервиса QuestCreator. '
         'Введите команду /quest для начала.',
-        reply_markup=ReplyKeyboardRemove())
+        reply_markup=create_opening_menu_keyboard())
 
 
 def activate_quest(quest_id):
@@ -362,7 +362,7 @@ async def cmd_quest(message: types.Message):
     :param message: message from user
     """
     await QuestStates.naming.set()
-    await message.answer('Введите идентификатор квеста.')
+    await message.answer('Введите идентификатор квеста.', reply_markup=ReplyKeyboardRemove())
 
 
 def make_media_groups(files):
@@ -481,11 +481,11 @@ async def name_quest(message: types.Message, state: FSMContext):
                 data['quest'].save(message.from_user.id, True)
                 await message.answer('Квест "' + data['quest'].name + '" закончен. '
                                      'Количество баллов: ' + str(data['quest'].score) + ".",
-                                     reply_markup=ReplyKeyboardRemove())
+                                     reply_markup=create_opening_menu_keyboard())
                 await state.finish()
     else:
         await message.reply('Квест с идентификатором "' + message.text + '" не найден',
-            reply_markup=ReplyKeyboardRemove())
+            reply_markup=create_opening_menu_keyboard())
         await state.finish()
 
 
@@ -513,7 +513,7 @@ async def load_quest(message: types.Message, state: FSMContext):
                 data['quest'].save(message.from_user.id, True)
                 await message.answer('Квест "' + data['quest'].name + '" закончен. '
                                      'Количество баллов: ' + str(data['quest'].score) + ".",
-                                     reply_markup=ReplyKeyboardRemove())
+                                     reply_markup=create_opening_menu_keyboard())
                 await state.finish()
         else:
             if data['quest'].load(message.from_user.id):
@@ -524,7 +524,8 @@ async def load_quest(message: types.Message, state: FSMContext):
                     keyboard = ReplyKeyboardRemove()
                 await send_files(message, data['quest'].cur_point.msg, data['quest'].cur_point.files, keyboard)
             else:
-                await message.answer('Не удалось возобновить прохождение.')
+                await message.answer('Не удалось возобновить прохождение.',
+                    reply_markup=create_opening_menu_keyboard())
                 await state.finish()
 
 
@@ -540,7 +541,7 @@ async def cancel_handler(message: types.Message, state: FSMContext):
                                  'Количество баллов: ' + str(data['quest'].score) + ".",
                                  reply_markup=ReplyKeyboardRemove())
         else:
-            await message.answer('Выберите квест командой /quest.', reply_markup=ReplyKeyboardRemove())
+            await message.answer('Выберите квест командой /quest.', reply_markup=create_opening_menu_keyboard())
         await state.finish()
 
 
@@ -560,7 +561,7 @@ async def tip_handler(message: types.Message, state: FSMContext):
                 await message.answer('Штраф за подсказку в баллах: ' + str(tip.fine) + ' .')
                 data['quest'].score -= tip.fine
         else:
-            await message.answer('Выберите квест командой /quest.', reply_markup=ReplyKeyboardRemove())
+            await message.answer('Выберите квест командой /quest.', reply_markup=create_opening_menu_keyboard())
 
 
 async def score_handler(message: types.Message, state: FSMContext):
@@ -573,7 +574,7 @@ async def score_handler(message: types.Message, state: FSMContext):
             await message.reply('Текущее количество баллов: ' + str(data['quest'].score) + '.',
                 reply_markup=ReplyKeyboardRemove())
         else:
-            await message.answer('Выберите квест командой /quest.', reply_markup=ReplyKeyboardRemove())
+            await message.answer('Выберите квест командой /quest.', reply_markup=create_opening_menu_keyboard())
 
 
 async def skip_handler(message: types.Message, state: FSMContext):
@@ -596,13 +597,13 @@ async def skip_handler(message: types.Message, state: FSMContext):
                         await state.finish()
                         await message.answer('Квест "' + data['quest'].name + '" закончен. '
                                              'Количество баллов: ' + str(data['quest'].score) + ".",
-                                              reply_markup=ReplyKeyboardRemove())
+                                              reply_markup=create_opening_menu_keyboard())
                 else:
                     await message.answer('Точка не поддерживает пропуск.')
             else:
                 await message.answer('Точка не поддерживает пропуск.')
         else:
-            await message.answer('Выберите квест командой /quest.', reply_markup=ReplyKeyboardRemove())
+            await message.answer('Выберите квест командой /quest.', reply_markup=create_opening_menu_keyboard())
 
 
 async def point_proc(message: types.Message, state: FSMContext, latitude, longitude):
@@ -632,7 +633,7 @@ async def point_proc(message: types.Message, state: FSMContext, latitude, longit
             await state.finish()
             await message.answer('Квест "' + data['quest'].name + '" закончен. '
                                  'Количество баллов: ' + str(data['quest'].score) + ".",
-                                  reply_markup=ReplyKeyboardRemove())
+                                  reply_markup=create_opening_menu_keyboard())
 
 
 async def quest_proc(message: types.Message, state: FSMContext):
@@ -647,7 +648,7 @@ async def warning(message: types.Message):
     """Warning message handler.
     :param message: message from user
     """
-    await message.answer('Выберите квест командой /quest.')
+    await message.answer('Выберите квест командой /quest.', reply_markup=create_opening_menu_keyboard())
 
 
 async def handle_location(message: types.Message, state: FSMContext):

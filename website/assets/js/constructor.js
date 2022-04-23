@@ -67,7 +67,7 @@ containerElement.addEventListener('panzoomend', (event) => {
 
 
 
-Quest.loadQuest(3).then((newQuest) => {
+Quest.loadQuest(1).then((newQuest) => {
     const quest = newQuest;
     Render.render(quest, instance, sourceEndpoint, targetEndpoint);
     return quest;

@@ -11,10 +11,12 @@ export class BlockRedactor {
             '</textarea>';
     }
 
-    static delete(option_id, element_id_part, question, instance) {
+    static delete(option_id, element_id_part, question, instance, special) {
         let ans = document.getElementById('answer_option' + option_id);
+        
+        if (!special)
+            document.getElementById(element_id_part + option_id).remove();
 
-        document.getElementById(element_id_part + option_id).remove();
         question.answer_options.splice(question.answer_options.findIndex((ans) => 
             ans.answer_option_id == option_id), 1);
         Render.deleteElemEndpoint(ans, instance);
@@ -28,7 +30,7 @@ export class BlockRedactor {
         if (withConfirm)
             conf = confirm('Вы действительно хотите удалить вариант ответа? Отменить действие будет не возможно.');
         if (conf) 
-            BlockRedactor.delete(answer.answer_option_id, 'ansblock', question, instance);
+            BlockRedactor.delete(answer.answer_option_id, 'ansblock', question, instance, false);
     }
 
     static addAnswerForQuestion(element_id, answer, question, instance) {
@@ -70,52 +72,52 @@ export class BlockRedactor {
         }
     }
 
-    static showSpecial(element_id, special, name, text) {
+    static addSpecialBox(element_id, points, id, text, hide) {
         document.getElementById(element_id).insertAdjacentHTML('afterend',
-            '<div class="row pb-1" id="' + name + special.answer_option_id + '">' +
+            '<div class="row pb-1" id="' + id + '"' + (hide ? ' hidden' : '') + '>' +
                 '<div class="col-8">'+
-                    '<input type="text" name="' + name + '" id="' + special.answer_option_id +
-                        '" class="form-control" placeholder="' + text + '" readonly>' +
+                    '<input type="text" class="form-control" placeholder="' + text + '" readonly>' +
                 '</div>' +
                 '<div class="col-3">' +
                     '<div class="input-group">' +
                         '<span class="input-group-text"> Очки </span>' +
                         '<input type="number" onkeydown="return (event.keyCode!=13);" class="form-control" ' +
-                            'id="answerPoints' + special.answer_option_id + '" value="' + special.points + '">' +
+                            'id="answerPoints' + id + '" value="' + points + '">' +
                     '</div>' +
                 '</div>' +
             '</div>'
         );
     }
 
-    static addSpecial(element_id, name, text, points, question, instance, sourceEndpoint){
-        if (document.getElementsByName(name)[0] !== undefined) {
+    static updateSpecialState(state, chbx_id, id, question, instance, text, sourceEndpoint) {
+        if (state.isActive === document.getElementById(chbx_id).checked) {
+            if (state.isActive) {
+                let answer = question.answer_options[question.answer_options.findIndex((ans) => 
+                    ans.answer_option_id == state.id)];
+                answer.points = document.getElementById('answerPoints' + id).value;
+                Quest.updateAnswer(state.id, JSON.stringify({
+                    points: answer.points,
+                    text: answer.text,
+                })).then((response) => console.log(response));
+            }
             return;
         }
-        let answer;
-        Quest.addAnswer(JSON.stringify({
-            points: points,
-            text: text,
-        })).then((response) => {
-            answer = {
-                answer_option_id: JSON.parse(response).answer_option_id,
-                points: points,
+        if (state.isActive)
+            BlockRedactor.delete(state.id, '', question, instance, true);
+        else {
+            Quest.addAnswer(JSON.stringify({
+                points: document.getElementById('answerPoints' + id).value,
                 text: text,
-            };
-            question.answer_options.push(answer);
-            Render.renderAnswer(answer, question, instance, sourceEndpoint, true);
-            if (text === '')
-                text = '<Любой другой ответ>';
-            BlockRedactor.showSpecial(element_id, answer, name, text);
-        });
-    }
-
-    static deleteSpecial(name, question, instance) {
-        let elem = document.getElementsByName(name)[0];
-        if (elem === undefined) {
-            return;
+            })).then((response) => {
+                let answer = {
+                    answer_option_id: JSON.parse(response).answer_option_id,
+                    points: document.getElementById('answerPoints' + id).value,
+                    text: text,
+                };
+                question.answer_options.push(answer);
+                Render.renderAnswer(answer, question, instance, sourceEndpoint, true);
+            });
         }
-        BlockRedactor.delete(elem.id, name, question, instance);
     }
 
     static addMovementForMovementBlock(form, question) {
@@ -163,34 +165,95 @@ export class BlockRedactor {
         };
     }
 
-    static checkboxHandler(chbx_id, element_id, name, text, event, question, instance, sourceEndpoint) {
-        if (document.getElementById(chbx_id).checked) {
-            if (event.detail === undefined)
-                BlockRedactor.addSpecial(element_id, name, text, 0, question, instance, sourceEndpoint);
-            else
-                BlockRedactor.addSpecial(element_id, name, text, event.detail, question, instance, sourceEndpoint);
-        } else
-            BlockRedactor.deleteSpecial(name, question, instance);
+    static loadAnswers(question, instance) {
+        let specialStates = {
+            skip : {
+                id : undefined,
+                isActive : false,
+            },
+            wrong : {
+                id : undefined,
+                isActive : false,
+            }
+        };
+        let skipPoints = 0;
+        let wrongPoints = 0;
+        
+        for (const answer of question.answer_options) {
+            if (answer.text === 'skip') {
+                document.getElementById('skip').checked = true;
+                specialStates.skip.id = answer.answer_option_id;
+                specialStates.skip.isActive = true;
+                skipPoints = answer.points;
+                continue;
+            }
+            if (answer.text === '') {
+                document.getElementById('wrong').checked = true;
+                specialStates.wrong.id = answer.answer_option_id;
+                specialStates.wrong.isActive = true;
+                wrongPoints = answer.points;
+                continue;
+            }
+            BlockRedactor.addAnswerForQuestion('OQanswers', answer, question, instance);
+        }
+        BlockRedactor.addSpecialBox('skipChbx', skipPoints, 'skipbx', 'skip', !specialStates.skip.isActive);
+        BlockRedactor.addSpecialBox('wrongChbx', wrongPoints, 'wrongbx', 'Любой другой ответ',
+            !specialStates.wrong.isActive);
+
+        return specialStates;
     }
 
-    static closeQuestionRedactor(newAns, skipState, wrongState, question, instance) {
-        for (const ans of newAns){
-            BlockRedactor.deleteAnswer(ans, question, instance, false);
+    static validateAnswers(question) {
+        let valid = true;
+
+        for (const answer of question.answer_options) {
+            let ans = document.getElementById('answerText' + answer.answer_option_id);
+            if (ans === null)
+                continue;
+            if (ans.value === 'skip' || ans.value === '') {
+                ans.className = 'form-control is-invalid';
+                valid = false;
+            } else
+                ans.className = 'form-control';
         }
-        if (document.getElementById('skip').checked != skipState.isActive) {
-            document.getElementById('skip').checked = skipState.isActive;
-            document.getElementById('skip').dispatchEvent(new CustomEvent('change', { detail: skipState.points }));
+        
+        return valid;
+    }
+
+    static updateOpenQuestion(question, specialState, instance, sourceEndpoint) {
+        console.log(specialState);
+        BlockRedactor.updateSpecialState(specialState.skip, 'skip', 'skipbx', question, instance, 'skip',
+            sourceEndpoint);
+
+        for (const answer of question.answer_options) {
+            const answerId = answer.answer_option_id;
+            if (document.getElementById('answerText' + answerId) === null)
+                continue;
+
+            answer.text = document.getElementById('answerText' + answerId).value;
+            document.getElementById('answer_option' + answerId).innerText = answer.text;
+            answer.points = document.getElementById('answerPoints' + answerId).value;
+            
+            Quest.updateAnswer(answerId, JSON.stringify({
+                points: answer.points,
+                text: answer.text,
+            })).then((response) => console.log(response));
         }
-        new Promise((resolve) => setTimeout(resolve, 50)).then(() => {
-            if (document.getElementById('wrong').checked != wrongState.isActive) {
-                document.getElementById('wrong').checked = wrongState.isActive;
-                document.getElementById('wrong').dispatchEvent(new CustomEvent('change', { detail: wrongState.points }));
-            }
-        });
+
+        BlockRedactor.updateSpecialState(specialState.wrong, 'wrong', 'wrongbx', question, instance, '',
+            sourceEndpoint);
+
+        question.text = document.getElementById('formControlTextarea').value;
+        document.getElementById(question.question_id).getElementsByClassName('card-text')[0].textContent =
+            question.text;
+        Quest.updateQuestion(question.question_id, JSON.stringify({
+            type: question.type,
+            text: question.text,
+        })).then(() => console.log('success'));
     }
 
     static createOpenQuestionRedactor(form, question, instance, sourceEndpoint, modal) {
-        this.addTextRedactor(form, 'Вопрос', question.text);
+        BlockRedactor.addTextRedactor(form, 'Вопрос', question.text);
         form.insertAdjacentHTML('beforeend', 
             '<hr><label for="formControlTextarea" class="form-label">Ответы:</label>');
         form.insertAdjacentHTML('beforeend', '<div id="OQanswers"></div>');
@@ -216,40 +279,14 @@ export class BlockRedactor {
             '</div>'
         );
    
-        document.getElementById('skip').onchange = (event) => {
-            BlockRedactor.checkboxHandler('skip', 'skipChbx', 'skipbx', 'skip', event, question, instance,
-                sourceEndpoint);
+        document.getElementById('skip').onchange = () => {
+            document.getElementById('skipbx').hidden = !document.getElementById('skipbx').hidden;
         }
-        document.getElementById('wrong').onchange = (event) => {
-            BlockRedactor.checkboxHandler('wrong', 'wrongChbx', 'wrongbx', '', event, question, instance,
-                sourceEndpoint);
+        document.getElementById('wrong').onchange = () => {
+            document.getElementById('wrongbx').hidden = !document.getElementById('wrongbx').hidden;
         }
 
-        let skipState = {
-            isActive: false,
-            points: 0,
-        };
-        let wrongState = {
-            isActive: false,
-            points: 0,
-        };
-        for (const answer of question.answer_options) {
-            if (answer.text === 'skip') {
-                BlockRedactor.showSpecial('skipChbx', answer, 'skipbx', 'skip');
-                document.getElementById('skip').checked = true;
-                skipState.isActive = true;
-                skipState.points = answer.points;
-                continue;
-            }
-            if (answer.text === '') {
-                BlockRedactor.showSpecial('wrongChbx', answer, 'wrongbx', 'Любой другой ответ');
-                document.getElementById('wrong').checked = true;
-                wrongState.isActive = true;
-                wrongState.points = answer.points;
-                continue;
-            }
-            BlockRedactor.addAnswerForQuestion('OQanswers', answer, question, instance);
-        }
+        let specialState = BlockRedactor.loadAnswers(question, instance);
 
         let newAns = [];
         document.getElementById('addAnswer').onclick = () => {
@@ -269,50 +306,21 @@ export class BlockRedactor {
             });
         };
         document.getElementById('close').onclick = () => {
-            BlockRedactor.closeQuestionRedactor(newAns, skipState, wrongState, question, instance);
+            for (const ans of newAns)
+                BlockRedactor.deleteAnswer(ans, question, instance, false);
         };
         document.getElementById('xclose').onclick = () => {
-            BlockRedactor.closeQuestionRedactor(newAns, skipState, wrongState, question, instance);
+            for (const ans of newAns)
+                BlockRedactor.deleteAnswer(ans, question, instance, false);
         };
         document.getElementById('update').onclick = () => {
-            let invalid = false;
-            for (const answer of question.answer_options) {
-                let ans = document.getElementById('answerText' + answer.answer_option_id);
-                if (ans === null)
-                    continue;
-                if (ans.value === 'skip' || ans.value === '') {
-                    ans.className = 'form-control is-invalid';
-                    invalid = true;
-                } else
-                    ans.className = 'form-control';
-            }
-            if (invalid)
+            if (!BlockRedactor.validateAnswers(question))
                 return false;
             
-            question.text = document.getElementById('formControlTextarea').value;
-            document.getElementById(question.question_id).getElementsByClassName('card-text')[0].textContent =
-                question.text;
-            for (const answer of question.answer_options) {
-                const answerId = answer.answer_option_id;
-                let elem = document.getElementById('answerText' + answerId);
-                if (elem !== null) {
-                    answer.text = document.getElementById('answerText' + answerId).value;
-                    document.getElementById('answer_option' + answerId).innerText = answer.text;
-                }
-                answer.points = document.getElementById('answerPoints' + answerId).value;
-                question.text = document.getElementById('formControlTextarea').value;
-                
-                Render.updateAnswersEndpoints(question, instance);
-                Quest.updateAnswer(answerId, JSON.stringify({
-                    points: answer.points,
-                    text: answer.text,
-                })).then((response) => console.log(response));
-                Quest.updateQuestion(question.question_id, JSON.stringify({
-                    type: question.type,
-                    text: question.text,
-                })).then(() => console.log('success'));
-                modal.hide();
-            }
+            BlockRedactor.updateOpenQuestion(question, specialState, instance, sourceEndpoint);
+
+            Render.updateAnswersEndpoints(question, instance);
+            modal.hide();
         };
     }
 

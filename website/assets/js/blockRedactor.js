@@ -96,7 +96,7 @@ export class BlockRedactor {
                     ans.answer_option_id == state.id)];
                 answer.points = document.getElementById('answerPoints' + id).value;
                 Quest.updateAnswer(state.id, JSON.stringify({
-                    points: answer.points,
+                    points: parseFloat(answer.points),
                     text: answer.text,
                 })).then((response) => console.log(response));
             }
@@ -106,12 +106,12 @@ export class BlockRedactor {
             BlockRedactor.delete(state.id, '', question, instance, true);
         else {
             Quest.addAnswer(JSON.stringify({
-                points: document.getElementById('answerPoints' + id).value,
+                points: parseFloat(document.getElementById('answerPoints' + id).value),
                 text: text,
             })).then((response) => {
                 let answer = {
                     answer_option_id: JSON.parse(response).answer_option_id,
-                    points: document.getElementById('answerPoints' + id).value,
+                    points: parseFloat(document.getElementById('answerPoints' + id).value),
                     text: text,
                 };
                 question.answer_options.push(answer);
@@ -235,7 +235,7 @@ export class BlockRedactor {
             answer.points = document.getElementById('answerPoints' + answerId).value;
             
             Quest.updateAnswer(answerId, JSON.stringify({
-                points: answer.points,
+                points: parseFloat(answer.points),
                 text: answer.text,
             })).then((response) => console.log(response));
         }

@@ -571,8 +571,7 @@ async def score_handler(message: types.Message, state: FSMContext):
     """
     async with state.proxy() as data:
         if 'quest' in data:
-            await message.reply('Текущее количество баллов: ' + str(data['quest'].score) + '.',
-                reply_markup=ReplyKeyboardRemove())
+            await message.reply('Текущее количество баллов: ' + str(data['quest'].score) + '.')
         else:
             await message.answer('Выберите квест командой /quest.', reply_markup=create_opening_menu_keyboard())
 
@@ -586,7 +585,13 @@ async def skip_handler(message: types.Message, state: FSMContext):
         if 'quest' in data:
             if data['quest'].cur_point.type == "open" or data['quest'].cur_point.type == "choice":
                 if 'skip' in data['quest'].cur_point.next_points:
+                    score = data['quest'].score
                     (quest_ends, msg, files, id) = data['quest'].next_point('skip')
+                    score_delta = data['quest'].score - score
+                    if score_delta > 0:
+                        await message.answer('Получены баллы: ' + str(score_delta) + '. ')
+                    elif score_delta < 0:
+                        await message.answer('Отняты баллы: ' + str(-score_delta) + '. ')
                     if data['quest'].cur_point.type == "choice":
                         keyboard = create_keyboard(edit_options(data['quest'].cur_point.next_points))
                         await send_files(message, msg, files, keyboard)
@@ -614,7 +619,13 @@ async def point_proc(message: types.Message, state: FSMContext, latitude, longit
     :param longitude: geoposition longitude
     """
     async with state.proxy() as data:
+        score = data['quest'].score
         (quest_ends, msg, files, id) = data['quest'].next_point(message.text, latitude=latitude, longitude=longitude)
+        score_delta = data['quest'].score - score
+        if score_delta > 0:
+            await message.answer('Получены баллы: ' + str(score_delta) + '. ')
+        elif score_delta < 0:
+            await message.answer('Отняты баллы: ' + str(-score_delta) + '. ')
         if data['quest'].cur_point.type == "choice":
             keyboard = create_keyboard(edit_options(data['quest'].cur_point.next_points))
             await send_files(message, msg, files, keyboard)

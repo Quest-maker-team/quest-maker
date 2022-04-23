@@ -67,7 +67,7 @@ export class Render {
     }
 
     static renderStart(question, instance, sourceEndpoint, position) {
-        const block = this.renderBlockBase(question, '10rem', 'Начало', position, instance, sourceEndpoint);
+        const block = this.renderBlockBase(question, '10rem', 'Начало', position);
 
         const answer = document.createElement("div");
         answer.id = 'answer_option' + question.answer_options[0].answer_option_id;
@@ -80,7 +80,7 @@ export class Render {
     }
 
     static renderFinish(question, instance, targetEndpoint, position) {
-        const block = this.renderBlockBase(question, '10rem', 'Конец', position, instance);
+        const block = this.renderBlockBase(question, '10rem', 'Конец', position);
         //instance.addEndpoint(block, targetEndpoint);
         Render.createEndpoint(instance, block, {}, targetEndpoint);
         return block;

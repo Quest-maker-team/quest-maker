@@ -75,15 +75,16 @@ class EntityType:
             return None
 
 
-class EntitiesContainer:
+class QuestContainer:
     """
     Class to store quest while it's created in constructor
     """
     def __init__(self):
-        self.__cur_ids = {e_type: 0 for e_type in range(EntityType.num_of_types())}
-        self.__entities = {e_type: {} for e_type in range(EntityType.num_of_types())}
+        self.quest = None
+        self.__cur_ids = {e_type: 0 for e_type in range(0, EntityType.num_of_types()) if e_type != EntityType.QUEST}
+        self.__entities = {e_type: {} for e_type in range(0, EntityType.num_of_types()) if e_type != EntityType.QUEST}
 
-    def add(self, entity):
+    def add_entity(self, entity):
         """
         Add entity to container (add only one entity without recursion)
         :param entity: entity to add
@@ -92,18 +93,22 @@ class EntitiesContainer:
         e_type = EntityType.from_instance(entity)
         if e_type is None:
             return None
+        if e_type == EntityType.QUEST:
+            return self.add_quest(entity)
         e_id = self.__cur_ids[e_type]
         self.__entities[e_type][e_id] = entity
         self.__cur_ids[e_type] += 1
         return e_id
 
-    def get(self, e_type: int, e_id):
+    def get_entity(self, e_type: int, e_id):
         """
         Get entity of type by id in container
         :param e_type: enum value type of entity
         :param e_id: entity id in container
         """
-        if e_type in EntityType.get_types() and e_id in self.__entities[e_type].keys():
+        if e_type == EntityType.QUEST:
+            return self.quest
+        if e_type in EntityType.get_types() and e_type != EntityType.QUEST and e_id in self.__entities[e_type].keys():
             return self.__entities[e_type][e_id]
         else:
             return None
@@ -113,29 +118,32 @@ class EntitiesContainer:
         Recursively add quest to container and change ids
         :param quest: quest to add to container
         """
-        quest.quest_id = self.add(quest)
+        self.quest = quest
         for file in quest.files:
-            file.file_id = self.add(file)
+            file.file_id = self.add_entity(file)
         for question in BFS(quest.first_question):
-            question.question_id = self.add(question)
+            question.question_id = self.add_entity(question)
             for file in question.files:
-                file.file_id = self.add(file)
+                file.file_id = self.add_entity(file)
             for hint in question.hints:
                 for hint_file in hint.files:
-                    hint_file.file_id = self.add(hint_file)
-                hint.hint_id = self.add(hint)
+                    hint_file.file_id = self.add_entity(hint_file)
+                hint.hint_id = self.add_entity(hint)
             for answer in question.answers:
-                answer.answer_option_id = self.add(answer)
+                answer.answer_option_id = self.add_entity(answer)
             for movement in question.movements:
-                movement.movement_id = self.add(movement)
-                movement.place.place_id = self.add(movement.place)
+                movement.movement_id = self.add_entity(movement)
+                movement.place.place_id = self.add_entity(movement.place)
 
-    def remove(self, e_type: int, e_id: int):
+    def remove_entity(self, e_type: int, e_id: int):
         """
         Remove entity of type by id in container
         :param e_type: enum value type of entity
         :param e_id: entity id in container
         """
+        if e_type == EntityType.QUEST:
+            return
+
         if e_id not in self.__entities[e_type].keys():
             return
 
@@ -144,23 +152,14 @@ class EntitiesContainer:
         if hasattr(entity, 'files'):
             for file in entity.files:
                 self.__entities[EntityType.FILE].pop(file.file_id)
-        if e_type == EntityType.QUEST:
-            for question in BFS(entity.first_question):
-                self.remove(EntityType.QUESTION, question.question_id)
         elif e_type == EntityType.QUESTION:
             for hint in entity.hints:
-                self.remove(EntityType.HINT, hint)
+                self.remove_entity(EntityType.HINT, hint)
             for ans in entity.answers:
-                self.remove(EntityType.ANSWER, ans)
+                self.remove_entity(EntityType.ANSWER, ans)
             for move in entity.hints:
-                self.remove(EntityType.MOVEMENT, move)
+                self.remove_entity(EntityType.MOVEMENT, move)
         elif e_type == EntityType.MOVEMENT:
-            self.remove(EntityType.PLACE, entity.place)
+            self.remove_entity(EntityType.PLACE, entity.place)
 
         entity.remove_from_graph()
-
-    def empty(self):
-        """
-        Check if there are no quests in container
-        """
-        return not self.__entities[EntityType.QUEST]

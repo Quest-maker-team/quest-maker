@@ -217,13 +217,12 @@ def get_quest(quest_id):
     """
     Load quest from table quests (with author name instead of author id)
     :param quest_id: quest id in database
-    :return: dictionary with table attrs as keys and key author instead of author_id
+    :return: dictionary with table attrs as keys
     """
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-        cursor.execute('SELECT title, authors.name AS author, description, quests.password AS password, '
+        cursor.execute('SELECT title, author_id, description, password, '
                        'time_open, time_close, lead_time, cover_url, hidden '
                        'FROM quests '
-                       'JOIN authors USING (author_id) '
                        'WHERE quest_id = %s', (quest_id,))
         return cursor.fetchone()
 
@@ -290,7 +289,7 @@ def get_question(question_id):
     :return: dictionary with q_type_name instead of q_type_id
     """
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-        cursor.execute('SELECT question_text, q_type_name FROM questions '
+        cursor.execute('SELECT question_text, q_type_name, pos_x, pos_y FROM questions '
                        'JOIN question_types USING (q_type_id) '
                        'WHERE question_id = %s', (question_id,))
         return cursor.fetchone()
@@ -407,6 +406,24 @@ def get_place(place_id):
         return cursor.fetchone()
 
 
+def get_file_types():
+    """
+    Load list of supported file types
+    """
+    with get_db().cursor() as cursor:
+        cursor.execute('SELECT f_type_name FROM file_types')
+        return [row[0] for row in cursor.fetchall()]
+
+
+def get_question_types():
+    """
+    Load list of supported question types
+    """
+    with get_db().cursor() as cursor:
+        cursor.execute('SELECT q_type_name FROM question_types')
+        return [row[0] for row in cursor.fetchall()]
+
+
 def set_file(file, cursor):
     """
     Add rows to table files in database.
@@ -469,11 +486,10 @@ def set_author(author):
             return False
 
 
-def set_quest(quest, author_id):
+def set_quest(quest):
     """
     Add row to table quest in database from Quest object and author email
     :param quest: quest to load in database
-    :param author_id: author id
     :return: quest id
     """
     with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
@@ -482,7 +498,7 @@ def set_quest(quest, author_id):
         cursor.execute('INSERT INTO quests (title, author_id, description, password, '
                        'time_open, time_close, lead_time, cover_url, hidden) '
                        'VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING quest_id',
-                       (quest.title, author_id, quest.description,
+                       (quest.title, quest.author_id, quest.description,
                         quest.password, quest.time_open, quest.time_close, quest.lead_time,
                         quest.cover_url, str(quest.hidden).upper()))
         return cursor.fetchone()['quest_id']
@@ -741,3 +757,36 @@ def set_questions(used_files: list, question, quest_id: int, places: dict, quest
 
         else:
             return True
+
+
+def get_draft(draft_id):
+    """
+    Get draft quest by id
+    """
+    with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+        cursor.execute('SELECT author_id, container FROM drafts WHERE draft_id = %s', (draft_id,))
+        return cursor.fetchone()
+
+
+def write_draft(author_id, container):
+    """
+    Write draft to db
+    :return: id of the new draft
+    """
+    with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+        cursor.execute('INSERT INTO drafts(author_id, container) '
+                       'VALUES (%s, %s) RETURNING draft_id', (author_id, container))
+        return cursor.fetchone()['draft_id']
+
+
+def update_draft(draft_id, container):
+    """
+    Update draft container
+    """
+    with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+        cursor.execute('UPDATE drafts SET container = %s WHERE draft_id = %s', (container, draft_id))
+
+
+def remove_draft(draft_id):
+    with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+        cursor.execute('DELETE from drafts WHERE draft_id = %s', (draft_id, ))

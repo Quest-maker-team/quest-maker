@@ -65,9 +65,19 @@ export class Quest {
         });
     }
 
+    static addAnswer(answer) {
+        const url = 'api/answer_option';
+        return Quest.makeRequest('POST', url, answer);
+    }
+
     static updateAnswer(id, answer) {
         const url = 'api/answer_option/' + id;
         return Quest.makeRequest('PUT', url, answer);
+    }
+
+    static deleteAnswer(id) {
+        const url = 'api/answer_option/' + id;
+        return Quest.makeRequest('DELETE', url);
     }
 
     static updateQuestion(id, question) {

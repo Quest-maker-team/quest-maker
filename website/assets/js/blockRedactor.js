@@ -11,30 +11,24 @@ export class BlockRedactor {
             '</textarea>';
     }
 
+    static delete(option_id, element_id_part, question, instance) {
+        let ans = document.getElementById('answer_option' + option_id);
+
+        document.getElementById(element_id_part + option_id).remove();
+        question.answer_options.splice(question.answer_options.findIndex((ans) => 
+            ans.answer_option_id == option_id), 1);
+        Render.deleteElemEndpoint(ans, instance);
+        ans.remove();
+        Quest.deleteAnswer(option_id);
+        Render.updateAnswersEndpoints(question, instance);
+    }
+
     static deleteAnswer(answer, question, instance, withConfirm) {
         let conf = true;
         if (withConfirm)
             conf = confirm('Вы действительно хотите удалить вариант ответа? Отменить действие будет не возможно.');
-        if (conf) {
-            let index = 0;
-            for (const ans of question.answer_options){
-                if (ans.answer_option_id === answer.answer_option_id)
-                    break;
-                index += 1;
-            }
-            document.getElementById('ansblock' + answer.answer_option_id).remove();
-            question.answer_options.splice(index, 1);
-            let ans = document.getElementById('answer_option' + answer.answer_option_id);
-            instance.deleteConnectionsForElement(ans);
-            instance.selectEndpoints({element: ans}).deleteAll();
-            delete instance.getManagedElements()[ans.id];
-            ans.remove();
-            Quest.deleteAnswer(answer.answer_option_id);
-            let answerTable = document.getElementById('anstab' + question.question_id);
-            for (const ans of answerTable.childNodes) {
-                instance.revalidate(ans);
-            }
-        }
+        if (conf) 
+            BlockRedactor.delete(answer.answer_option_id, 'ansblock', question, instance);
     }
 
     static addAnswerForQuestion(element_id, answer, question, instance) {
@@ -72,7 +66,7 @@ export class BlockRedactor {
             '</div>'
         );
         document.getElementById('ansdel' + answer.answer_option_id).onclick = () => {
-            this.deleteAnswer(answer, question, instance, true);
+            BlockRedactor.deleteAnswer(answer, question, instance, true);
         }
     }
 
@@ -112,7 +106,7 @@ export class BlockRedactor {
             Render.renderAnswer(answer, question, instance, sourceEndpoint, true);
             if (text === '')
                 text = '<Любой другой ответ>';
-            this.showSpecial(element_id, answer, name, text);
+            BlockRedactor.showSpecial(element_id, answer, name, text);
         });
     }
 
@@ -121,27 +115,7 @@ export class BlockRedactor {
         if (elem === undefined) {
             return;
         }
-        let id = elem.id;
-        let index = 0;
-        for (const ans of question.answer_options) {
-            if (ans.answer_option_id == id) {
-                break;
-            }
-            index += 1;
-        }
-        let box = document.getElementById(name + id);
-        box.remove();
-        question.answer_options.splice(index, 1);
-        let ans = document.getElementById('answer_option' + id);
-        instance.deleteConnectionsForElement(ans);
-        instance.selectEndpoints({element: ans}).deleteAll();
-        delete instance.getManagedElements()[ans.id];
-        ans.remove();
-        Quest.deleteAnswer(id);
-        let answerTable = document.getElementById('anstab' + question.question_id);
-        for (const ans of answerTable.childNodes) {
-            instance.revalidate(ans);
-        }
+        BlockRedactor.delete(elem.id, name, question, instance);
     }
 
     static addMovementForMovementBlock(form, question) {
@@ -157,7 +131,7 @@ export class BlockRedactor {
                 '<div class=\'input-group\'>' +
                     '<span class="input-group-text"> Радиус(м) </span>' +
                     '<input type="text" class="form-control" id="moveRadius"  ' +
-                            'value=' +question.movements[0].place.radius + '>' +
+                            'value=' + question.movements[0].place.radius + '>' +
                   '</div>'+
             '</div>'
         );
@@ -274,7 +248,7 @@ export class BlockRedactor {
                 wrongState.points = answer.points;
                 continue;
             }
-            this.addAnswerForQuestion('OQanswers', answer, question, instance);
+            BlockRedactor.addAnswerForQuestion('OQanswers', answer, question, instance);
         }
 
         let newAns = [];
@@ -289,7 +263,7 @@ export class BlockRedactor {
                     text: '',
                 };
                 question.answer_options.push(answer);
-                this.addAnswerForQuestion('OQanswers', answer, question, instance);
+                BlockRedactor.addAnswerForQuestion('OQanswers', answer, question, instance);
                 Render.renderAnswer(answer, question, instance, sourceEndpoint);
                 newAns.push(answer);
             });
@@ -327,10 +301,8 @@ export class BlockRedactor {
                 }
                 answer.points = document.getElementById('answerPoints' + answerId).value;
                 question.text = document.getElementById('formControlTextarea').value;
-                let answerTable = document.getElementById('anstab' + question.question_id);
-
-                for (const ans of answerTable.childNodes)
-                    instance.revalidate(ans);
+                
+                Render.updateAnswersEndpoints(question, instance);
                 Quest.updateAnswer(answerId, JSON.stringify({
                     points: answer.points,
                     text: answer.text,

@@ -25,6 +25,12 @@ export class Render {
         return block;
     }
 
+    static deleteElemEndpoint(elem, instance) {
+        instance.deleteConnectionsForElement(elem);
+        instance.selectEndpoints({element: elem}).deleteAll();
+        delete instance.getManagedElements()[elem.id];
+    }
+
     static addDeleteButton(quest, block, instance, answerElements) {
         const deleteButton = document.createElement('button');
         deleteButton.id = 'btn' + block.id;
@@ -35,9 +41,7 @@ export class Render {
         deleteButton.onclick = () => {
             if (answerElements !== undefined) {
                 for (const answerElement of answerElements) {
-                    instance.deleteConnectionsForElement(answerElement);
-                    instance.selectEndpoints({element: answerElement}).deleteAll();
-                    delete instance.getManagedElements()[answerElement.id];
+                    Render.deleteElemEndpoint(answerElement, instance)
                 }
             }
             instance.deleteConnectionsForElement(block);
@@ -46,7 +50,7 @@ export class Render {
             delete instance.getManagedElements()[block.id];
             block.parentElement.removeChild(block);
             const questions = quest.data.questions;
-            questions.splice(questions.indexOf(questions.find((question) => question.question_id == block.id)), 1);
+            questions.splice(questions.findIndex((question) => question.question_id == block.id), 1);
         };
         block.append(deleteButton);
     }
@@ -66,6 +70,12 @@ export class Render {
         const block = this.renderBlockBase(question, '10rem', 'Конец', position);
         instance.addEndpoint(block, targetEndpoint);
         return block;
+    }
+
+    static updateAnswersEndpoints(question, instance) {
+        let answerTable = document.getElementById('anstab' + question.question_id);
+        for (const ans of answerTable.childNodes)
+            instance.revalidate(ans);
     }
 
     static renderAnswer(answer, question, instance, sourceEndpoint, special) {

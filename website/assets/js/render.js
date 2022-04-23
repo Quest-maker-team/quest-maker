@@ -13,7 +13,7 @@ export class Render {
         }));
     }
 
-    static renderBlockBase(question, width, title, position) {
+    static renderBlockBase(question, width, title, position, instance, sourceEndpoint) {
         //console.log(position);
         const block = document.createElement('div');
         block.id = question.question_id;
@@ -52,7 +52,7 @@ export class Render {
         deleteButton.onclick = () => {
             if (answerElements !== undefined) {
                 for (const answerElement of answerElements) {
-                    Render.deleteElemEndpoint(answerElement, instance)
+                    Render.deleteElemEndpoint(answerElement, instance);
                 }
             }
             instance.deleteConnectionsForElement(block);
@@ -148,7 +148,7 @@ export class Render {
     }
 
     static renderMovement(quest, question, instance, sourceEndpoint, targetEndpoint, position) {
-        const block = Render.renderBlockBase(question, '15rem', 'Перемещение', position);
+        const block = Render.renderBlockBase(question, '15rem', 'Перемещение', position, instance, sourceEndpoint);
 
         Render.addDeleteButton(quest, block, instance);
 

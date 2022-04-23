@@ -30,6 +30,10 @@ export class BlockRedactor {
             delete instance.getManagedElements()[ans.id];
             ans.remove();
             Quest.deleteAnswer(answer.answer_option_id);
+            let answerTable = document.getElementById('anstab' + question.question_id);
+            for (const ans of answerTable.childNodes) {
+                instance.revalidate(ans);
+            }
         }
     }
 
@@ -38,7 +42,7 @@ export class BlockRedactor {
             '<div class="row pb-1" id="ansblock' + answer.answer_option_id + '">' +
                 '<div class="col-8">'+
                     '<input type="text" onkeydown="return (event.keyCode!=13);" class="form-control" id="answerText' +
-                        answer.answer_option_id + '" value="' + answer.text + '">' +
+                        answer.answer_option_id + '" value="' + answer.text + '" placeholder="Вариант ответа">' +
                     '<div class="invalid-feedback">' +
                         'Не используйте "skip" или пустую строку в качестве ответов. ' +
                         'Добавить возможность пропуска можно, установив соответствующий флаг.' +
@@ -69,6 +73,74 @@ export class BlockRedactor {
         );
         document.getElementById('ansdel' + answer.answer_option_id).onclick = () => {
             this.deleteAnswer(answer, question, instance, true);
+        }
+    }
+
+    static showSpecial(element_id, special, name, text) {
+        document.getElementById(element_id).insertAdjacentHTML('afterend',
+            '<div class="row pb-1" id="' + name + special.answer_option_id + '">' +
+                '<div class="col-8">'+
+                    '<input type="text" name="' + name + '" id="' + special.answer_option_id +
+                        '" class="form-control" placeholder="' + text + '" readonly>' +
+                '</div>' +
+                '<div class="col-3">' +
+                    '<div class="input-group">' +
+                        '<span class="input-group-text"> Очки </span>' +
+                        '<input type="number" onkeydown="return (event.keyCode!=13);" class="form-control" ' +
+                            'id="answerPoints' + special.answer_option_id + '" value="' + special.points + '">' +
+                    '</div>' +
+                '</div>' +
+            '</div>'
+        );
+    }
+
+    static addSpecial(element_id, name, text, points, question, instance, sourceEndpoint){
+        if (document.getElementsByName(name)[0] !== undefined) {
+            return;
+        }
+        let answer;
+        Quest.addAnswer(JSON.stringify({
+            points: points,
+            text: text,
+        })).then((response) => {
+            answer = {
+                answer_option_id: JSON.parse(response).answer_option_id,
+                points: points,
+                text: text,
+            };
+            question.answer_options.push(answer);
+            Render.renderAnswer(answer, question, instance, sourceEndpoint, true);
+            if (text === '')
+                text = '<Любой другой ответ>';
+            this.showSpecial(element_id, answer, name, text);
+        });
+    }
+
+    static deleteSpecial(name, question, instance) {
+        let elem = document.getElementsByName(name)[0];
+        if (elem === undefined) {
+            return;
+        }
+        let id = elem.id;
+        let index = 0;
+        for (const ans of question.answer_options) {
+            if (ans.answer_option_id == id) {
+                break;
+            }
+            index += 1;
+        }
+        let box = document.getElementById(name + id);
+        box.remove();
+        question.answer_options.splice(index, 1);
+        let ans = document.getElementById('answer_option' + id);
+        instance.deleteConnectionsForElement(ans);
+        instance.selectEndpoints({element: ans}).deleteAll();
+        delete instance.getManagedElements()[ans.id];
+        ans.remove();
+        Quest.deleteAnswer(id);
+        let answerTable = document.getElementById('anstab' + question.question_id);
+        for (const ans of answerTable.childNodes) {
+            instance.revalidate(ans);
         }
     }
 
@@ -117,17 +189,91 @@ export class BlockRedactor {
         };
     }
 
+    static checkboxHandler(chbx_id, element_id, name, text, event, question, instance, sourceEndpoint) {
+        if (document.getElementById(chbx_id).checked) {
+            if (event.detail === undefined)
+                BlockRedactor.addSpecial(element_id, name, text, 0, question, instance, sourceEndpoint);
+            else
+                BlockRedactor.addSpecial(element_id, name, text, event.detail, question, instance, sourceEndpoint);
+        } else
+            BlockRedactor.deleteSpecial(name, question, instance);
+    }
+
+    static closeQuestionRedactor(newAns, skipState, wrongState, question, instance) {
+        for (const ans of newAns){
+            BlockRedactor.deleteAnswer(ans, question, instance, false);
+        }
+        if (document.getElementById('skip').checked != skipState.isActive) {
+            document.getElementById('skip').checked = skipState.isActive;
+            document.getElementById('skip').dispatchEvent(new CustomEvent('change', { detail: skipState.points }));
+        }
+        new Promise((resolve) => setTimeout(resolve, 50)).then(() => {
+            if (document.getElementById('wrong').checked != wrongState.isActive) {
+                document.getElementById('wrong').checked = wrongState.isActive;
+                document.getElementById('wrong').dispatchEvent(new CustomEvent('change', { detail: wrongState.points }));
+            }
+        });
+    }
+
     static createOpenQuestionRedactor(form, question, instance, sourceEndpoint, modal) {
         this.addTextRedactor(form, 'Вопрос', question.text);
         form.insertAdjacentHTML('beforeend', 
             '<hr><label for="formControlTextarea" class="form-label">Ответы:</label>');
         form.insertAdjacentHTML('beforeend', '<div id="OQanswers"></div>');
         form.insertAdjacentHTML('beforeend',
-            '<div class="col-auto"><button type="button" class="btn btn-primary" id="addAnswer">' +
-                'Добавить ответ' +
-            '</button></div>'
+            '<div class="col-12" id="special">' +
+                '<div class="form-check pb-1" id="skipChbx">' +
+                    '<input class="form-check-input" type="checkbox" id="skip">' +
+                    '<label class="form-check-label" for="skip">' +
+                        'Добавить возможность пропусить вопрос' +
+                    '</label>' +
+                '</div>' +
+                '<div class="form-check pb-1" id="wrongChbx">' +
+                    '<input class="form-check-input" type="checkbox" id="wrong">' +
+                    '<label class="form-check-label" for="wrong">' +
+                        'Добавить действие в случае неправильного ответа' +
+                    '</label>' +
+                '</div>' +
+                '<div class="col-auto pt-2">' +
+                    '<button type="button" class="btn btn-primary" id="addAnswer">' +
+                        'Добавить ответ' +
+                    '</button>' +
+                '</div>' +
+            '</div>'
         );
+   
+        document.getElementById('skip').onchange = (event) => {
+            BlockRedactor.checkboxHandler('skip', 'skipChbx', 'skipbx', 'skip', event, question, instance,
+                sourceEndpoint);
+        }
+        document.getElementById('wrong').onchange = (event) => {
+            BlockRedactor.checkboxHandler('wrong', 'wrongChbx', 'wrongbx', '', event, question, instance,
+                sourceEndpoint);
+        }
+
+        let skipState = {
+            isActive: false,
+            points: 0,
+        };
+        let wrongState = {
+            isActive: false,
+            points: 0,
+        };
         for (const answer of question.answer_options) {
+            if (answer.text === 'skip') {
+                BlockRedactor.showSpecial('skipChbx', answer, 'skipbx', 'skip');
+                document.getElementById('skip').checked = true;
+                skipState.isActive = true;
+                skipState.points = answer.points;
+                continue;
+            }
+            if (answer.text === '') {
+                BlockRedactor.showSpecial('wrongChbx', answer, 'wrongbx', 'Любой другой ответ');
+                document.getElementById('wrong').checked = true;
+                wrongState.isActive = true;
+                wrongState.points = answer.points;
+                continue;
+            }
             this.addAnswerForQuestion('OQanswers', answer, question, instance);
         }
 
@@ -149,42 +295,40 @@ export class BlockRedactor {
             });
         };
         document.getElementById('close').onclick = () => {
-            for (const ans of newAns){
-                BlockRedactor.deleteAnswer(ans, question, instance, false);
-            }
+            BlockRedactor.closeQuestionRedactor(newAns, skipState, wrongState, question, instance);
         };
         document.getElementById('xclose').onclick = () => {
-            for (const ans of newAns){
-                BlockRedactor.deleteAnswer(ans, question, instance, false);
-            }
+            BlockRedactor.closeQuestionRedactor(newAns, skipState, wrongState, question, instance);
         };
         document.getElementById('update').onclick = () => {
             let invalid = false;
             for (const answer of question.answer_options) {
                 let ans = document.getElementById('answerText' + answer.answer_option_id);
+                if (ans === null)
+                    continue;
                 if (ans.value === 'skip' || ans.value === '') {
                     ans.className = 'form-control is-invalid';
                     invalid = true;
-                }
-                else{
+                } else
                     ans.className = 'form-control';
-                }
             }
-            if (invalid){
+            if (invalid)
                 return false;
-            }
+            
             question.text = document.getElementById('formControlTextarea').value;
             document.getElementById(question.question_id).getElementsByClassName('card-text')[0].textContent =
                 question.text;
             for (const answer of question.answer_options) {
                 const answerId = answer.answer_option_id;
-                answer.text = document.getElementById('answerText' + answerId).value;
+                let elem = document.getElementById('answerText' + answerId);
+                if (elem !== null) {
+                    answer.text = document.getElementById('answerText' + answerId).value;
+                    document.getElementById('answer_option' + answerId).innerText = answer.text;
+                }
                 answer.points = document.getElementById('answerPoints' + answerId).value;
                 question.text = document.getElementById('formControlTextarea').value;
                 let answerTable = document.getElementById('anstab' + question.question_id);
 
-                document.getElementById('answer_option' + answerId).innerText =
-                    document.getElementById('answerText' + answerId).value;
                 for (const ans of answerTable.childNodes)
                     instance.revalidate(ans);
                 Quest.updateAnswer(answerId, JSON.stringify({

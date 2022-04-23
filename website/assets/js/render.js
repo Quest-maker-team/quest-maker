@@ -68,13 +68,41 @@ export class Render {
         return block;
     }
 
-    static renderAnswer(answer, question, instance, sourceEndpoint) {
+    static renderAnswer(answer, question, instance, sourceEndpoint, special) {
+        let ansTable = document.getElementById('anstab' + question.question_id);
         const tableElement = document.createElement('li');
-        tableElement.innerText = answer.text;
         tableElement.className = 'list-group-item';
         tableElement.id = 'answer_option' + answer.answer_option_id;
-        document.getElementById('anstab' + question.question_id).append(tableElement);
+
+        if (special === true && answer.text === '') {
+            tableElement.innerText = '<Неверный ответ>';
+            ansTable.append(tableElement);
+        } else {
+            tableElement.innerText = answer.text;
+            let last = ansTable.lastElementChild;
+            if (last === null)
+                ansTable.append(tableElement);
+            else if (last.innerText === '<Неверный ответ>') {
+                if (answer.text === 'skip')
+                    last.before(tableElement);
+                else {
+                    last = last.previousElementSibling;
+                    if (last === null)
+                        ansTable.prepend(tableElement);
+                    else if (last.innerText === 'skip')
+                        last.before(tableElement);
+                    else
+                        last.after(tableElement);
+                }
+            } else if (last.innerText === 'skip')
+                last.before(tableElement);
+            else
+                last.after(tableElement);
+        }
         instance.addEndpoint(tableElement, {anchor: ['Right', 'Left']}, sourceEndpoint);
+        for (const ans of ansTable.childNodes) {
+            instance.revalidate(ans);
+        }
     }
 
     static renderOpenQuestion(quest, question, instance, sourceEndpoint, targetEndpoint, position) {
@@ -84,7 +112,7 @@ export class Render {
         answerTable.id = 'anstab' + question.question_id;
         block.append(answerTable);
         for (const answer of question.answer_options) {
-            Render.renderAnswer(answer, question, instance, sourceEndpoint);
+            Render.renderAnswer(answer, question, instance, sourceEndpoint, true);
         }
 
         Render.addDeleteButton(quest, block, instance, answerTable.childNodes);

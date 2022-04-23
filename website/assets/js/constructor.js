@@ -3,6 +3,7 @@ import {FlowchartConnector} from '@jsplumb/connector-flowchart';
 import {Quest} from './quest';
 import {Render} from './render';
 import {EVENT_CONNECTION_DETACHED, EVENT_CONNECTION} from '@jsplumb/core';
+import Panzoom from '@panzoom/panzoom';
 
 // load static images
 require.context(
@@ -33,7 +34,40 @@ const targetEndpoint = {
     anchor: [0.5, 0, 0, -1],
 };
 
-Quest.loadQuest(1).then((newQuest) => {
+
+//panzoom init
+const panzoom = Panzoom(containerElement, {
+    canvas: true,
+    maxScale: 5,
+    cursor: "default"
+});
+
+// Panning and pinch zooming are bound automatically (unless disablePan is true).
+// There are several available methods for zooming
+// that can be bound on button clicks or mousewheel.
+//button.addEventListener('click', panzoom.zoomIn);
+containerElement.parentElement.addEventListener('wheel', panzoom.zoomWithWheel);
+
+containerElement.addEventListener('newEndpointCreating', (event) => {
+    panzoom.getOptions().exclude.push(event.detail.endpointElem);
+});
+
+containerElement.addEventListener('panzoomzoom', (event) => {
+    instance.setZoom(event.detail.scale);
+});
+
+containerElement.addEventListener('panzoomstart', (event) => {
+    containerElement.parentElement.style.cursor = 'move';
+});
+
+containerElement.addEventListener('panzoomend', (event) => {
+    containerElement.parentElement.style.cursor = "default";
+});
+
+
+
+
+Quest.loadQuest(3).then((newQuest) => {
     const quest = newQuest;
     Render.render(quest, instance, sourceEndpoint, targetEndpoint);
     return quest;
@@ -53,6 +87,9 @@ Quest.loadQuest(1).then((newQuest) => {
         Quest.disconnect(sourceIdSplit[1], 'question', sourceIdSplit[2]).then(() =>
             console.log('disconnect success'));
     });
+    return quest;
+}).then((quest) => {
+
     return quest;
 }).then((quest) => {
     const createNewBlock = function(type, text, renderFunction) {

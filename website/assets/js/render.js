@@ -13,7 +13,7 @@ export class Render {
         }));
     }
 
-    static renderBlockBase(question, width, title, position) {
+    static renderBlockBase(question, width, title, position, instance, sourceEndpoint) {
         //console.log(position);
         const block = document.createElement('div');
         block.id = question.question_id;
@@ -52,7 +52,7 @@ export class Render {
         deleteButton.onclick = () => {
             if (answerElements !== undefined) {
                 for (const answerElement of answerElements) {
-                    Render.deleteElemEndpoint(answerElement, instance)
+                    Render.deleteElemEndpoint(answerElement, instance);
                 }
             }
             instance.deleteConnectionsForElement(block);
@@ -67,7 +67,7 @@ export class Render {
     }
 
     static renderStart(question, instance, sourceEndpoint, position) {
-        const block = this.renderBlockBase(question, '10rem', 'Начало', position);
+        const block = this.renderBlockBase(question, '10rem', 'Начало', position, instance, sourceEndpoint);
 
         const answer = document.createElement("div");
         answer.id = 'answer_option' + question.answer_options[0].answer_option_id;
@@ -80,7 +80,7 @@ export class Render {
     }
 
     static renderFinish(question, instance, targetEndpoint, position) {
-        const block = this.renderBlockBase(question, '10rem', 'Конец', position);
+        const block = this.renderBlockBase(question, '10rem', 'Конец', position, instance);
         //instance.addEndpoint(block, targetEndpoint);
         Render.createEndpoint(instance, block, {}, targetEndpoint);
         return block;
@@ -148,7 +148,7 @@ export class Render {
     }
 
     static renderMovement(quest, question, instance, sourceEndpoint, targetEndpoint, position) {
-        const block = Render.renderBlockBase(question, '15rem', 'Перемещение', position);
+        const block = Render.renderBlockBase(question, '15rem', 'Перемещение', position, instance, sourceEndpoint);
 
         Render.addDeleteButton(quest, block, instance);
 

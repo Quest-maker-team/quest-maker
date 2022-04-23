@@ -19,10 +19,10 @@
     </header>
 
     <main>
-        {% set sections_content = [('Конструктор', 'constructor_screen.png', 'Быстро и просто', 'Создавайте квесты в удобном онлайн конструкторе', 'right'),
-                                   ('Бот', 'tg.gif', 'Ничего лишнего', 'Не нужно устанавливать приложение —
-        проходите квесты в Telegram, который есть у всех.', 'left'),
-        ('Геолокация', 'geo.png', 'Находите интересные места', 'Поддержка карт в конструкторе и геолокации в боте', 'right')] %}
+        {% set sections_content = [('Конструктор', 'constructor_screen.png', 'Быстро и просто', 'Создавайте квесты в удобном онлайн конструкторе.', 'right'),
+                                   ('Бот', 'tg.gif', 'Ничего лишнего', 'Не нужно устанавливать дополнительное приложение.
+        Проходите квесты в Telegram — он есть у всех.', 'left'),
+        ('Геолокация', 'geo.png', 'Находите интересные места', 'Поддержка карт в конструкторе и геолокации в боте.', 'right')] %}
         {% for header, img, slogan, text, direction in sections_content %}
         {% set color = "white" if loop.index % 2 else "#c5c5c5" %}
             <section class="py-4 pt-md-5 min-vh-100" style="background-color: {{ color }}">
@@ -30,14 +30,14 @@
                     <div class="{% if direction == 'right' %} flex-row row {% else %} flex-row-reverse row {% endif %}">
                         <div class="col-md-2">
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <!-- Media -->
                             <div class="mb-5 mb-md-0" style="max-width: 80%">
                                 <!-- Image -->
                                 <img class="img-fluid" src="{{ webpack_url_for('img/' + img) }}" alt="...">
                             </div>
                         </div>
-                        <div class="col-md-5 align-self-center mx-auto">
+                        <div class="col-md-4 align-self-center mx-auto">
                             <!-- Heading -->
                             <h2 class="mb-2">
                                 {{ slogan }}

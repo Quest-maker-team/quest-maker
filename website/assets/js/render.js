@@ -29,11 +29,17 @@ export class Render {
         block.append(blockBody);
 
         block.ondblclick = () => {
-            BlockRedactor.showRedactor(question);
+            BlockRedactor.showRedactor(question, instance, sourceEndpoint);
         };
 
         document.getElementById('container').append(block);
         return block;
+    }
+
+    static deleteElemEndpoint(elem, instance) {
+        instance.deleteConnectionsForElement(elem);
+        instance.selectEndpoints({element: elem}).deleteAll();
+        delete instance.getManagedElements()[elem.id];
     }
 
     static addDeleteButton(quest, block, instance, answerElements) {
@@ -46,9 +52,7 @@ export class Render {
         deleteButton.onclick = () => {
             if (answerElements !== undefined) {
                 for (const answerElement of answerElements) {
-                    instance.deleteConnectionsForElement(answerElement);
-                    instance.selectEndpoints({element: answerElement}).deleteAll();
-                    delete instance.getManagedElements()[answerElement.id];
+                    Render.deleteElemEndpoint(answerElement, instance)
                 }
             }
             instance.deleteConnectionsForElement(block);
@@ -57,7 +61,7 @@ export class Render {
             delete instance.getManagedElements()[block.id];
             block.parentElement.removeChild(block);
             const questions = quest.data.questions;
-            questions.splice(questions.indexOf(questions.find((question) => question.question_id == block.id)), 1);
+            questions.splice(questions.findIndex((question) => question.question_id == block.id), 1);
         };
         block.append(deleteButton);
     }
@@ -82,19 +86,57 @@ export class Render {
         return block;
     }
 
+    static updateAnswersEndpoints(question, instance) {
+        let answerTable = document.getElementById('anstab' + question.question_id);
+        for (const ans of answerTable.childNodes)
+            instance.revalidate(ans);
+    }
+
+    static renderAnswer(answer, question, instance, sourceEndpoint, special) {
+        let ansTable = document.getElementById('anstab' + question.question_id);
+        const tableElement = document.createElement('li');
+        tableElement.className = 'list-group-item';
+        tableElement.id = 'answer_option' + answer.answer_option_id;
+
+        if (special === true && answer.text === '') {
+            tableElement.innerText = '<Неверный ответ>';
+            ansTable.append(tableElement);
+        } else {
+            tableElement.innerText = answer.text;
+            let last = ansTable.lastElementChild;
+            if (last === null)
+                ansTable.append(tableElement);
+            else if (last.innerText === '<Неверный ответ>') {
+                if (answer.text === 'skip')
+                    last.before(tableElement);
+                else {
+                    last = last.previousElementSibling;
+                    if (last === null)
+                        ansTable.prepend(tableElement);
+                    else if (last.innerText === 'skip')
+                        last.before(tableElement);
+                    else
+                        last.after(tableElement);
+                }
+            } else if (last.innerText === 'skip')
+                last.before(tableElement);
+            else
+                last.after(tableElement);
+        }
+        Render.createEndpoint(instance, tableElement, {anchor: ['Right', 'Left']}, sourceEndpoint);
+        for (const ans of ansTable.childNodes) {
+            instance.revalidate(ans);
+        }
+    }
+
     static renderOpenQuestion(quest, question, instance, sourceEndpoint, targetEndpoint, position) {
-        const block = Render.renderBlockBase(question, '15rem', 'Открытый вопрос', position);
+        const block = Render.renderBlockBase(question, '15rem', 'Открытый вопрос', position, instance, sourceEndpoint);
         const answerTable = document.createElement('ul');
         answerTable.className = 'list-group list-group-flush';
+        answerTable.id = 'anstab' + question.question_id;
         block.append(answerTable);
         for (const answer of question.answer_options) {
-            const tableElement = document.createElement('li');
-            tableElement.innerHTML = answer.text;
-            tableElement.className = 'list-group-item';
-            tableElement.id = 'answer_option' + answer.answer_option_id;
-            answerTable.append(tableElement);
-            //instance.addEndpoint(tableElement, {anchor: ['Right', 'Left']}, sourceEndpoint);
-            Render.createEndpoint(instance, tableElement, {anchor: ['Right', 'Left']}, sourceEndpoint);
+            Render.renderAnswer(answer, question, instance, sourceEndpoint, true);            
         }
 
         Render.addDeleteButton(quest, block, instance, answerTable.childNodes);

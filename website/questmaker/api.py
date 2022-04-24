@@ -1,6 +1,6 @@
 from .quest import Quest, Question, Place, Hint, Answer, Movement, File, update_from_dict
 from .quest_container import EntityType, QuestContainer
-from .db import get_draft, update_draft, write_draft, remove_draft
+from .db import get_draft, update_draft, write_draft, remove_draft, get_draft_for_update
 from flask_login import current_user, login_required
 
 from flask import Blueprint, jsonify, request, g, session
@@ -21,7 +21,7 @@ def before_request():
             (request.method == 'POST' and request.endpoint in ['api.create_quest', 'api.save_quest']):
         return
     if 'draft_id' in session:
-        draft = get_draft(session['draft_id'])
+        draft = get_draft_for_update(session['draft_id'])
         if not draft:
             return 'No draft with this id', 400
         if draft['author_id'] != author_id:

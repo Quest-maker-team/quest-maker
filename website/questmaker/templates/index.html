@@ -27,16 +27,16 @@
         {% set color = "white" if loop.index % 2 else "#c5c5c5" %}
             <section class="py-4 pt-md-5" style="background-color: {{ color }}; max-height: 90vh">
                 <div class="container">
-                    <div class="flex-column
+                    <div class="flex-column align-items-center justify-content-center
                             {% if direction == 'right' %} flex-md-row row {% else %} flex-md-row-reverse row {% endif %}
                             h-100">
-                        <div class="col-md-6 py-4 d-flex justify-content-center align-content-center">
-                            <div class="mb-5 mb-md-0 overflow-hidden" style="max-width: 80%">
+                        <div class="col-10 col-md-6 py-4 d-flex justify-content-center align-content-center">
+                            <div class="mb-md-0 overflow-hidden" style="max-width: 80%">
                                 <img class="img-fluid" style="max-height: 60vh"
                                      src="{{ webpack_url_for('img/' + img) }}" alt="...">
                             </div>
                         </div>
-                        <div class="col-md-4 align-self-center mx-auto ">
+                        <div class="col-md-4 align-self-center mx-auto">
                             <h2 class="mb-2">
                                 {{ slogan }}
                             </h2>

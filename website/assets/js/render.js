@@ -1,5 +1,6 @@
 import {BlockRedactor} from './blockRedactor';
 import {consume} from '@jsplumb/browser-ui';
+import {Quest} from "./quest";
 
 export class Render {
     static createEndpoint(instance, elem, anchors, options){
@@ -37,7 +38,6 @@ export class Render {
     }
 
     static deleteElemEndpoint(elem, instance) {
-        instance.deleteConnectionsForElement(elem);
         instance.selectEndpoints({element: elem}).deleteAll();
         delete instance.getManagedElements()[elem.id];
     }
@@ -55,13 +55,13 @@ export class Render {
                     Render.deleteElemEndpoint(answerElement, instance);
                 }
             }
-            instance.deleteConnectionsForElement(block);
 
             instance.selectEndpoints({element: block}).deleteAll();
             delete instance.getManagedElements()[block.id];
             block.parentElement.removeChild(block);
             const questions = quest.data.questions;
             questions.splice(questions.findIndex((question) => question.question_id == block.id), 1);
+            Quest.deleteEntity('question', block.id);
         };
         block.append(deleteButton);
     }
@@ -201,14 +201,16 @@ export class Render {
                 });
             } else if (question.type !== 'end') {
                 for (const answer of question.answer_options) {
-                    instance.connect({
-                        source: instance.selectEndpoints({
-                            element: document.getElementById('answer_option' + answer.answer_option_id),
-                        }).get(0),
-                        target: instance.selectEndpoints({
-                            element: document.getElementById(answer.next_question_id),
-                        }).get(0),
-                    });
+                    if (answer.next_question_id != null) {
+                        instance.connect({
+                            source: instance.selectEndpoints({
+                                element: document.getElementById('answer_option' + answer.answer_option_id),
+                            }).get(0),
+                            target: instance.selectEndpoints({
+                                element: document.getElementById(answer.next_question_id),
+                            }).get(0),
+                        });
+                    }
                 }
             }
         }

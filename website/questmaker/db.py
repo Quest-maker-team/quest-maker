@@ -768,6 +768,15 @@ def get_draft(draft_id):
         return cursor.fetchone()
 
 
+def get_draft_for_update(draft_id):
+    """
+    Get draft quest by id and block row
+    """
+    with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+        cursor.execute('SELECT author_id, container FROM drafts WHERE draft_id = %s FOR UPDATE', (draft_id,))
+        return cursor.fetchone()
+
+
 def write_draft(author_id, container):
     """
     Write draft to db

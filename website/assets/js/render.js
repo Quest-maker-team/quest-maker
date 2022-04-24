@@ -14,14 +14,13 @@ export class Render {
         }));
     }
 
-    static renderBlockBase(question, width, title, position, instance, sourceEndpoint) {
-        // console.log(position);
+    static renderBlockBase(question, width, title, instance, sourceEndpoint) {
         const block = document.createElement('div');
         block.id = question.question_id;
         block.className = 'position-absolute card border-2 panzoom-exclude';
         block.style.width = width.toString();
-        block.style.top = position[0].toString();
-        block.style.left = position[1].toString();
+        block.style.left = question.pos_x.toString() + 'px';
+        block.style.top = question.pos_y.toString() + 'px';
         const blockBody = document.createElement('div');
         blockBody.className = 'card-body';
         blockBody.innerHTML = '<h5 class="card-title text-center">' + title + '</h5>' +
@@ -66,8 +65,8 @@ export class Render {
         block.append(deleteButton);
     }
 
-    static renderStart(question, instance, sourceEndpoint, position) {
-        const block = this.renderBlockBase(question, '10rem', 'Начало', position);
+    static renderStart(question, instance, sourceEndpoint) {
+        const block = this.renderBlockBase(question, '10rem', 'Начало');
 
         const answer = document.createElement('div');
         answer.id = 'answer_option' + question.answer_options[0].answer_option_id;
@@ -79,8 +78,8 @@ export class Render {
         return block;
     }
 
-    static renderFinish(question, instance, targetEndpoint, position) {
-        const block = this.renderBlockBase(question, '10rem', 'Конец', position);
+    static renderFinish(question, instance, targetEndpoint) {
+        const block = this.renderBlockBase(question, '10rem', 'Конец');
         // instance.addEndpoint(block, targetEndpoint);
         Render.createEndpoint(instance, block, {}, targetEndpoint);
         return block;
@@ -133,7 +132,7 @@ export class Render {
     }
 
     static renderOpenQuestion(quest, question, instance, sourceEndpoint, targetEndpoint, position) {
-        const block = Render.renderBlockBase(question, '15rem', 'Открытый вопрос', position, instance, sourceEndpoint);
+        const block = Render.renderBlockBase(question, '15rem', 'Открытый вопрос', instance, sourceEndpoint);
         const answerTable = document.createElement('ul');
         answerTable.className = 'list-group list-group-flush';
         answerTable.id = 'anstab' + question.question_id;
@@ -150,8 +149,8 @@ export class Render {
         return block;
     }
 
-    static renderMovement(quest, question, instance, sourceEndpoint, targetEndpoint, position) {
-        const block = Render.renderBlockBase(question, '15rem', 'Перемещение', position, instance, sourceEndpoint);
+    static renderMovement(quest, question, instance, sourceEndpoint, targetEndpoint) {
+        const block = Render.renderBlockBase(question, '15rem', 'Перемещение', instance, sourceEndpoint);
 
         Render.addDeleteButton(quest, block, instance);
 
@@ -167,26 +166,27 @@ export class Render {
         return block;
     }
 
-    static render(quest, instance, sourceEndpoint, targetEndpoint) {
-        const position = [0, 0];
+    static render(quest, instance, sourceEndpoint, targetEndpoint, panzoom) {
         for (const question of quest.data.questions) {
             let block;
             switch (question.type) {
             case 'start':
-                block = Render.renderStart(question, instance, sourceEndpoint, position);
+                setTimeout(() => {panzoom.pan(parseInt(question.pos_x) + window.innerWidth / 2,
+                            -parseInt(question.pos_y) + window.innerHeight / 2)});
+                block = Render.renderStart(question, instance, sourceEndpoint);
                 break;
             case 'end':
-                block = Render.renderFinish(question, instance, targetEndpoint, position);
+                block = Render.renderFinish(question, instance, targetEndpoint);
                 break;
             case 'open':
-                block = Render.renderOpenQuestion(quest, question, instance, sourceEndpoint, targetEndpoint, position);
+                block = Render.renderOpenQuestion(quest, question, instance, sourceEndpoint, targetEndpoint);
                 break;
             case 'movement':
-                block = Render.renderMovement(quest, question, instance, sourceEndpoint, targetEndpoint, position);
+                block = Render.renderMovement(quest, question, instance, sourceEndpoint, targetEndpoint);
                 break;
             case 'choice':
                 // TODO: change this to function for "choice"
-                block = Render.renderOpenQuestion(quest, question, instance, sourceEndpoint, targetEndpoint, position);
+                block = Render.renderOpenQuestion(quest, question, instance, sourceEndpoint, targetEndpoint);
                 break;
             default:
                 break;

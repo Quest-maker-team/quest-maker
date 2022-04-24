@@ -118,7 +118,7 @@ export class Quest {
         new Promise((resolve, reject) => {
             resolve(Quest.makePostRequest(url+'question', {
                 'type': questionToSend.type,
-                'text': questionToSend.text
+                'text': questionToSend.text,
             }).then((data) => {
                 console.log(data);
                 console.log(id === data['question_id']);
@@ -129,7 +129,7 @@ export class Quest {
                     new Promise((resolve, reject) => {
                         resolve(Quest.makePostRequest(url+'answer_option', {
                             'text': questionToSend.answer_options[i].text,
-                            'points': questionToSend.answer_options[i].points
+                            'points': questionToSend.answer_options[i].points,
                         }).then((data) => {
                             console.log(data);
                             quest.data.questions.find((question) => question.question_id===id).answer_options[i].answer_option_id = data['answer_option_id'];
@@ -147,7 +147,7 @@ export class Quest {
         new Promise((resolve, reject) => {
             resolve(Quest.makePostRequest(url+'question', {
                 'type': questionToSend.type,
-                'text': questionToSend.text
+                'text': questionToSend.text,
             }).then((data) => {
                 console.log('AA');
                 console.log(data);

@@ -3,19 +3,19 @@ import {consume} from '@jsplumb/browser-ui';
 import {Quest} from "./quest";
 
 export class Render {
-    static createEndpoint(instance, elem, anchors, options){
-        let endpoint = instance.addEndpoint(elem, anchors, options);
-        //console.log(endpoint.endpoint);
+    static createEndpoint(instance, elem, anchors, options) {
+        const endpoint = instance.addEndpoint(elem, anchors, options);
+        // console.log(endpoint.endpoint);
         elem.dispatchEvent(new CustomEvent('newEndpointCreating', {
             bubbles: true,
             detail: {
                 endpointElem: endpoint.endpoint.canvas,
-            }
+            },
         }));
     }
 
     static renderBlockBase(question, width, title, position, instance, sourceEndpoint) {
-        //console.log(position);
+        // console.log(position);
         const block = document.createElement('div');
         block.id = question.question_id;
         block.className = 'position-absolute card border-2 panzoom-exclude';
@@ -69,31 +69,32 @@ export class Render {
     static renderStart(question, instance, sourceEndpoint, position) {
         const block = this.renderBlockBase(question, '10rem', 'Начало', position);
 
-        const answer = document.createElement("div");
+        const answer = document.createElement('div');
         answer.id = 'answer_option' + question.answer_options[0].answer_option_id;
         block.append(answer);
 
         instance.manage(block);
-        //instance.addEndpoint(answer, sourceEndpoint);
+        // instance.addEndpoint(answer, sourceEndpoint);
         Render.createEndpoint(instance, answer, {}, sourceEndpoint);
         return block;
     }
 
     static renderFinish(question, instance, targetEndpoint, position) {
         const block = this.renderBlockBase(question, '10rem', 'Конец', position);
-        //instance.addEndpoint(block, targetEndpoint);
+        // instance.addEndpoint(block, targetEndpoint);
         Render.createEndpoint(instance, block, {}, targetEndpoint);
         return block;
     }
 
     static updateAnswersEndpoints(question, instance) {
-        let answerTable = document.getElementById('anstab' + question.question_id);
-        for (const ans of answerTable.childNodes)
+        const answerTable = document.getElementById('anstab' + question.question_id);
+        for (const ans of answerTable.childNodes) {
             instance.revalidate(ans);
+        }
     }
 
     static renderAnswer(answer, question, instance, sourceEndpoint, special) {
-        let ansTable = document.getElementById('anstab' + question.question_id);
+        const ansTable = document.getElementById('anstab' + question.question_id);
         const tableElement = document.createElement('li');
         tableElement.className = 'list-group-item';
         tableElement.id = 'answer_option' + answer.answer_option_id;
@@ -104,24 +105,26 @@ export class Render {
         } else {
             tableElement.innerText = answer.text;
             let last = ansTable.lastElementChild;
-            if (last === null)
+            if (last === null) {
                 ansTable.append(tableElement);
-            else if (last.innerText === '<Неверный ответ>') {
-                if (answer.text === 'skip')
+            } else if (last.innerText === '<Неверный ответ>') {
+                if (answer.text === 'skip') {
                     last.before(tableElement);
-                else {
+                } else {
                     last = last.previousElementSibling;
-                    if (last === null)
+                    if (last === null) {
                         ansTable.prepend(tableElement);
-                    else if (last.innerText === 'skip')
+                    } else if (last.innerText === 'skip') {
                         last.before(tableElement);
-                    else
+                    } else {
                         last.after(tableElement);
+                    }
                 }
-            } else if (last.innerText === 'skip')
+            } else if (last.innerText === 'skip') {
                 last.before(tableElement);
-            else
+            } else {
                 last.after(tableElement);
+            }
         }
         Render.createEndpoint(instance, tableElement, {anchor: ['Right', 'Left']}, sourceEndpoint);
         for (const ans of ansTable.childNodes) {
@@ -136,12 +139,12 @@ export class Render {
         answerTable.id = 'anstab' + question.question_id;
         block.append(answerTable);
         for (const answer of question.answer_options) {
-            Render.renderAnswer(answer, question, instance, sourceEndpoint, true);            
+            Render.renderAnswer(answer, question, instance, sourceEndpoint, true);
         }
 
         Render.addDeleteButton(quest, block, instance, answerTable.childNodes);
 
-        //instance.addEndpoint(block, {anchor: 'Top'}, targetEndpoint);
+        // instance.addEndpoint(block, {anchor: 'Top'}, targetEndpoint);
         Render.createEndpoint(instance, block, {anchor: 'Top'}, targetEndpoint);
 
         return block;
@@ -152,12 +155,12 @@ export class Render {
 
         Render.addDeleteButton(quest, block, instance);
 
-        const answer = document.createElement("div");
+        const answer = document.createElement('div');
         answer.id = 'movement' + question.movements[0].movement_id;
         block.append(answer);
 
-        //instance.addEndpoint(block, {anchor: 'Top'}, targetEndpoint);
-        //instance.addEndpoint(answer, {anchor: 'Bottom'}, sourceEndpoint);
+        // instance.addEndpoint(block, {anchor: 'Top'}, targetEndpoint);
+        // instance.addEndpoint(answer, {anchor: 'Bottom'}, sourceEndpoint);
         Render.createEndpoint(instance, block, {anchor: 'Top'}, targetEndpoint);
         Render.createEndpoint(instance, answer, {anchor: 'Bottom'}, sourceEndpoint);
 
@@ -194,7 +197,7 @@ export class Render {
             if (question.type === 'movement') {
                 instance.connect({
                     source: instance.selectEndpoints({
-                        element: document.getElementById('movement' + question.movements[0].movement_id)
+                        element: document.getElementById('movement' + question.movements[0].movement_id),
                     }).get(0),
                     target: instance.selectEndpoints({
                         element: document.getElementById(question.movements[0].next_question_id)}).get(0),

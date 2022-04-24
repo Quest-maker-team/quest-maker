@@ -67,13 +67,13 @@ containerElement.addEventListener('panzoomend', (event) => {
 
 
 
-Quest.loadQuest(1).then((newQuest) => {
+Quest.loadQuest(1, 24).then((newQuest) => {
     const quest = newQuest;
     Render.render(quest, instance, sourceEndpoint, targetEndpoint);
     return quest;
 }).then((quest) => {
-    /* document.getElementById("save").onclick = () => {
-        quest.save().then(() => console.log("save"));
+    /*document.getElementById("save").onclick = () => {
+        Quest.save(24).then(() => console.log("save"));
     }*/
 
     instance.bind(EVENT_CONNECTION, (connection) => {

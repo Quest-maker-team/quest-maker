@@ -477,6 +477,6 @@ def save_quest(draft_id):
     if draft['author_id'] != author_id:
         return 'This is not your quest', 403
     container = pickle.loads(bytes(draft['container']))
-    container.quest.to_db(author_id)
+    container.quest.to_db()
     remove_draft(draft_id)
     return '', 200

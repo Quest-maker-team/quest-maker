@@ -17,7 +17,7 @@ export class Quest {
                     if (xmlhttp.status === 200) {
                         resolve(xmlhttp.response);
                     } else {
-                        // console.log("fail to load");
+                        console.log(xmlhttp.responseText);
                         reject(xmlhttp.status);
                     }
                 }
@@ -57,11 +57,22 @@ export class Quest {
         });
     }
 
-    static loadQuest(id) {
-        const url = '/api/db/quest/' + id.toString();
-        return Quest.makeRequest('GET', url).then((data) => {
+    static loadQuest(id, draft) {
+        //const url = '/api/db/quest/' + id.toString();
+        /*return Quest.makeRequest('GET', url).then((data) => {
             console.log('success');
             return new Quest(JSON.parse(data));
+        });*/
+        return Quest.makeRequest('GET', '/api/draft/quest/' + draft.toString()).then(result => {
+            console.log('success load from draft');
+            return result;
+        }, error => {
+            console.log('failed load from draft');
+            return Quest.makeRequest('GET', '/api/db/quest/' + id.toString());
+        }).then(data => {
+            return new Quest(JSON.parse(data));
+        }, error => {
+            console.log('failed load');
         });
     }
 
@@ -75,8 +86,8 @@ export class Quest {
         return Quest.makeRequest('PUT', url, answer);
     }
 
-    static deleteAnswer(id) {
-        const url = 'api/answer_option/' + id;
+    static deleteEntity(type, id) {
+        const url = 'api/' + type + '/' + id;
         return Quest.makeRequest('DELETE', url);
     }
 
@@ -95,8 +106,8 @@ export class Quest {
         return Quest.makeRequest('DELETE', url);
     }
 
-    save() {
-        const url = 'api/save/' + this.data.quest_id;
+    static save(draft) {
+        const url = 'api/save/' + draft;
         return Quest.makePostRequest(url);
     }
 

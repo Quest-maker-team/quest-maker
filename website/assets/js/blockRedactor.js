@@ -21,7 +21,7 @@ export class BlockRedactor {
             ans.answer_option_id == option_id), 1);
         Render.deleteElemEndpoint(ans, instance);
         ans.remove();
-        Quest.deleteAnswer(option_id);
+        Quest.deleteEntity('answer_option', option_id);
         Render.updateAnswersEndpoints(question, instance);
     }
 
@@ -116,7 +116,8 @@ export class BlockRedactor {
                 };
                 question.answer_options.push(answer);
                 Render.renderAnswer(answer, question, instance, sourceEndpoint, true);
-            });
+                return Quest.connect('question', 'answer_option', question.question_id, answer.answer_option_id);
+            }).then(result => console.log('special pidor'));
         }
     }
 
@@ -303,7 +304,8 @@ export class BlockRedactor {
                 BlockRedactor.addAnswerForQuestion('OQanswers', answer, question, instance);
                 Render.renderAnswer(answer, question, instance, sourceEndpoint);
                 newAns.push(answer);
-            });
+                return Quest.connect('question', 'answer_option', question.question_id, answer.answer_option_id);
+            }).then(result => console.log('pidor'));
         };
         document.getElementById('close').onclick = () => {
             for (const ans of newAns)

@@ -1,28 +1,30 @@
 * `quest`:
-  * `title`
-  * `tags`
-  * `hidden`
-  * `description`
-  * `password`
-  * `time_open`
-  * `time_close`
-  * `lead_time`
+  * `title` - string, **required for creating**
+  * `tags` - array of strings
+  * `hidden` - bool, **required for creating**
+  * `description` - string
+  * `password` - string
+  * `time_open` - string...?
+  * `time_close` ?
+  * `lead_time` int ?
 * `question`:
-  * `type`
-  * `text`
+  * `type` - `open`, `choice`, `start`, `end`, `movement` string, "**required for creating**
+  * `text` - string
+  * `pox_s` - int
+  * `pos_y` - int
 * `hint`:
-  * `text`
-  * `fine`
+  * `text` - string, **required for creating**
+  * `fine` - float
 * `answer_option`:
-  * `text`
-  * `points`
+  * `text` - string, **required for creating**
+  * `points` - float
 * `movement`:
   * There are no available attributes 
 * `file`:
-  * `type`
-  * `url`
+  * `type` - `image`, `video`, `audio` string, **required for creating**
+  * `url` - string, **required for creating**
 * `place`:
-  * `coords`
-  * `radius`
-  * `time_open`
-  * `time_close`
+  * `coords` - array of two floats, **required for creating**
+  * `radius` - float, **required for creating**
+  * `time_open` - ?
+  * `time_close` - ?

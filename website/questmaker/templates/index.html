@@ -7,45 +7,39 @@
 
 {% block content %}
     <header class="mask d-flex flex-column align-items-center justify-content-center min-vh-100 header"
-             style="background-image: url({{ webpack_url_for('img/telegram_scrin_on_phone.jpg') }});">
-            <div class="min-vh-100 w-75 position-relative">
-                <div class="position-absolute end-0 top-50 col-8">
-                    <div class="text-light">
-                        <h1 class="h1 text-center">Quest Maker</h1>
-                        <div class="text-center">Инструмент для создания telegram-квестов</div>
+             style="background-image: url({{ webpack_url_for('img/telegram_screen_on_phone.jpg') }});">
+            <div class="min-vh-100 col-12 col-md-10 d-flex flex-column justify-content-center">
+                <div class="col-12 col-md-8 col-lg-6 align-self-center align-self-md-end">
+                    <div class="text-light bg-dark bg-opacity-75 rounded-pill px-3">
+                        <h1 class="h1 text-center" style="font-size: 60px">QuestMaker</h1>
+                        <div class="text-center" style="font-size: 25px">Инструмент для создания квестов</div>
                     </div>
                 </div>
             </div>
     </header>
 
     <main>
-        {% set sections_content = [('Заголовок1', 'img1.jpg', 'Лозунг', 'Тескт тескт тескт тескт тескт', 'right'),
-                                   ('Заголовок2', 'img1.jpg', 'Лозунг', 'Тескт тескт тескт тескт тескт', 'left')] %}
+        {% set sections_content = [('Конструктор', 'constructor_screen.png', 'Быстро и просто', 'Создавайте квесты в удобном онлайн конструкторе.', 'right'),
+                                   ('Бот', 'tg.gif', 'Ничего лишнего', 'Не нужно устанавливать дополнительное приложение.
+        Проходите квесты в Telegram — он есть у всех.', 'left'),
+        ('Геолокация', 'geo.png', 'Находите интересные места', 'Поддержка карт в конструкторе и геолокации в боте.', 'right')] %}
         {% for header, img, slogan, text, direction in sections_content %}
-            <section class="py-4 pt-md-5">
+        {% set color = "white" if loop.index % 2 else "#c5c5c5" %}
+            <section class="py-4 pt-md-5" style="background-color: {{ color }}; max-height: 90vh">
                 <div class="container">
-                    <div class="{% if direction == 'right' %} flex-row row {% else %} flex-row-reverse row {% endif %}">
-                        <div class="col-md-2">
-                            <!-- Divider -->
-                            <hr class="hr-sm bg-primary">
-                            <!-- Text -->
-                            <p class="fs-lg lh-lg text-black mb-5 mb-md-0">
-                                {{ header }}
-                            </p>
-                        </div>
-                        <div class="col-md-4">
-                            <!-- Media -->
-                            <div class="mb-5 mb-md-0" style="max-width: 80%">
-                                <!-- Image -->
-                                <img class="img-fluid" src="{{ webpack_url_for('img/' + img) }}" alt="...">
+                    <div class="flex-column align-items-center justify-content-center
+                            {% if direction == 'right' %} flex-md-row row {% else %} flex-md-row-reverse row {% endif %}
+                            h-100">
+                        <div class="col-10 col-md-6 py-4 d-flex justify-content-center align-content-center">
+                            <div class="mb-md-0 overflow-hidden" style="max-width: 80%">
+                                <img class="img-fluid" style="max-height: 60vh"
+                                     src="{{ webpack_url_for('img/' + img) }}" alt="...">
                             </div>
                         </div>
-                        <div class="col-md-5 align-self-center mx-auto">
-                            <!-- Heading -->
+                        <div class="col-md-4 align-self-center mx-auto">
                             <h2 class="mb-2">
-                                "Лозунг"
+                                {{ slogan }}
                             </h2>
-                            <!-- Text -->
                             <p class="mb-0">
                                 {{ text }}
                             </p>

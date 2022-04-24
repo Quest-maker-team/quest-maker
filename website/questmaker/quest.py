@@ -18,9 +18,9 @@ def update_from_dict(entity, entity_dict):
     :param entity_dict: dictionary with new params
     :return: True if success else False
     """
-    for key, value in entity_dict.items():
-        if key in entity.available_attrs():
-            entity.__setattr__(key, value)
+    for attr, value in entity_dict.items():
+        if type(entity).check_valid_update_attr(attr, value):
+            entity.__setattr__(attr, value)
         else:
             return False
     return True
@@ -30,6 +30,7 @@ class QuestEntity(ABC):
     """
     Common class for all quest entities
     """
+
     @abstractmethod
     def to_dict(self):
         """
@@ -44,10 +45,19 @@ class QuestEntity(ABC):
         """
         pass
 
+    @staticmethod
     @abstractmethod
-    def available_attrs(self):
+    def check_valid_update_attr(attr, val):
         """
-        Attributes available to change from frontend
+        Check possibility to assign value to attribute
+        """
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def check_creation_attrs(attrs):
+        """
+        Check that list attrs contains necessary attributes to create new entity
         """
         pass
 
@@ -74,9 +84,19 @@ class File(QuestEntity):
     def remove_from_graph(self):
         if self.parent and self in self.parent.files:
             self.parent.files.remove(self)
+            self.parent = None
 
-    def available_attrs(self):
-        return 'type', 'url'
+    @staticmethod
+    def check_valid_update_attr(attr, val):
+        if attr == 'type':
+            return val in db.get_file_types()
+        elif attr == 'url':
+            return isinstance(val, str)
+        return False
+
+    @staticmethod
+    def check_creation_attrs(attrs):
+        return all([(attr in attrs) for attr in ['type', 'url']])
 
 
 class Author:
@@ -131,9 +151,19 @@ class Hint(QuestEntity):
         self.files = []
         if self.parent and self in self.parent.hints:
             self.parent.hints.remove(self)
+        self.parent = None
 
-    def available_attrs(self):
-        return 'text', 'fine'
+    @staticmethod
+    def check_valid_update_attr(attr, val):
+        if attr == 'text':
+            return isinstance(val, str)
+        if attr == 'fine':
+            return isinstance(val, (int, float))
+        return True
+
+    @staticmethod
+    def check_creation_attrs(attrs):
+        return all([(attr in attrs) for attr in ['text']])
 
 
 class Answer(QuestEntity):
@@ -184,9 +214,20 @@ class Answer(QuestEntity):
             self.next_question.parents.remove(self)
         if self.parent and self in self.parent.answers:
             self.parent.answers.remove(self)
+        self.next_question = None
+        self.parent = None
 
-    def available_attrs(self):
-        return 'text', 'points'
+    @staticmethod
+    def check_valid_update_attr(attr, val):
+        if attr == 'points':
+            return isinstance(val, (int, float))
+        elif attr == 'text':
+            return isinstance(val, str)
+        return False
+
+    @staticmethod
+    def check_creation_attrs(attrs):
+        return all([(attr in attrs) for attr in ['text']])
 
 
 class Place(QuestEntity):
@@ -226,9 +267,23 @@ class Place(QuestEntity):
     def remove_from_graph(self):
         if self.parent:
             self.parent.place = None
+        self.parent = None
 
-    def available_attrs(self):
-        return 'coords', 'radius', 'time_open', 'time_close'
+    @staticmethod
+    def check_valid_update_attr(attr, val):
+        if attr == 'coords':
+            return isinstance(val, list) and len(val) == 2 \
+                   and isinstance(val[0], (int, float)) and isinstance(val[1], (int, float))
+        elif attr == 'radius':
+            return isinstance(val, (int, float))
+        elif attr == 'time_open' or attr == 'time_close':
+            # TODO: add time support
+            return False
+        return False
+
+    @staticmethod
+    def check_creation_attrs(attrs):
+        return all([(attr in attrs) for attr in ['coords', 'radius']])
 
 
 class Movement(QuestEntity):
@@ -267,7 +322,7 @@ class Movement(QuestEntity):
 
     def to_dict(self):
         return {'movement_id': self.movement_id,
-                'place': self.place.to_dict(),
+                'place': self.place.to_dict() if self.place else None,
                 'next_question_id': self.next_question.question_id if self.next_question is not None else None}
 
     def remove_from_graph(self):
@@ -276,9 +331,16 @@ class Movement(QuestEntity):
         if self.parent and self in self.parent.movements:
             self.parent.movements.remove(self)
         self.place = None
+        self.next_question = None
+        self.parent = None
 
-    def available_attrs(self):
-        return ()
+    @staticmethod
+    def check_valid_update_attr(attr, val):
+        return False
+
+    @staticmethod
+    def check_creation_attrs(attrs):
+        return not attrs
 
 
 class Question(QuestEntity):
@@ -297,6 +359,8 @@ class Question(QuestEntity):
         question.question_id = question_id
         question.text = question_info['question_text']
         question.type = question_info['q_type_name']
+        question.pos_x = question_info['pos_x']
+        question.pos_y = question_info['pos_y']
 
         question.files = [File(file['f_type_name'], file['url_for_file'], question)
                           for file in db.get_question_files(question_id)]
@@ -329,13 +393,17 @@ class Question(QuestEntity):
         self.answers = []
         self.movements = []
         self.parents = []
+        self.pos_x = 0
+        self.pos_y = 0
 
     def to_dict(self):
         return {'question_id': self.question_id, 'type': self.type, 'text': self.text,
                 'files': [file.to_dict() for file in self.files],
                 'hints': [hint.to_dict() for hint in self.hints],
                 'answer_options': [ans.to_dict() for ans in self.answers],
-                'movements': [move.to_dict() for move in self.movements]}
+                'movements': [move.to_dict() for move in self.movements],
+                'pos_x': self.pos_x,
+                'pos_y': self.pos_y}
 
     def remove_from_graph(self):
         for parent in self.parents:
@@ -344,11 +412,25 @@ class Question(QuestEntity):
             answer.parent = None
         for move in self.movements:
             move.parent = None
+        self.answers = []
+        self.movements = []
         self.files = []
         self.hints = []
+        self.parents = []
 
-    def available_attrs(self):
-        return 'type', 'text'
+    @staticmethod
+    def check_valid_update_attr(attr, val):
+        if attr == 'type':
+            return val in db.get_question_types()
+        elif attr == 'pos_x' or attr == 'pos_y':
+            return isinstance(val, int)
+        elif attr == 'text':
+            return isinstance(val, str)
+        return False
+
+    @staticmethod
+    def check_creation_attrs(attrs):
+        return all([(attr in attrs) for attr in ['type']])
 
 
 class Quest(QuestEntity):
@@ -367,7 +449,7 @@ class Quest(QuestEntity):
         quest.id_in_db = quest_id
         quest.quest_id = quest_id
         quest.title = quest_info['title']
-        quest.author = quest_info['author']
+        quest.author_id = quest_info['author_id']
         quest.description = quest_info['description']
         quest.password = quest_info['password']
         quest.time_open = quest_info['time_open']
@@ -388,7 +470,7 @@ class Quest(QuestEntity):
         self.id_in_db = None
         self.quest_id = None
         self.title = None
-        self.author = None
+        self.author_id = None
         self.tags = []
         self.files = []
         self.hidden = False
@@ -401,11 +483,11 @@ class Quest(QuestEntity):
         self.first_question = None
         self.rating = {'one': 0, 'two': 0, 'three': 0, 'four': 0, 'five': 0}
 
-    def to_db(self, author_id):
+    def to_db(self):
         """
         Write data from Quest object to database
         """
-        quest_id = set_quest(self, author_id)
+        quest_id = set_quest(self)
         set_tags(self, quest_id)
         question_id = create_new_question(self.first_question, quest_id)
         questions = dict()
@@ -439,8 +521,20 @@ class Quest(QuestEntity):
     def remove_from_graph(self):
         pass
 
-    def available_attrs(self):
-        return 'title', 'tags', 'hidden', 'description', 'password', 'time_open', 'time_close', 'lead_time'
+    @staticmethod
+    def check_valid_update_attr(attr, val):
+        if attr in ['title', 'description', 'password']:
+            return isinstance(val, str)
+        elif attr == 'hidden':
+            return isinstance(val, bool)
+        elif attr in ['time_open', 'time_close', 'lead_time']:
+            # TODO: add time support
+            return False
+        return False
+
+    @staticmethod
+    def check_creation_attrs(attrs):
+        return all([(attr in attrs) for attr in ['title']])
 
     def create_from_dict(self, quest_dict):
         """
@@ -448,6 +542,8 @@ class Quest(QuestEntity):
         :param quest_dict: dictionary with quest params
         :return: True if success else False
         """
+        if 'title' not in quest_dict.keys():
+            return False
         rc = update_from_dict(self, quest_dict)
         if not rc:
             return False

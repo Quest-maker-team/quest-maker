@@ -142,7 +142,7 @@ export class BlockRedactor {
         );
     }
 
-    static createStartRedactor(form, question) {
+    static createStartRedactor(form, question, modal) {
         this.addTextRedactor(form, 'Приветственное сообщение:', question.text);
         document.getElementById('update').onclick = () => {
             question.text = document.getElementById('formControlTextarea').value;
@@ -152,10 +152,11 @@ export class BlockRedactor {
                 type: question.type,
                 text: question.text,
             })).then(() => console.log('success'));
+            modal.hide();
         };
     }
 
-    static createFinishRedactor(form, question) {
+    static createFinishRedactor(form, question, modal) {
         this.addTextRedactor(form, 'Прощальное сообщение:', question.text);
         document.getElementById('update').onclick = () => {
             question.text = document.getElementById('formControlTextarea').value;
@@ -165,6 +166,7 @@ export class BlockRedactor {
                 type: question.type,
                 text: question.text,
             })).then(() => console.log('success'));
+            modal.hide();
         };
     }
 
@@ -333,7 +335,7 @@ export class BlockRedactor {
         };
     }
 
-    static createMovementRedactor(form, question) {
+    static createMovementRedactor(form, question, modal) {
         BlockRedactor.addTextRedactor(form, 'Перемещение', question.text);
         form.innerHTML+=
         '<div class="z-depth-1-half map-container" style="height: 500px" id="map"></div>';
@@ -382,7 +384,7 @@ export class BlockRedactor {
                 question.text;
             question.movements[0].place.coords = document.getElementById('moveCoords').value;
             question.movements[0].place.radius = document.getElementById('moveRadius').value;
-            question.answer_options[0].points = document.getElementById('movePoints').value;
+            modal.hide();
         };
     }
 
@@ -392,16 +394,16 @@ export class BlockRedactor {
         form.innerHTML = '';
         switch (question.type) {
         case 'start':
-            BlockRedactor.createStartRedactor(form, question);
+            BlockRedactor.createStartRedactor(form, question, modal);
             break;
         case 'end':
-            BlockRedactor.createFinishRedactor(form, question);
+            BlockRedactor.createFinishRedactor(form, question, modal);
             break;
         case 'open':
             BlockRedactor.createOpenQuestionRedactor(form, question, instance, sourceEndpoint, modal);
             break;
         case 'movement':
-            BlockRedactor.createMovementRedactor(form, question);
+            BlockRedactor.createMovementRedactor(form, question, modal);
             break;
         case 'choice':
             // TODO: change this to function for "choice"

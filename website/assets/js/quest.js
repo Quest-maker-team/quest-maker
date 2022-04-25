@@ -33,11 +33,6 @@ export class Quest {
 
 
     static loadQuest(id, draft) {
-        //const url = '/api/db/quest/' + id.toString();
-        /*return Quest.makeRequest('GET', url).then((data) => {
-            console.log('success');
-            return new Quest(JSON.parse(data));
-        });*/
         return Quest.makeRequest('GET', '/api/draft/quest/' + draft.toString()).then(result => {
             console.log('success load from draft');
             return result;
@@ -56,14 +51,14 @@ export class Quest {
         return Quest.makeRequest('POST', url, answer);
     }
 
+    static updateQuest(id, questParams){
+        const url = 'api/quest/' + id;
+        return Quest.makeRequest('PUT', url, questParams);
+    }
+
     static updateAnswer(id, answer) {
         const url = 'api/answer_option/' + id;
         return Quest.makeRequest('PUT', url, answer);
-    }
-
-    static deleteEntity(type, id) {
-        const url = 'api/' + type + '/' + id;
-        return Quest.makeRequest('DELETE', url);
     }
 
     static updateQuestion(id, question) {
@@ -78,6 +73,11 @@ export class Quest {
 
     static disconnect(type1, type2, id1) {
         const url = 'api/' + type1 + '/' + id1 + '/' + type2;
+        return Quest.makeRequest('DELETE', url);
+    }
+
+    static deleteEntity(type, id) {
+        const url = 'api/' + type + '/' + id;
         return Quest.makeRequest('DELETE', url);
     }
 

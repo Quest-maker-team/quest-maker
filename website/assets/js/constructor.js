@@ -153,7 +153,7 @@ Quest.loadQuest(1, 24).then(quest => {
     };
 
     document.getElementById('addQBtn').onclick = () => {
-        const questionId = createNewBlock('open', 'Новый открытый вопрос', Render.renderOpenQuestion);
+        const questionId = createNewBlock('open', 'Новый открытый вопрос', Render.renderQuestion);
         Quest.pushQuestion(quest, questionId);
     };
 });

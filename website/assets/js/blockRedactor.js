@@ -262,7 +262,7 @@ export class BlockRedactor {
         })).then(() => console.log('success'));
     }
 
-    static createOpenQuestionRedactor(form, question, instance, sourceEndpoint, modal) {
+    static createQuestionRedactor(form, question, instance, sourceEndpoint, modal) {
         BlockRedactor.addTextRedactor(form, 'Вопрос', question.text);
         form.insertAdjacentHTML('beforeend',
             '<hr><label for="formControlTextarea" class="form-label">Ответы:</label>');
@@ -403,14 +403,13 @@ export class BlockRedactor {
             BlockRedactor.createFinishRedactor(form, question, modal);
             break;
         case 'open':
-            BlockRedactor.createOpenQuestionRedactor(form, question, instance, sourceEndpoint, modal);
+            BlockRedactor.createQuestionRedactor(form, question, instance, sourceEndpoint, modal);
             break;
         case 'movement':
             BlockRedactor.createMovementRedactor(form, question, modal);
             break;
         case 'choice':
-            // TODO: change this to function for "choice"
-            BlockRedactor.createOpenQuestionRedactor(form, question, instance, sourceEndpoint, modal);
+            BlockRedactor.createQuestionRedactor(form, question, instance, sourceEndpoint, modal);
             break;
         default:
             break;

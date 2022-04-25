@@ -5,7 +5,6 @@ import {Quest} from "./quest";
 export class Render {
     static createEndpoint(instance, elem, anchors, options) {
         const endpoint = instance.addEndpoint(elem, anchors, options);
-        // console.log(endpoint.endpoint);
         elem.dispatchEvent(new CustomEvent('newEndpointCreating', {
             bubbles: true,
             detail: {
@@ -73,14 +72,12 @@ export class Render {
         block.append(answer);
 
         instance.manage(block);
-        // instance.addEndpoint(answer, sourceEndpoint);
         Render.createEndpoint(instance, answer, {}, sourceEndpoint);
         return block;
     }
 
     static renderFinish(question, instance, targetEndpoint) {
         const block = this.renderBlockBase(question, '10rem', 'Конец');
-        // instance.addEndpoint(block, targetEndpoint);
         Render.createEndpoint(instance, block, {}, targetEndpoint);
         return block;
     }
@@ -131,8 +128,8 @@ export class Render {
         }
     }
 
-    static renderOpenQuestion(quest, question, instance, sourceEndpoint, targetEndpoint, position) {
-        const block = Render.renderBlockBase(question, '15rem', 'Открытый вопрос', instance, sourceEndpoint);
+    static renderQuestion(quest, question, title, instance, sourceEndpoint, targetEndpoint) {
+        const block = Render.renderBlockBase(question, '15rem', title, instance, sourceEndpoint);
         const answerTable = document.createElement('ul');
         answerTable.className = 'list-group list-group-flush';
         answerTable.id = 'anstab' + question.question_id;
@@ -143,7 +140,6 @@ export class Render {
 
         Render.addDeleteButton(quest, block, instance, answerTable.childNodes);
 
-        // instance.addEndpoint(block, {anchor: 'Top'}, targetEndpoint);
         Render.createEndpoint(instance, block, {anchor: 'Top'}, targetEndpoint);
 
         return block;
@@ -158,8 +154,6 @@ export class Render {
         answer.id = 'movement' + question.movements[0].movement_id;
         block.append(answer);
 
-        // instance.addEndpoint(block, {anchor: 'Top'}, targetEndpoint);
-        // instance.addEndpoint(answer, {anchor: 'Bottom'}, sourceEndpoint);
         Render.createEndpoint(instance, block, {anchor: 'Top'}, targetEndpoint);
         Render.createEndpoint(instance, answer, {anchor: 'Bottom'}, sourceEndpoint);
 
@@ -177,14 +171,13 @@ export class Render {
                 block = Render.renderFinish(question, instance, targetEndpoint);
                 break;
             case 'open':
-                block = Render.renderOpenQuestion(quest, question, instance, sourceEndpoint, targetEndpoint);
+                block = Render.renderQuestion(quest, question,"Открытый вопрос", instance, sourceEndpoint, targetEndpoint);
                 break;
             case 'movement':
                 block = Render.renderMovement(quest, question, instance, sourceEndpoint, targetEndpoint);
                 break;
             case 'choice':
-                // TODO: change this to function for "choice"
-                block = Render.renderOpenQuestion(quest, question, instance, sourceEndpoint, targetEndpoint);
+                block = Render.renderQuestion(quest, question, "Вопрос с выбором ответа", instance, sourceEndpoint, targetEndpoint);
                 break;
             default:
                 break;

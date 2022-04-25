@@ -227,6 +227,20 @@ def get_quest(quest_id):
         return cursor.fetchone()
 
 
+def get_quests_by_author_id(author_id):
+    """
+    Load quests info for personal catalog from table quests by author id
+    :param author_id: author id in database
+    :return: list of dictionaries with attrs as keys
+    """
+    with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+        cursor.execute('SELECT quest_id, title, password, '
+                       'time_open, time_close, hidden '
+                       'FROM quests '
+                       'WHERE author_id = %s', (author_id,))
+        return cursor.fetchall()
+
+
 def get_quest_tags(quest_id):
     """
     Load tags related with quest
@@ -766,6 +780,15 @@ def get_draft(draft_id):
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('SELECT author_id, container FROM drafts WHERE draft_id = %s', (draft_id,))
         return cursor.fetchone()
+
+
+def get_drafts_by_author_id(author_id):
+    """
+    Get drafts quest by author id
+    """
+    with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+        cursor.execute('SELECT draft_id, container FROM drafts WHERE author_id = %s', (author_id,))
+        return cursor.fetchall()
 
 
 def get_draft_for_update(draft_id):

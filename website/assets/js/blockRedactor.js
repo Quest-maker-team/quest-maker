@@ -4,11 +4,12 @@ import {Render} from './render';
 
 export class BlockRedactor {
     static addTextRedactor(form, label, text) {
-        form.innerHTML +=
+        form.insertAdjacentHTML('beforeend',
             '<label for="formControlTextarea" class="form-label">' + label + '</label>' +
             '<textarea class="form-control" id="formControlTextarea" rows="3">' +
             text +
-            '</textarea>';
+            '</textarea>'
+        );
     }
 
     static delete(optionId, elementIdPart, question, instance, special) {
@@ -414,6 +415,71 @@ export class BlockRedactor {
         default:
             break;
         }
+        modal.show();
+    }
+}
+
+
+export class QuestRedactor{
+    static createQuestRedactor(form, quest) {
+        form.insertAdjacentHTML('beforeend',
+            '<div class="col-12" id="special">' +
+                    '<label class="form-check-label" for="questTitle">' +
+                        'Название квеста' +
+                    '</label>' +
+                    '<input type="text" onkeydown="return (event.keyCode!=13);" class="form-control" id="questTitle"' +
+                        ' value="' + quest.data.title + '" placeholder="Название квеста">' +
+
+                    '<label for="formControlTextarea" class="form-label mt-2">' + 'Описание' + '</label>' +
+                    '<textarea class="form-control" id="questDescription" rows="3">' +
+                        quest.data.description +
+                    '</textarea>' +
+
+                    '<div  class="form-check mt-2">' +
+                        '<input class="form-check-input" type="checkbox" id="private" ' +
+                        (quest.data.password.toString() !== '' ? 'checked' : '') + '>' +
+                        '<label class="form-check-label" for="private">' +
+                            'Приватный квест' +
+                        '</label>' +
+                    '</div>' +
+
+                    '<div id="passwordBox" ' +
+                        (quest.data.password.toString() === '' ? 'hidden' : '') + '>' +
+                        '<label class="form-check-label" for="private">' +
+                            'Ключевое слово' +
+                        '</label>' +
+                        '<input type="text" onkeydown="return (event.keyCode!=13);" class="form-control" id="questPassword"' +
+                            ' value="' + quest.data.password + '" placeholder="Ключевое слово">' +
+                    '</div>' +
+            '</div>'
+        );
+    }
+
+    static showQuestRedactor(quest) {
+        const modal = new bootstrap.Modal(document.getElementById('redactor'));
+        const form = document.getElementById('redactorForm');
+        form.innerHTML = '';
+
+        QuestRedactor.createQuestRedactor(form, quest);
+
+        document.getElementById('private').onchange = () => {
+            document.getElementById('passwordBox').hidden = !document.getElementById('passwordBox').hidden;
+        };
+
+        document.getElementById('update').onclick = () => {
+            Quest.updateQuest(quest.data.quest_id, JSON.stringify({
+                title: document.getElementById('questTitle').value,
+                description: document.getElementById('questDescription').value,
+                password: document.getElementById('private').checked ? document.getElementById('questPassword').value : '',
+            }));
+
+            quest.data.title = document.getElementById('questTitle').value;
+            quest.data.description = document.getElementById('questDescription').value;
+            quest.data.password = document.getElementById('private').checked ? document.getElementById('questPassword').value : '';
+
+            modal.hide();
+        }
+
         modal.show();
     }
 }

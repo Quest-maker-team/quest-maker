@@ -4,6 +4,7 @@ import {Quest} from './quest';
 import {Render} from './render';
 import {EVENT_CONNECTION_DETACHED, EVENT_CONNECTION} from '@jsplumb/core';
 import Panzoom from '@panzoom/panzoom';
+import {QuestRedactor} from "./blockRedactor";
 
 // load static images
 require.context(
@@ -81,6 +82,11 @@ Quest.loadQuest(1, 24).then(quest => {
         Quest.disconnect(sourceIdSplit[1], 'question', sourceIdSplit[2]).then(() =>
             console.log('disconnect success'));
     });
+
+    document.getElementById('redactorQuest').onclick = () => {
+        QuestRedactor.showQuestRedactor(quest);
+    };
+
 
     setInterval(() => {
         for (const question of quest.data.questions) {

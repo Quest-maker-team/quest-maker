@@ -58,11 +58,6 @@ export class Quest {
     }
 
     static loadQuest(id, draft) {
-        //const url = '/api/db/quest/' + id.toString();
-        /*return Quest.makeRequest('GET', url).then((data) => {
-            console.log('success');
-            return new Quest(JSON.parse(data));
-        });*/
         return Quest.makeRequest('GET', '/api/draft/quest/' + draft.toString()).then(result => {
             console.log('success load from draft');
             return result;
@@ -82,7 +77,7 @@ export class Quest {
     }
 
     static updateQuest(id, questParams){
-        const url = 'api/quest' + id;
+        const url = 'api/quest/' + id;
         return Quest.makeRequest('PUT', url, questParams);
     }
 

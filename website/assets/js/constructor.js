@@ -141,9 +141,7 @@ Quest.loadQuest(1, 1).then(quest => {
             Quest.addMovement(quest, questionInd).then(data=>{
                 const place = {
                     coords: [0.0, 0.0],
-                    radius: 0.0,
-                    time_close: 0,
-                    time_open: 0,
+                    radius: 0.0
                 }
                 Quest.addNewPlace(quest, JSON.stringify(place), questionInd).then(rez=>{     
                     console.log("Render movement:");
@@ -154,9 +152,9 @@ Quest.loadQuest(1, 1).then(quest => {
                     Quest.connect('question', 'movement', 
                      quest.data.questions[questionInd].question_id,
                      quest.data.questions[questionInd].movements[0].movement_id);
-                    Quest.connect('place', 'movement',
-                    quest.data.questions[questionInd].movements[0].place.place_id,
-                    quest.data.questions[questionInd].movements[0].movement_id);
+                     Quest.connect('movement', 'place',
+                     quest.data.questions[questionInd].movements[0].movement_id,
+                     quest.data.questions[questionInd].movements[0].place.place_id);
                     Render.renderMovement(quest, quest.data.questions[questionInd], instance, sourceEndpoint, targetEndpoint, 'absolute');
                 });
             });

@@ -118,7 +118,7 @@ export class Quest {
     }
 
     static addMovement(quest, moveInd) {
-        return Quest.makeRequest('POST','api/movement',JSON.stringify({}))
+        return Quest.makeRequest('POST','api/movement', JSON.stringify({}))
         .then(result => {
             console.log('success add new movement '+ result);
             const id = JSON.parse(result).movement_id;
@@ -129,7 +129,6 @@ export class Quest {
             console.log('failed add new movement');
         });
     }
-    
     static createNewQuest(){
         return Quest.makeRequest('POST', 'api/quest').then(data =>{
             console.log("create new quest");
@@ -138,8 +137,8 @@ export class Quest {
             const start_id = quest_par['start_question_id'];
             const start_ans_id = quest_par['first_answer_id'];
             const end_id = quest_par['end_question_id'];
-            
             return Quest.loadQuest(-1, quest_id);
         });
     }
+   
 }

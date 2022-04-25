@@ -36,7 +36,7 @@
                         {% endif %}
                         <td style="width: 5%; border-left: 0">
                             <button type="button" class="btn btn-primary"
-                                    onclick="goConstructor({% if  quest['state'] == 'Черновик' %}'draft'{% else %}
+                                    onclick="goConstructor({% if quest['state'] == 'Черновик' %}'draft'{% else %}
                                     'clean'{% endif %}, {{ quest['id'] }})">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                                         class="bi bi-pencil" viewBox="0 0 16 16">

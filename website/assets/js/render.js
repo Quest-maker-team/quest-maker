@@ -16,6 +16,10 @@ export class Render {
 
     static renderBlockBase(question, width, title, instance, sourceEndpoint) {
         const block = document.createElement('div');
+        console.log(question);
+        console.log(width);
+        console.log(title);
+        console.log(instance);
         block.id = question.question_id;
         block.className = 'position-absolute card border-2 panzoom-exclude';
         block.style.width = width.toString();

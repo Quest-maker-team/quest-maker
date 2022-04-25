@@ -10,13 +10,14 @@ export class QuestRedactor{
             '</textarea>';
     }
     static createQuest(form, modal){
-        
+        this.addTextRedactor(form, "Введите описание квеста", "");
+
     }
     static showRedactor(quest) {
         const modal = new bootstrap.Modal(document.getElementById('newQuest'));
         const form = document.getElementById('questForm');
         form.innerHTML = '';
-        Quest quest = QuestRedactor.createQuest(form, modal);
+        //Quest quest = QuestRedactor.createQuest(form, modal);
         modal.show();
     }
 }

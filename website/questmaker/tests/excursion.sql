@@ -1,7 +1,7 @@
 /*test#2*/
 
 --author info
-INSERT INTO authors (email, name, password, status_id) VALUES ('excursion@gmail.com','Экскурсии','password_hash',
+INSERT INTO authors (email, name, password, status_id) VALUES ('excursion@gmail.com','Экскурсии','pbkdf2:sha256:260000$nDzF9CRQMkgu1EoP$ec9bcdf6ba34a3e7368686fd72299b55f7fb0495f743941f3bbaf8fdfe48189d',
     (SELECT status_id FROM statuses WHERE status_name= 'author'));
 
 --quest info

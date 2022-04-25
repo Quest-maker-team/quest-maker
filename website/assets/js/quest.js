@@ -5,7 +5,6 @@ export class Quest {
     constructor(data) {
         this.data = data;
     }
-
     static makeRequest(method, url, data) {
         return new Promise(function(resolve, reject) {
             const xmlhttp = new XMLHttpRequest();
@@ -118,7 +117,7 @@ export class Quest {
     }
 
     static addMovement(quest, moveInd) {
-        return Quest.makeRequest('POST','api/movement', JSON.stringify({}))
+        return Quest.makeRequest('POST', 'api/movement', JSON.stringify({}))
         .then(result => {
             console.log('success add new movement '+ result);
             const id = JSON.parse(result).movement_id;
@@ -130,14 +129,13 @@ export class Quest {
         });
     }
     static createNewQuest(){
-        return Quest.makeRequest('POST', 'api/quest').then(data =>{
+        return Quest.makeRequest('POST', 'api/quest', JSON.stringify({
+            hidden: false,
+            title: "Новый квест" 
+        })).then(data =>{
             console.log("create new quest");
             const quest_par = JSON.parse(data);
-            const quest_id = quest_par['quest_id'];
-            const start_id = quest_par['start_question_id'];
-            const start_ans_id = quest_par['first_answer_id'];
-            const end_id = quest_par['end_question_id'];
-            return Quest.loadQuest(-1, quest_id);
+            return quest_par;
         });
     }
    

@@ -71,7 +71,7 @@ export class Render {
 
     static renderStart(question, instance, sourceEndpoint) {
         const block = this.renderBlockBase(question, '10rem', 'Начало');
-
+        block.className+=' text-white bg-danger';
         const answer = document.createElement('div');
         answer.id = 'answer_option' + question.answer_options[0].answer_option_id;
         block.append(answer);
@@ -84,6 +84,7 @@ export class Render {
 
     static renderFinish(question, instance, targetEndpoint) {
         const block = this.renderBlockBase(question, '10rem', 'Конец');
+        block.className+=' text-white bg-dark';
         // instance.addEndpoint(block, targetEndpoint);
         Render.createEndpoint(instance, block, {}, targetEndpoint);
         return block;
@@ -137,6 +138,7 @@ export class Render {
 
     static renderOpenQuestion(quest, question, instance, sourceEndpoint, targetEndpoint, position) {
         const block = Render.renderBlockBase(question, '15rem', 'Открытый вопрос', instance, sourceEndpoint);
+        block.className+=' border-primary';
         const answerTable = document.createElement('ul');
         answerTable.className = 'list-group list-group-flush';
         answerTable.id = 'anstab' + question.question_id;
@@ -155,7 +157,7 @@ export class Render {
 
     static renderMovement(quest, question, instance, sourceEndpoint, targetEndpoint) {
         const block = Render.renderBlockBase(question, '15rem', 'Перемещение', instance, sourceEndpoint);
-
+        block.className+=' border-warning';
         Render.addDeleteButton(quest, block, instance);
 
         const answer = document.createElement('div');

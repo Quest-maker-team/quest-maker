@@ -185,14 +185,15 @@ function createQuest(id, draft){
             });
         };
         document.getElementById('addQuest').onclick = () => {
-
+           // instance.innerHTML = '';
+            //location.reload();
             Quest.createNewQuest().then(quest_par =>{
                 console.log(quest_par);
                 const quest_id = quest_par['quest_id'];
                 const start_id = quest_par['start_question_id'];
                 const start_ans_id = quest_par['first_answer_id'];
                 const end_id = quest_par['end_question_id'];
-
+                
                 createQuest(-1, quest_id);
             });
 

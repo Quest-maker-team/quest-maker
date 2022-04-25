@@ -35,6 +35,7 @@ const targetEndpoint = {
     anchor: [0.5, 0, 0, -1],
 };
 
+
 function load(name, id) {
     if (name === 'new'){
         return Quest.makeNewQuest();

@@ -5,7 +5,6 @@ import {Quest} from "./quest";
 export class Render {
     static createEndpoint(instance, elem, anchors, options) {
         const endpoint = instance.addEndpoint(elem, anchors, options);
-        // console.log(endpoint.endpoint);
         elem.dispatchEvent(new CustomEvent('newEndpointCreating', {
             bubbles: true,
             detail: {
@@ -23,6 +22,7 @@ export class Render {
         block.style.top = question.pos_y.toString() + 'px';
         const blockBody = document.createElement('div');
         blockBody.className = 'card-body';
+        blockBody.id = 'body' + question.question_id;
         blockBody.innerHTML = '<h5 class="card-title text-center">' + title + '</h5>' +
                                 '<hr>' +
                                 '<p class="card-text text-center text-truncate">' + question.text + '</p>';
@@ -55,7 +55,7 @@ export class Render {
                 }
             }
 
-            instance.selectEndpoints({element: block}).deleteAll();
+            instance.selectEndpoints({element: document.getElementById('body' + block.id)}).deleteAll();
             delete instance.getManagedElements()[block.id];
             block.parentElement.removeChild(block);
             const questions = quest.data.questions;
@@ -70,18 +70,21 @@ export class Render {
 
         const answer = document.createElement('div');
         answer.id = 'answer_option' + question.answer_options[0].answer_option_id;
+        answer.style.height = '100%';
+        answer.style.width = '100%';
+        answer.className = 'position-absolute';
         block.append(answer);
 
         instance.manage(block);
-        // instance.addEndpoint(answer, sourceEndpoint);
-        Render.createEndpoint(instance, answer, {}, sourceEndpoint);
+        Render.createEndpoint(instance, answer, {anchor: ['Top', 'Right', 'Left', 'Bottom']}, sourceEndpoint);
         return block;
     }
 
     static renderFinish(question, instance, targetEndpoint) {
         const block = this.renderBlockBase(question, '10rem', 'Конец');
-        // instance.addEndpoint(block, targetEndpoint);
-        Render.createEndpoint(instance, block, {}, targetEndpoint);
+        instance.manage(block);
+        Render.createEndpoint(instance, document.getElementById('body' + question.question_id),
+            {anchor: ['Top', 'Right', 'Left', 'Bottom']}, targetEndpoint);
         return block;
     }
 
@@ -131,8 +134,8 @@ export class Render {
         }
     }
 
-    static renderOpenQuestion(quest, question, instance, sourceEndpoint, targetEndpoint, position) {
-        const block = Render.renderBlockBase(question, '15rem', 'Открытый вопрос', instance, sourceEndpoint);
+    static renderQuestion(quest, question, title, instance, sourceEndpoint, targetEndpoint) {
+        const block = Render.renderBlockBase(question, '15rem', title, instance, sourceEndpoint);
         const answerTable = document.createElement('ul');
         answerTable.className = 'list-group list-group-flush';
         answerTable.id = 'anstab' + question.question_id;
@@ -141,10 +144,10 @@ export class Render {
             Render.renderAnswer(answer, question, instance, sourceEndpoint, true);
         }
 
+        instance.manage(block);
         Render.addDeleteButton(quest, block, instance, answerTable.childNodes);
-
-        // instance.addEndpoint(block, {anchor: 'Top'}, targetEndpoint);
-        Render.createEndpoint(instance, block, {anchor: 'Top'}, targetEndpoint);
+        Render.createEndpoint(instance, document.getElementById('body' + question.question_id),
+            {anchor: ['Top', 'Right', 'Left']}, targetEndpoint);
 
         return block;
     }
@@ -152,16 +155,19 @@ export class Render {
     static renderMovement(quest, question, instance, sourceEndpoint, targetEndpoint) {
         const block = Render.renderBlockBase(question, '15rem', 'Перемещение', instance, sourceEndpoint);
 
-        Render.addDeleteButton(quest, block, instance);
-
         const answer = document.createElement('div');
         answer.id = 'movement' + question.movements[0].movement_id;
+        answer.style.height = '100%';
+        answer.style.width = '100%';
+        answer.className = 'position-absolute';
         block.append(answer);
 
-        // instance.addEndpoint(block, {anchor: 'Top'}, targetEndpoint);
-        // instance.addEndpoint(answer, {anchor: 'Bottom'}, sourceEndpoint);
-        Render.createEndpoint(instance, block, {anchor: 'Top'}, targetEndpoint);
-        Render.createEndpoint(instance, answer, {anchor: 'Bottom'}, sourceEndpoint);
+        instance.manage(block);
+        Render.addDeleteButton(quest, block, instance,
+            [document.getElementById('movement' + question.movements[0].movement_id)]);
+        Render.createEndpoint(instance, document.getElementById('body' + question.question_id),
+            {anchor: ['Top', 'Right', 'Left', 'Bottom']}, targetEndpoint);
+        Render.createEndpoint(instance, answer, {anchor: ['Top', 'Right', 'Left', 'Bottom']}, sourceEndpoint);
 
         return block;
     }
@@ -177,14 +183,13 @@ export class Render {
                 block = Render.renderFinish(question, instance, targetEndpoint);
                 break;
             case 'open':
-                block = Render.renderOpenQuestion(quest, question, instance, sourceEndpoint, targetEndpoint);
+                block = Render.renderQuestion(quest, question,"Открытый вопрос", instance, sourceEndpoint, targetEndpoint);
                 break;
             case 'movement':
                 block = Render.renderMovement(quest, question, instance, sourceEndpoint, targetEndpoint);
                 break;
             case 'choice':
-                // TODO: change this to function for "choice"
-                block = Render.renderOpenQuestion(quest, question, instance, sourceEndpoint, targetEndpoint);
+                block = Render.renderQuestion(quest, question, "Вопрос с выбором ответа", instance, sourceEndpoint, targetEndpoint);
                 break;
             default:
                 break;
@@ -198,7 +203,7 @@ export class Render {
                         element: document.getElementById('movement' + question.movements[0].movement_id),
                     }).get(0),
                     target: instance.selectEndpoints({
-                        element: document.getElementById(question.movements[0].next_question_id)}).get(0),
+                        element: document.getElementById('body' + question.movements[0].next_question_id)}).get(0),
                 });
             } else if (question.type !== 'end') {
                 for (const answer of question.answer_options) {
@@ -208,7 +213,7 @@ export class Render {
                                 element: document.getElementById('answer_option' + answer.answer_option_id),
                             }).get(0),
                             target: instance.selectEndpoints({
-                                element: document.getElementById(answer.next_question_id),
+                                element: document.getElementById('body' + answer.next_question_id),
                             }).get(0),
                         });
                     }

@@ -73,7 +73,7 @@ Quest.loadQuest(1, 24).then(quest => {
 
     instance.bind(EVENT_CONNECTION, (connection) => {
         const sourceIdSplit = connection.source.id.match(/([a-z]*_?[a-z]*)([0-9]*)/);
-        Quest.connect(sourceIdSplit[1], 'question', sourceIdSplit[2], connection.target.id).then(() =>
+        Quest.connect(sourceIdSplit[1], 'question', sourceIdSplit[2], connection.target.parentNode.id).then(() =>
             console.log('connect success'));
     });
 

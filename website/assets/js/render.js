@@ -22,6 +22,7 @@ export class Render {
         block.style.top = question.pos_y.toString() + 'px';
         const blockBody = document.createElement('div');
         blockBody.className = 'card-body';
+        blockBody.id = 'body' + question.question_id;
         blockBody.innerHTML = '<h5 class="card-title text-center">' + title + '</h5>' +
                                 '<hr>' +
                                 '<p class="card-text text-center text-truncate">' + question.text + '</p>';
@@ -54,7 +55,7 @@ export class Render {
                 }
             }
 
-            instance.selectEndpoints({element: block}).deleteAll();
+            instance.selectEndpoints({element: document.getElementById('body' + block.id)}).deleteAll();
             delete instance.getManagedElements()[block.id];
             block.parentElement.removeChild(block);
             const questions = quest.data.questions;
@@ -69,16 +70,21 @@ export class Render {
 
         const answer = document.createElement('div');
         answer.id = 'answer_option' + question.answer_options[0].answer_option_id;
+        answer.style.height = '100%';
+        answer.style.width = '100%';
+        answer.className = 'position-absolute';
         block.append(answer);
 
         instance.manage(block);
-        Render.createEndpoint(instance, answer, {}, sourceEndpoint);
+        Render.createEndpoint(instance, answer, {anchor: ['Top', 'Right', 'Left', 'Bottom']}, sourceEndpoint);
         return block;
     }
 
     static renderFinish(question, instance, targetEndpoint) {
         const block = this.renderBlockBase(question, '10rem', 'Конец');
-        Render.createEndpoint(instance, block, {}, targetEndpoint);
+        instance.manage(block);
+        Render.createEndpoint(instance, document.getElementById('body' + question.question_id),
+            {anchor: ['Top', 'Right', 'Left', 'Bottom']}, targetEndpoint);
         return block;
     }
 
@@ -138,9 +144,10 @@ export class Render {
             Render.renderAnswer(answer, question, instance, sourceEndpoint, true);
         }
 
+        instance.manage(block);
         Render.addDeleteButton(quest, block, instance, answerTable.childNodes);
-
-        Render.createEndpoint(instance, block, {anchor: 'Top'}, targetEndpoint);
+        Render.createEndpoint(instance, document.getElementById('body' + question.question_id),
+            {anchor: ['Top', 'Right', 'Left']}, targetEndpoint);
 
         return block;
     }
@@ -148,14 +155,19 @@ export class Render {
     static renderMovement(quest, question, instance, sourceEndpoint, targetEndpoint) {
         const block = Render.renderBlockBase(question, '15rem', 'Перемещение', instance, sourceEndpoint);
 
-        Render.addDeleteButton(quest, block, instance);
-
         const answer = document.createElement('div');
         answer.id = 'movement' + question.movements[0].movement_id;
+        answer.style.height = '100%';
+        answer.style.width = '100%';
+        answer.className = 'position-absolute';
         block.append(answer);
 
-        Render.createEndpoint(instance, block, {anchor: 'Top'}, targetEndpoint);
-        Render.createEndpoint(instance, answer, {anchor: 'Bottom'}, sourceEndpoint);
+        instance.manage(block);
+        Render.addDeleteButton(quest, block, instance,
+            [document.getElementById('movement' + question.movements[0].movement_id)]);
+        Render.createEndpoint(instance, document.getElementById('body' + question.question_id),
+            {anchor: ['Top', 'Right', 'Left', 'Bottom']}, targetEndpoint);
+        Render.createEndpoint(instance, answer, {anchor: ['Top', 'Right', 'Left', 'Bottom']}, sourceEndpoint);
 
         return block;
     }
@@ -191,7 +203,7 @@ export class Render {
                         element: document.getElementById('movement' + question.movements[0].movement_id),
                     }).get(0),
                     target: instance.selectEndpoints({
-                        element: document.getElementById(question.movements[0].next_question_id)}).get(0),
+                        element: document.getElementById('body' + question.movements[0].next_question_id)}).get(0),
                 });
             } else if (question.type !== 'end') {
                 for (const answer of question.answer_options) {
@@ -201,7 +213,7 @@ export class Render {
                                 element: document.getElementById('answer_option' + answer.answer_option_id),
                             }).get(0),
                             target: instance.selectEndpoints({
-                                element: document.getElementById(answer.next_question_id),
+                                element: document.getElementById('body' + answer.next_question_id),
                             }).get(0),
                         });
                     }

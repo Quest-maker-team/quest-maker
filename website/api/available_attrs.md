@@ -10,7 +10,7 @@
 * `question`:
   * `type` - `open`, `choice`, `start`, `end`, `movement` string, "**required for creating**
   * `text` - string
-  * `pox_s` - int
+  * `pos_x` - int
   * `pos_y` - int
 * `hint`:
   * `text` - string, **required for creating**

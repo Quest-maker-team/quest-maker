@@ -171,8 +171,6 @@ export class Render {
             let block;
             switch (question.type) {
             case 'start':
-                setTimeout(() => {panzoom.pan(parseInt(question.pos_x) + window.innerWidth / 2,
-                            -parseInt(question.pos_y) + window.innerHeight / 2)});
                 block = Render.renderStart(question, instance, sourceEndpoint);
                 break;
             case 'end':

@@ -93,8 +93,6 @@ Quest.loadQuest(1, 24).then(quest => {
     }, 20000);
 
     Render.render(quest, instance, sourceEndpoint, targetEndpoint, panzoom);
-    //panzoom.zoom(0.5);
-    console.log(panzoom.getPan());
 
     return quest;
 }).then((quest) => {

@@ -1,6 +1,7 @@
 import {newInstance} from '@jsplumb/browser-ui';
 import {Render} from './render';
 
+
 export class Quest {
     constructor(data) {
         this.data = data;
@@ -28,32 +29,6 @@ export class Quest {
             } else {
                 xmlhttp.send();
             }
-        });
-    }
-
-    static makePostRequest(url, data) {
-        return new Promise(function(resolve, reject) {
-            const xmlhttp = new XMLHttpRequest();
-            xmlhttp.open('POST', url);
-            xmlhttp.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-
-            xmlhttp.onreadystatechange = () => {
-                if (xmlhttp.readyState === XMLHttpRequest.DONE) {
-                    if (xmlhttp.status === 200) {
-                        resolve(xmlhttp.response);
-                    } else {
-                        // console.log("fail to load");
-                        reject(xmlhttp.status);
-                    }
-                }
-            };
-
-            if (data !== undefined) {
-                xmlhttp.send(JSON.stringify(data));
-            } else {
-                xmlhttp.send();
-            }
-            // console.log("POST: " + json);
         });
     }
 
@@ -167,58 +142,46 @@ export class Quest {
         return Quest.makePostRequest(url);
     }
 
-    static pushQuestion(quest, id) {
-        const url = '/api/';
-        const questionToSend = quest.data.questions.find((question) => question.question_id===id);
-
-        new Promise((resolve, reject) => {
-            resolve(Quest.makePostRequest(url+'question', {
-                'type': questionToSend.type,
-                'text': questionToSend.text,
-            }).then((data) => {
-                console.log(data);
-                console.log(id === data['question_id']);
-                quest.data.questions.find((question) => question.question_id===id).question_id = data['question_id'];
-                id = data['question_id'];
-            }).then((data)=>{
-                for (let i = 0; i < questionToSend.answer_options.length; i++) {
-                    new Promise((resolve, reject) => {
-                        resolve(Quest.makePostRequest(url+'answer_option', {
-                            'text': questionToSend.answer_options[i].text,
-                            'points': questionToSend.answer_options[i].points,
-                        }).then((data) => {
-                            console.log(data);
-                            quest.data.questions.find((question) => question.question_id===id).answer_options[i].answer_option_id = data['answer_option_id'];
-                        }));
-                    });
-                }
-            }));
+    static addNewPlace(quest, place, questionInd){
+        const url = 'api/place';
+        return Quest.makeRequest('POST', url, place).then(result=>{
+            console.log('success add new place '+ result);
+            const id = JSON.parse(result).place_id;
+            quest.data.questions[questionInd].movements[0].place.place_id = id;
+            console.log('id = '+ id);
+            return id;
         });
     }
 
-    static pushMovement(quest, id, moveId) {
-        const url = '/api/';
-        const questionToSend = quest.data.questions.find((question) => question.question_id===id);
-        console.log('A');
-        new Promise((resolve, reject) => {
-            resolve(Quest.makePostRequest(url+'question', {
-                'type': questionToSend.type,
-                'text': questionToSend.text,
-            }).then((data) => {
-                console.log('AA');
-                console.log(data);
-                console.log(id === data['question_id']);
-                quest.data.questions.find((question) => question.question_id===id).question_id = data['question_id'];
-                id = data['question_id'];
-            }).then((dataM) =>{
-                console.log(dataM);
-                new Promise((resolve, reject) => {
-                    resolve(Quest.makePostRequest(url+'movement', {})).then((dataMM) => {
-                        console.log(dataMM);
-                    });
-                });
-            })
-            );
+    static addQuestion(quest, questionInd) {
+        return Quest.makeRequest('POST', 'api/question', JSON.stringify({
+            type: quest.data.questions[questionInd].type,
+            text: " " ,
+            pos_x: 0,
+            pos_y: 0
+        }))
+        .then(result => {
+            console.log('success add new question '+ result);
+            const id = JSON.parse(result).question_id;
+            quest.data.questions[questionInd].question_id = id;
+            console.log('id = '+ id);
+            return id;
+        }, error => {
+            console.log('failed add new question');
+        });
+    
+    }
+
+    static addMovement(quest, moveInd) {
+        return Quest.makeRequest('POST', 'api/movement', JSON.stringify({}))
+        .then(result => {
+            console.log('success add new movement '+ result);
+            const id = JSON.parse(result).movement_id;
+            quest.data.questions[moveInd].movements[0].movement_id = id;
+            console.log('id = '+ id);
+            return id;
+        }, error => {
+            console.log('failed add new movement');
         });
     }
 }

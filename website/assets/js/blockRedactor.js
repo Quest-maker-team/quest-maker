@@ -272,7 +272,7 @@ export class BlockRedactor {
                 '<div class="form-check pb-1" id="skipChbx">' +
                     '<input class="form-check-input" type="checkbox" id="skip">' +
                     '<label class="form-check-label" for="skip">' +
-                        'Добавить возможность пропусить вопрос' +
+                        'Добавить возможность пропустить вопрос' +
                     '</label>' +
                 '</div>' +
                 '<div class="form-check pb-1" id="wrongChbx">' +

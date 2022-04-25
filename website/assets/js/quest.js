@@ -78,12 +78,16 @@ export class Quest {
             let data = {
                 quest_id: responseData.quest_id,
                 start_question_id: responseData.start_question_id,
+                title: '',
+                description: '',
+                password: '',
                 questions: [
                     {
                         question_id: responseData.start_question_id,
                         answer_options: [
                             {
                                 answer_option_id: responseData.first_answer_id,
+                                text: '',
                                 points: 0,
                             }
                         ],
@@ -102,6 +106,23 @@ export class Quest {
                     },
                 ]
             };
+            Quest.updateQuestion(responseData.start_question_id, JSON.stringify({
+                pos_x: 200,
+                pos_y: 100,
+                text: '',
+                type: 'start',
+            }));
+            Quest.updateAnswer(data.questions[0].answer_options[0].answer_option_id, JSON.stringify({
+                text: '',
+                points: 0,
+            })).then(() => {
+                Quest.connect('question', 'answer_option', responseData.start_question_id, data.questions[0].answer_options[0].answer_option_id);
+            });
+            Quest.updateQuestion(responseData.start_question_id, JSON.stringify({
+                pos_x: 400,
+                pos_y: 300,
+                text: '',
+                type: 'end'}));
             return new Quest(data);
         })
     }

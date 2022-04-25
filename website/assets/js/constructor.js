@@ -35,46 +35,40 @@ const targetEndpoint = {
 };
 
 
-// panzoom init
-const panzoom = Panzoom(containerElement, {
-    canvas: true,
-    maxScale: 5,
-    cursor: 'default',
-});
-
-// Panning and pinch zooming are bound automatically (unless disablePan is true).
-// There are several available methods for zooming
-// that can be bound on button clicks or mousewheel.
-// button.addEventListener('click', panzoom.zoomIn);
-containerElement.parentElement.addEventListener('wheel', panzoom.zoomWithWheel);
-
-containerElement.addEventListener('newEndpointCreating', (event) => {
-    panzoom.getOptions().exclude.push(event.detail.endpointElem);
-});
-
-containerElement.addEventListener('panzoomzoom', (event) => {
-    instance.setZoom(event.detail.scale);
-});
-
-containerElement.addEventListener('panzoomstart', (event) => {
-    containerElement.parentElement.style.cursor = 'move';
-});
-
-containerElement.addEventListener('panzoomend', (event) => {
-    containerElement.parentElement.style.cursor = 'default';
-});
-
-
-
-
-Quest.loadQuest(1, 24).then((newQuest) => {
-    const quest = newQuest;
-    Render.render(quest, instance, sourceEndpoint, targetEndpoint);
-    return quest;
-}).then((quest) => {
+Quest.loadQuest(1, 24).then(quest => {
     /*document.getElementById("save").onclick = () => {
         Quest.save(24).then(() => console.log("save"));
     }*/
+
+    // panzoom init
+    const panzoom = Panzoom(containerElement, {
+        canvas: true,
+        maxScale: 5,
+        cursor: 'default',
+    });
+
+    // Panning and pinch zooming are bound automatically (unless disablePan is true).
+    // There are several available methods for zooming
+    // that can be bound on button clicks or mousewheel.
+    // button.addEventListener('click', panzoom.zoomIn);
+    containerElement.parentElement.addEventListener('wheel', panzoom.zoomWithWheel);
+
+    containerElement.addEventListener('newEndpointCreating', (event) => {
+        panzoom.getOptions().exclude.push(event.detail.endpointElem);
+    });
+
+    containerElement.addEventListener('panzoomzoom', (event) => {
+        instance.setZoom(event.detail.scale);
+    });
+
+    containerElement.addEventListener('panzoomstart', (event) => {
+        containerElement.parentElement.style.cursor = 'move';
+    });
+
+    containerElement.addEventListener('panzoomend', (event) => {
+        containerElement.parentElement.style.cursor = 'default';
+    });
+
 
     instance.bind(EVENT_CONNECTION, (connection) => {
         const sourceIdSplit = connection.source.id.match(/([a-z]*_?[a-z]*)([0-9]*)/);
@@ -87,8 +81,19 @@ Quest.loadQuest(1, 24).then((newQuest) => {
         Quest.disconnect(sourceIdSplit[1], 'question', sourceIdSplit[2]).then(() =>
             console.log('disconnect success'));
     });
-    return quest;
-}).then((quest) => {
+
+    setInterval(() => {
+        for (const question of quest.data.questions) {
+            const blok = document.getElementById(question.question_id);
+            Quest.updateQuestion(blok.id, JSON.stringify({
+                pos_x: parseInt(blok.style.left),
+                pos_y: parseInt(blok.style.top),
+            }));
+        }
+    }, 20000);
+
+    Render.render(quest, instance, sourceEndpoint, targetEndpoint, panzoom);
+
     return quest;
 }).then((quest) => {
     const createNewBlock = function(type, text, renderFunction) {

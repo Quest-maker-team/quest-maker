@@ -3,19 +3,61 @@
 
 {% block content %}
 
-<script src="https://api-maps.yandex.ru/2.1/?apikey=57bad925-98eb-4a1e-8bf9-78a2f0a99e22&lang=ru_RU" type="text/javascript"></script>
+<div class="container-fluid">
+    <div class="row flex-nowrap">
+        <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-light">
+            <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
+                <a href="/" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                    <span class="fs-5 d-none d-sm-inline">Menu</span>
+                </a>
+                    <li>
+                        <a href="#submenu1" data-bs-toggle="collapse" class="nav-link px-0 align-middle">             
+                                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newQuest">
+                                        Добавить новый квест
+                                    </button>
+                             <li>
+                                <a href="#" class="nav-link px-0"> <span class="d-none d-sm-inline">Каталог</span>  </a>
+                            </li>
+                        <ul class="collapse show nav flex-column ms-1" id="submenu1" data-bs-parent="#menu">
+                            <li class="mw-100">
+                                <button type="button" class="btn btn-outline-dark btn-sm" data-bs-toggle="modal" data-bs-target="#updateQuest">
+                                    Редактировать квест
+                                </button>
+                            </li>
+
+                            <li class="mw-100">
+                                <button type="button" class="btn btn-outline-dark btn-sm" id="deleteQuestBtn">
+                                    Удалить квест
+                                </button>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#submenu2" data-bs-toggle="collapse" class="nav-link px-0 align-middle">             
+ 
+                        <ul class="collapse show nav flex-column ms-1" id="submenu1" data-bs-parent="#menu">
+                            <li class="mw-100">
+                                <button type="button" class="btn btn-danger"  id="addMBtn">
+                                    Блок перемещения
+                                </button>
+    
+                            </li>
+
+                            <li class="mw-100">
+                                <button type="button" class="btn btn-primary" id="addQBtn">
+                                    Блок вопроса
+                                </button>
+                            </li>
+                        </ul>
+                    </li>
+                   
+                </ul>
+      
+            </div>
+        </div>
+        <script src="https://api-maps.yandex.ru/2.1/?apikey=57bad925-98eb-4a1e-8bf9-78a2f0a99e22&lang=ru_RU" type="text/javascript"></script>
     <main class="min-vh-100 min-vw-100 position-relative d-flex">
         <div class="position-absolute d-flex min-vw-100 min-vh-100">
-            <div class="col-1 position-fixed" style="box-sizing: border-box; padding-top: 88px">
-                <div class="p-2">
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal">
-                        +
-                    </button>
-                    <!--<button type="button" class="btn btn-primary" id="save">
-                        Сохранить
-                    </button>-->
-                </div>
-            </div>
             <div class="position-relative" id="container">
                 <!-- Container for block rendered -->
             </div>
@@ -26,19 +68,19 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Заголовок</h5>
+                        <h5 class="modal-title" id="exampleModalLabel">Добавить новый блок?</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <p class="mb-5">Добавить новый блок?</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="addMBtn">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal" id="addMBtn">
                             Блок перемещения
                         </button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="addQBtn">
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="addQBtn">
                             Блок вопроса
                         </button>
+                    </div>
+                    <div class="modal-footer">
+                   
                     </div>
                 </div>
             </div>
@@ -64,7 +106,34 @@
                 </div>
             </div>
         </div>
+        <div class="modal fade" id="newQuest" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Создать новый квест?</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="questForm" class="row g-3 p-2">
+                    
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal" id="closeBtn">
+                            Отменить
+                        </button>
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="addQuest">
+                            Создать
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
+    </div>
+</div>
+
+
 {% endblock %}
 
 {% block footer %}

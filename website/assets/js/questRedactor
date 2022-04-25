@@ -1,0 +1,22 @@
+import {Quest} from './quest';
+import * as bootstrap from 'bootstrap';
+import {Render} from './render';
+export class QuestRedactor{
+    static addTextRedactor(form, label, text) {
+        form.innerHTML +=
+            '<label for="formControlTextarea" class="form-label">' + label + '</label>' +
+            '<textarea class="form-control" id="formControlTextarea" rows="3">' +
+            text +
+            '</textarea>';
+    }
+    static createQuest(form, modal){
+        
+    }
+    static showRedactor(quest) {
+        const modal = new bootstrap.Modal(document.getElementById('newQuest'));
+        const form = document.getElementById('questForm');
+        form.innerHTML = '';
+        Quest quest = QuestRedactor.createQuest(form, modal);
+        modal.show();
+    }
+}

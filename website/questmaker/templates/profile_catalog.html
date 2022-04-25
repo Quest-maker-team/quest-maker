@@ -27,7 +27,7 @@
                     <tr class="table-{{ quest['color'] }}">
                         <th scope="row" style="width: 5%">{% if quest['state'] == 'Черновик' %}-{% else %}
                            {{ quest['id'] }}{% endif %}</th>
-                        <td style="width: 50%">{{ quest['title'] }}</td>
+                        <td class="text-truncate" style="width: 50%">{{ quest['title'] }}</td>
                         {% if quest['state'] == 'Черновик' %}
                             <td style="width: 30%; border-right: 0" colspan="2">{{ quest['state'] }}</td>
                         {% else %}

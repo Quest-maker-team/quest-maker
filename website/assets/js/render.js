@@ -67,7 +67,7 @@ export class Render {
 
     static renderStart(question, instance, sourceEndpoint) {
         const block = this.renderBlockBase(question, '10rem', 'Начало');
-
+        block.className += ' text-white bg-success';
         const answer = document.createElement('div');
         answer.id = 'answer_option' + question.answer_options[0].answer_option_id;
         answer.style.height = '100%';
@@ -82,6 +82,7 @@ export class Render {
 
     static renderFinish(question, instance, targetEndpoint) {
         const block = this.renderBlockBase(question, '10rem', 'Конец');
+        block.className += ' text-white bg-dark';
         instance.manage(block);
         Render.createEndpoint(instance, document.getElementById('body' + question.question_id),
             {anchor: ['Top', 'Right', 'Left', 'Bottom']}, targetEndpoint);
@@ -136,6 +137,7 @@ export class Render {
 
     static renderQuestion(quest, question, title, instance, sourceEndpoint, targetEndpoint) {
         const block = Render.renderBlockBase(question, '15rem', title, instance, sourceEndpoint);
+        block.className+=' border-primary';
         const answerTable = document.createElement('ul');
         answerTable.className = 'list-group list-group-flush';
         answerTable.id = 'anstab' + question.question_id;
@@ -154,7 +156,7 @@ export class Render {
 
     static renderMovement(quest, question, instance, sourceEndpoint, targetEndpoint) {
         const block = Render.renderBlockBase(question, '15rem', 'Перемещение', instance, sourceEndpoint);
-
+        block.className+=' border-warning';
         const answer = document.createElement('div');
         answer.id = 'movement' + question.movements[0].movement_id;
         answer.style.height = '100%';
@@ -167,7 +169,7 @@ export class Render {
             [document.getElementById('movement' + question.movements[0].movement_id)]);
         Render.createEndpoint(instance, document.getElementById('body' + question.question_id),
             {anchor: ['Top', 'Right', 'Left', 'Bottom']}, targetEndpoint);
-        Render.createEndpoint(instance, answer, {anchor: ['Top', 'Right', 'Left', 'Bottom']}, sourceEndpoint);
+        Render.createEndpoint(instance, answer, {anchor: ['Bottom', 'Right', 'Left', 'Top']}, sourceEndpoint);
 
         return block;
     }

@@ -57,18 +57,53 @@ export class Quest {
         });
     }
 
-    static loadQuest(id, draft) {
-        return Quest.makeRequest('GET', '/api/draft/quest/' + draft.toString()).then(result => {
-            console.log('success load from draft');
-            return result;
-        }, error => {
-            console.log('failed load from draft');
-            return Quest.makeRequest('GET', '/api/db/quest/' + id.toString());
-        }).then(data => {
+    static loadQuest(id) {
+        return Quest.makeRequest('GET', 'api/db/quest/' + id.toString()).then(data => {
             return new Quest(JSON.parse(data));
-        }, error => {
-            console.log('failed load');
         });
+    }
+
+    static loadDraft(id) {
+        return Quest.makeRequest('GET', 'api/draft/quest/' + id.toString()).then(data => {
+            return new Quest(JSON.parse(data));
+        });
+    }
+
+    static makeNewQuest() {
+        return Quest.makeRequest('POST', 'api/quest', JSON.stringify({
+            title: '',
+            hidden: true,
+        })).then(response => {
+            let responseData = JSON.parse(response);
+            let data = {
+                quest_id: responseData.quest_id,
+                start_question_id: responseData.start_question_id,
+                questions: [
+                    {
+                        question_id: responseData.start_question_id,
+                        answer_options: [
+                            {
+                                answer_option_id: responseData.first_answer_id,
+                                points: 0,
+                            }
+                        ],
+                        pos_x: 200,
+                        pos_y: 100,
+                        text: '',
+                        type: 'start',
+                    },
+                    {
+                        question_id: responseData.end_question_id,
+                        answer_options: [],
+                        pos_x: 400,
+                        pos_y: 300,
+                        text: '',
+                        type: 'end',
+                    },
+                ]
+            };
+            return new Quest(data);
+        })
     }
 
     static addAnswer(answer) {

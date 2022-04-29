@@ -9,6 +9,7 @@ from .bfs import BFS
 
 from flask import g
 from abc import ABC, abstractmethod
+from uuid import uuid4
 
 
 def update_from_dict(entity, entity_dict):
@@ -451,6 +452,7 @@ class Quest(QuestEntity):
         quest.title = quest_info['title']
         quest.author_id = quest_info['author_id']
         quest.description = quest_info['description']
+        quest.keyword = quest_info['keyword']
         quest.password = quest_info['password']
         quest.time_open = quest_info['time_open']
         quest.time_close = quest_info['time_close']
@@ -475,6 +477,9 @@ class Quest(QuestEntity):
         self.files = []
         self.hidden = False
         self.description = None
+        self.keyword = str(uuid4())[:8]
+        while not db.check_uuid(self.keyword):
+            self.keyword = str(uuid4())[:8]
         self.password = None
         self.time_open = None
         self.time_close = None

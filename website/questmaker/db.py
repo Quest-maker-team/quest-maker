@@ -220,7 +220,7 @@ def get_quest(quest_id):
     :return: dictionary with table attrs as keys
     """
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-        cursor.execute('SELECT title, author_id, description, password, '
+        cursor.execute('SELECT title, author_id, description, keyword, password, '
                        'time_open, time_close, lead_time, cover_url, hidden '
                        'FROM quests '
                        'WHERE quest_id = %s', (quest_id,))
@@ -820,5 +820,17 @@ def update_draft(draft_id, container):
 
 
 def remove_draft(draft_id):
+    """
+    Remove draft from db by id
+    """
     with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('DELETE from drafts WHERE draft_id = %s', (draft_id, ))
+
+
+def check_uuid(uuid):
+    """
+    Return True if uuid is free else False
+    """
+    with get_db().cursor() as cursor:
+        cursor.execute('SELECT quest_id FROM quests WHERE keyword = %s', (uuid,))
+        return not cursor.fetchone()

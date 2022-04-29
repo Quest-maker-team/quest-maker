@@ -32,7 +32,8 @@ The `open_time` and `close_time` fields represent the opening date and time of t
 `keyword` is the unique 8-length string identifier     
 
 ### Draft quests
-Table with unpublished quests.
+Table with unpublished quests. 
+`container` is a pickled quest object. `quest_id` is id of related quest if draft isn't a new quest. 
 
 ### Places
 The `open_time` and `close_time` fields represent the opening time of the place and the closing time, respectively. These fields provide a cyclical opening every day. They should not have a date written in them.

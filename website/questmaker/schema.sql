@@ -36,7 +36,8 @@ DROP TABLE IF EXISTS drafts;
 CREATE TABLE drafts (
     draft_id SERIAL PRIMARY KEY,
     author_id INTEGER NOT NULL REFERENCES authors (author_id) ON DELETE CASCADE,
-    container BYTEA
+    container BYTEA,
+    quest_id INTEGER  DEFAULT NULL REFERENCES quests (quest_id)  ON DELETE CASCADE
 );
 
 DROP TABLE IF EXISTS places CASCADE;

@@ -23,6 +23,7 @@ CREATE TABLE quests (
     title CHARACTER VARYING NOT NULL,
     author_id INTEGER NOT NULL REFERENCES authors (author_id) ON DELETE CASCADE,
     description TEXT,
+    keyword VARCHAR(8),
     password CHARACTER VARYING(100),
     cover_url TEXT,
     time_open TIMESTAMP WITHOUT TIME ZONE,

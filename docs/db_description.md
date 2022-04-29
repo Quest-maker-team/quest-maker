@@ -29,6 +29,8 @@ In the future, their content may be supplemented for the expansion of functional
 ### Quests
 The "open_time" and "close_time" fields represent the opening date and time of the quest and the closing date and time, respectively. These fields do not ensure the cyclical opening of the quest, for example, it will not be possible to record 12:00 and 18:00 in the hope that the quest will open every day at 12 and close at 18.
 
+"keyword" is the unique 8-length string identifier     
+
 ### Draft quests
 Table with unpublished quests.
 

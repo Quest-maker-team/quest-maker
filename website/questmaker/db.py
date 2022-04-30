@@ -800,14 +800,14 @@ def get_draft_for_update(draft_id):
         return cursor.fetchone()
 
 
-def write_draft(author_id, container):
+def write_draft(author_id, container, quest_id):
     """
     Write draft to db
     :return: id of the new draft
     """
     with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-        cursor.execute('INSERT INTO drafts(author_id, container) '
-                       'VALUES (%s, %s) RETURNING draft_id', (author_id, container))
+        cursor.execute('INSERT INTO drafts(author_id, container, quest_id) '
+                       'VALUES (%s, %s) RETURNING draft_id', (author_id, container, quest_id))
         return cursor.fetchone()['draft_id']
 
 

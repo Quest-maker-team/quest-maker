@@ -97,9 +97,13 @@ def create_quest():
     if not rc:
         return 'Wrong JSON attributes', 400
 
+    # TODO quest.to_db must return created quest's id if quest was created
+    quest_id = quest.to_db()
+    quest.id_in_db = quest_id
+
     container = QuestContainer()
     container.add_quest(quest)
-    draft_id = write_draft(current_user.author['author_id'], pickle.dumps(container))
+    draft_id = write_draft(current_user.author['author_id'], pickle.dumps(container), quest_id)
     quest.quest_id = draft_id
     session['draft_id'] = draft_id
     return jsonify(quest.to_dict())

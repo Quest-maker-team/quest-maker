@@ -29,7 +29,8 @@ CREATE TABLE quests (
     time_open TIMESTAMP WITHOUT TIME ZONE,
     time_close TIMESTAMP WITHOUT TIME ZONE,
     lead_time INTERVAL,
-    hidden BOOLEAN NOT NULL
+    hidden BOOLEAN NOT NULL,
+    published BOOLEAN DEFAULT FALSE NOT NULL
 );
 
 DROP TABLE IF EXISTS drafts;

@@ -33,15 +33,7 @@ Return JSON the same as for database quest.
   * `place`
   * `file`
 
-  `POST api/quest` return JSON like
-    ```json
-    {
-      "quest_id": 0,
-      "start_question_id": 0,
-      "first_answer_id": 0,
-      "end_question_id": 1
-    } 
-    ```
+  `POST api/quest` return the same JSON as `GET api/db/quest/<id>`.
   Other return JSON with id of created entity, e.g.:
   ```json
   {

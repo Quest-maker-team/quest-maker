@@ -104,10 +104,7 @@ def create_quest():
     draft_id = write_draft(current_user.author['author_id'], pickle.dumps(container))
     quest.quest_id = draft_id
     session['draft_id'] = draft_id
-    return jsonify({'quest_id': quest.quest_id,
-                    'start_question_id': quest.first_question.question_id,
-                    'first_answer_id': quest.first_question.answers[0].answer_option_id,
-                    'end_question_id': quest.first_question.answers[0].next_question.question_id})
+    return jsonify(quest.to_dict())
 
 
 @api.route('/question', methods=['POST'])

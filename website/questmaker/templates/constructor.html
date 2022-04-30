@@ -2,53 +2,85 @@
 {% set active_page = active_page|default('constructor') -%}
 
 {% block content %}
-
 <script src="https://api-maps.yandex.ru/2.1/?apikey=57bad925-98eb-4a1e-8bf9-78a2f0a99e22&lang=ru_RU" type="text/javascript"></script>
     <main class="min-vh-100 min-vw-100 position-relative d-flex">
         <div class="position-absolute d-flex min-vw-100 min-vh-100">
-            <div class="col-1 position-fixed" style="box-sizing: border-box; padding-top: 88px; z-index: 100">
-                <div class="p-2">
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal">
-                        Добавить блок
-                    </button>
-                    <button type="button" class="btn btn-primary mt-2" id="redactorQuest">
-                        Редактировать квест
-                    </button>
-                    <!--<button type="button" class="btn btn-primary" id="save">
-                        Сохранить
-                    </button>-->
-                </div>
-            </div>
+                            <!--  MENU begin -->
+                            
+                <aside class="bd-sidebar col-2 mt-4 bg-light">
+                        <div class="collapse bd-links mt-5 d-grid gap-3">
+                            <li class="mb-0">
+                                <button class="btn d-inline-flex align-items-center rounded collapsed" data-bs-toggle="collapse" data-bs-target="#getting-started-collapse" aria-expanded="false">
+                                  Редактировать квест
+                                </button>
+                        
+                                <div class="collapse" id="getting-started-collapse" style="">
+                                  <ul class="list-unstyled fw-normal pb-1 small">
+                                      <li><button type="button" class="btn btn-primary mt-2" id="redactorQuest">
+                                        Изменить описание квеста
+                                    </button>
+                                </li>
+                                      <li> <button type="button" class="btn btn-success mt-2" id="addMBtn" >
+                                        Добавить блок перемещения
+                                    </button></li>
+                                    <li> <button type="button" class="btn btn-success mt-2" id="addQBtn">
+                                        Добавить открытый вопрос
+                                    </button></li>
+                                    <li> <button type="button" class="btn btn-success mt-2" id="addQCBtn">
+                                        Добавить вопрос с выбором
+                                    </button></li>
+                                  </ul>
+                                </div>
+                              </li>
+                            
+                            </li>
+                            <li class="mb-1">
+                                <button class="btn d-inline-flex align-items-center rounded collapsed" data-bs-toggle="collapse" data-bs-target="#getting-started-collapse2" aria-expanded="false">
+                                 Удалить квест
+                                </button>
+                        
+                                <div class="collapse" id="getting-started-collapse2" style="">
+                                  <ul class="list-unstyled fw-normal pb-1 small">
+                                      <li><button type="button" class="btn btn-danger mt-2" id="deleteQuest">
+                                        Удалить текущий квест
+                                    </button>
+                                </li>
+                                  </ul>
+                                </div>
+                              </li>
+                            
+                            </li>
+                            <li class="mb-1">
+                                <button class="btn d-inline-flex align-items-center rounded collapsed" data-bs-toggle="collapse" data-bs-target="#getting-started-collapse3" aria-expanded="false">
+                                 Новый квест
+                                </button>
+                                <div class="collapse" id="getting-started-collapse3" style="">
+                                  <ul class="list-unstyled fw-normal pb-1 small">
+                                      <li><button type="button" class="btn btn-success mt-2" onclick="window.location.href='/constructor.html?name=new&id=0'" id="createNewQuest">
+                                        Создать новый квест
+                                    </button>
+                                </li>
+                                  </ul>
+                                </div>
+                              </li>
+                            
+                            </li>
+                            <!--<button type="button" class="btn btn-primary" id="save">
+                                Сохранить
+                            </button>-->
+                            
+                        </div>
+                    
+                     
+           
+                    </aside>
+                    <!--  MENU end -->
+            
             <div class="position-relative" id="container" style="z-index: 0">
                 <!-- Container for block rendered -->
             </div>
         </div>
 
-        <!-- Модальное окно-->
-        <div class="modal fade" id="modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Заголовок</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p class="mb-5">Добавить новый блок?</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="addMBtn">
-                            Блок перемещения
-                        </button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="addQBtn">
-                            Блок открытого вопроса
-                        </button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="addQCBtn">
-                            Блок вопроса с выбором ответа
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <div class="modal fade" id="redactor" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">

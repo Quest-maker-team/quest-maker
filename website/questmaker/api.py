@@ -48,7 +48,22 @@ def after_request(response):
     return response
 
 
-@api.route('/db/quest/<int:quest_id>', methods=['GET'])
+@api.route('/quest/<int:quest_id>', methods=['GET'])
+def get_quest(quest_id):
+    """
+    Get quest for edit from drafts if draft exists or create new draft
+    """
+    draft = get_draft(quest_id)
+    if draft:
+        if draft['author_id'] != current_user.author['author_id']:
+            return 'This is not your quest', 403
+        quest = pickle.loads(bytes(draft['container'])).quest
+        session['draft_id'] = draft['draft_id']
+        return jsonify(quest.to_dict()) if quest else ('Wrong quest id', 400)
+    else:
+        return get_quest_from_db(quest_id)
+
+
 def get_quest_from_db(quest_id):
     """
     Load quest from database to constructor
@@ -66,23 +81,6 @@ def get_quest_from_db(quest_id):
     quest.quest_id = write_draft(current_user.author['author_id'], pickle.dumps(container))
     session['draft_id'] = quest.quest_id
     return jsonify(quest.to_dict())
-
-
-@api.route('/draft/quest/<int:draft_id>', methods=['GET'])
-def get_quest_from_draft(draft_id):
-    """
-    Get draft quest
-    :param draft_id: draft id in drafts table
-    :return: json with quest or error message
-    """
-    draft = get_draft(draft_id)
-    if not draft:
-        return 'Draft does not exist', 400
-    if draft['author_id'] != current_user.author['author_id']:
-        return 'This is not your quest', 403
-    quest = pickle.loads(bytes(draft['container'])).quest
-    session['draft_id'] = draft_id
-    return jsonify(quest.to_dict()) if quest else ('Wrong quest id', 400)
 
 
 @api.route('/quest', methods=['POST'])
@@ -463,20 +461,21 @@ def remove_question_answer_link(question_id, answer_id):
         return 'No link', 400
 
 
-@api.route('/save/<int:draft_id>', methods=['POST'])
-def save_quest(draft_id):
+@api.route('/save/<int:quest_id>', methods=['POST'])
+def save_quest(quest_id):
     """
     Save quest in database and remove from drafts
-    :param draft_id: draft_id in drafts
+    :param quest_id: quest id in quests and drafts
     :return: status code
     """
     author_id = current_user.author['author_id']
-    draft = get_draft(draft_id)
+    draft = get_draft(quest_id)
     if not draft:
-        return 'No draft with this id', 400
+        return 'No quest with this id', 400
     if draft['author_id'] != author_id:
         return 'This is not your quest', 403
     container = pickle.loads(bytes(draft['container']))
+    container.quest.published = True
     container.quest.to_db()
-    remove_draft(draft_id)
+    remove_draft(quest_id)
     return '', 200

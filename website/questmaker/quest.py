@@ -487,6 +487,7 @@ class Quest(QuestEntity):
         self.cover_url = None
         self.first_question = None
         self.rating = {'one': 0, 'two': 0, 'three': 0, 'four': 0, 'five': 0}
+        self.published = False
 
     def to_db(self):
         """

@@ -52,6 +52,7 @@ def catalog():
 
     for q in quests:
         c = {}
+        c['id'] = q['quest_id']
         c['keyword'] = q['keyword']
         c['title'] = q['title']
         if q['password'] != None:

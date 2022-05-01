@@ -38,9 +38,9 @@ const targetEndpoint = {
 
 function load(name, id) {
     if (name === 'new'){
-        return Quest.makeNewQuest();
-    } else if (name === 'draft') {
-        return Quest.loadDraft(id);
+        Quest.makeNewQuest().then((response) => {
+            document.location = 'constructor.html?name=quest&id=' + response;
+        });
     } else {
         return Quest.loadQuest(id);
     }

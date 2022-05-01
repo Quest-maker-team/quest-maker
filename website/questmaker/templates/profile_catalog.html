@@ -3,8 +3,8 @@
 
 {% block profile_info %}
 <script language="javascript" type="text/javascript">
-    function goConstructor(name, id) {
-        document.location = "constructor.html?name=" + name + "&id=" + id;
+    function goConstructor(id) {
+        document.location = "constructor.html?name=quest&id=" + id;
     }
 </script>
 <div class="position-absolute d-flex min-vw-100 flex-fill" style="top: 88px; z-index: 0">
@@ -18,26 +18,19 @@
                   <th scope="col" style="width: 5%">ID</th>
                   <th scope="col" style="width: 55%">Название</th>
                   <th scope="col" style="width: 10%">Тип</th>
-                  <th scope="col" style="width: 15%; border-right: 0">Состояние</th>
-                  <th scope="col" style="width: 5%; border-left: 0"></th>
+                  <th scope="col" style="width: 15%">Состояние</th>
+                  <th scope="col" style="width: 5%; border-right: 0"></th>
                 </tr>
             </thead>
             <tbody>
                 {% for quest in quests %}
                     <tr class="table-{{ quest['color'] }}">
-                        <th scope="row" style="width: 5%">{% if quest['state'] == 'Черновик' %}-{% else %}
-                           {{ quest['id'] }}{% endif %}</th>
-                        <td class="text-truncate" style="width: 50%">{{ quest['title'] }}</td>
-                        {% if quest['state'] == 'Черновик' %}
-                            <td style="width: 30%; border-right: 0" colspan="2">{{ quest['state'] }}</td>
-                        {% else %}
-                            <td style="width: 15%">{{ quest['type'] }}</td>
-                            <td style="width: 15%; border-right: 0">{{ quest['state'] }}</td>
-                        {% endif %}
-                        <td style="width: 5%; border-left: 0">
-                            <button type="button" class="btn btn-primary"
-                                    onclick="goConstructor({% if quest['state'] == 'Черновик' %}'draft'{% else %}
-                                    'clean'{% endif %}, {{ quest['id'] }})">
+                        <th scope="row" style="width: 5%">{{ quest['keyword'] }}</th>
+                        <td class="text-truncate" style="width: 50%">{{ quest['title']|e }}</td>
+                        <td style="width: 15%">{{ quest['type'] }}</td>
+                        <td style="width: 15%; ">{{ quest['state'] }}</td>
+                        <td style="width: 5%; border-right: 0">
+                            <button type="button" class="btn btn-primary" onclick="goConstructor({{ quest['id'] }})">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                                         class="bi bi-pencil" viewBox="0 0 16 16">
                                     <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 

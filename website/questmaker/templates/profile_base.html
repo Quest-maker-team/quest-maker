@@ -7,25 +7,25 @@
 {% block content %}
     <main class="min-vh-100 min-vw-100 position-relative d-flex">
         <div class="min-vh-100 p-3 text-white bg-dark col-3 col-lg-2 position-fixed top-0" style="z-index: 10">
-            <div class="position-absolute d-flex flex-column flex-shrink-0 " style="top: 88px">
-            <div class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-                <span class="fs-4">Профиль</span>
-            </div>
-            <hr>
-            <ul class="nav nav-pills flex-column mb-auto">
-                {% for href, id, caption in profile_navbar %}
-                <li class={% if id == active_profile_page %}"nav-item"{% endif %}>
-                    <a href="{{ href|e }}" class="nav-link text-white {% if id == active_profile_page %}active{% endif %}"
-                       {% if id == active_profile_page %}aria-current="page"{% endif %}>
-                        {{ caption|e }}
-                    </a>
-                </li>
-                {% endfor %}
-            </ul>
-            <hr>
-            <div class="dropdown">
-                <a class="text-danger text-decoration-none" href="{{ url_for('auth.logout') }}">Выйти из профиля</a>
-            </div>
+            <div class="position-relative d-flex flex-column flex-shrink-0 " style="top: 88px">
+                <div class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                    <span class="fs-4">Профиль</span>
+                </div>
+                <hr>
+                    <ul class="nav nav-pills flex-column mb-auto">
+                        {% for href, id, caption in profile_navbar %}
+                        <li class={% if id == active_profile_page %}"nav-item"{% endif %}>
+                            <a href="{{ href|e }}" class="nav-link text-white {% if id == active_profile_page %}active{% endif %}"
+                                {% if id == active_profile_page %}aria-current="page"{% endif %}>
+                                {{ caption|e }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                <hr>
+                <div class="dropdown">
+                    <a class="text-danger text-decoration-none" href="{{ url_for('auth.logout') }}">Выйти из профиля</a>
+                </div>
             </div>
         </div>
         {% block profile_info %}

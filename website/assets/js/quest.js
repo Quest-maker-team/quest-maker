@@ -18,7 +18,7 @@ export class Quest {
                     if (xmlhttp.status === 200) {
                         resolve(xmlhttp.response);
                     } else {
-                        console.log(xmlhttp.responseText);
+                        // console.log(xmlhttp.responseText);
                         reject(xmlhttp.status);
                     }
                 }
@@ -33,13 +33,7 @@ export class Quest {
     }
 
     static loadQuest(id) {
-        return Quest.makeRequest('GET', 'api/db/quest/' + id.toString()).then(data => {
-            return new Quest(JSON.parse(data));
-        });
-    }
-
-    static loadDraft(id) {
-        return Quest.makeRequest('GET', 'api/draft/quest/' + id.toString()).then(data => {
+        return Quest.makeRequest('GET', 'api/quest/' + id).then(data => {
             return new Quest(JSON.parse(data));
         });
     }
@@ -49,56 +43,7 @@ export class Quest {
             title: '',
             hidden: true,
         })).then(response => {
-            let responseData = JSON.parse(response);
-            let data = {
-                quest_id: responseData.quest_id,
-                start_question_id: responseData.start_question_id,
-                title: '',
-                description: '',
-                password: '',
-                questions: [
-                    {
-                        question_id: responseData.start_question_id,
-                        answer_options: [
-                            {
-                                answer_option_id: responseData.first_answer_id,
-                                text: '',
-                                points: 0,
-                            }
-                        ],
-                        pos_x: 200,
-                        pos_y: 100,
-                        text: '',
-                        type: 'start',
-                    },
-                    {
-                        question_id: responseData.end_question_id,
-                        answer_options: [],
-                        pos_x: 400,
-                        pos_y: 300,
-                        text: '',
-                        type: 'end',
-                    },
-                ]
-            };
-            Quest.updateQuestion(responseData.start_question_id, JSON.stringify({
-                pos_x: 200,
-                pos_y: 100,
-                text: '',
-                type: 'start',
-            }));
-            Quest.updateAnswer(data.questions[0].answer_options[0].answer_option_id, JSON.stringify({
-                text: '',
-                points: 0,
-            })).then(() => {
-                Quest.connect('question', 'answer_option', responseData.start_question_id, data.questions[0].answer_options[0].answer_option_id);
-            });
-            Quest.updateQuestion(responseData.start_question_id, JSON.stringify({
-                pos_x: 400,
-                pos_y: 300,
-                text: '',
-                type: 'end'}));
-            return new Quest(data);
+            return JSON.parse(response);
         })
     }
 

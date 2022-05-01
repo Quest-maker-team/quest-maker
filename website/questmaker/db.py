@@ -234,8 +234,8 @@ def get_quests_by_author_id(author_id):
     :return: list of dictionaries with attrs as keys
     """
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-        cursor.execute('SELECT quest_id, title, password, '
-                       'time_open, time_close, hidden '
+        cursor.execute('SELECT quest_id, keyword, title, password, '
+                       'time_open, time_close, hidden, published '
                        'FROM quests '
                        'WHERE author_id = %s', (author_id,))
         return cursor.fetchall()
@@ -782,15 +782,6 @@ def get_draft(quest_id):
         return cursor.fetchone()
 
 
-def get_drafts_by_author_id(author_id):
-    """
-    Get drafts quest by author id
-    """
-    with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-        cursor.execute('SELECT draft_id, container FROM drafts WHERE author_id = %s', (author_id,))
-        return cursor.fetchall()
-
-
 def get_draft_for_update(draft_id):
     """
     Get draft quest by id and block row
@@ -807,7 +798,7 @@ def write_draft(author_id, container, quest_id):
     """
     with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('INSERT INTO drafts(author_id, container, quest_id) '
-                       'VALUES (%s, %s) RETURNING draft_id', (author_id, container, quest_id))
+                       'VALUES (%s, %s, %s) RETURNING draft_id', (author_id, container, quest_id))
         return cursor.fetchone()['draft_id']
 
 

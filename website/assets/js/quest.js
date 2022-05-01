@@ -43,7 +43,7 @@ export class Quest {
             title: '',
             hidden: true,
         })).then(response => {
-            return JSON.parse(response).id_in_db;
+            return JSON.parse(response);
         })
     }
 

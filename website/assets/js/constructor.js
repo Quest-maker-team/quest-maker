@@ -38,8 +38,9 @@ const targetEndpoint = {
 
 function load(name, id) {
     if (name === 'new'){
-        Quest.makeNewQuest().then((response) => {
-            document.location = 'constructor.html?name=quest&id=' + response;
+        return Quest.makeNewQuest().then((response) => {
+            document.location = 'constructor.html?name=quest&id=' + response.id_in_db;
+            return;
         });
     } else {
         return Quest.loadQuest(id);
@@ -53,7 +54,7 @@ window.onload = () => {
         /*document.getElementById("save").onclick = () => {
             Quest.save(24).then(() => console.log("save"));
         }*/
-    
+
         // panzoom init
         const panzoom = Panzoom(containerElement, {
             canvas: true,

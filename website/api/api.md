@@ -1,21 +1,14 @@
 # API description
 For simplicity, answers can contain only this status codes:
 * `200 OK` if success;
-* `400 Bad Request` if there is request syntax or logic error (
-* body contains error message)
-  );
+* `400 Bad Request` if there is request syntax or logic error (body contains error message);
 * `500 Internal Server Error` if server error.
 
 ## GET
-* `GET api/db/quest/{quest_id}`
+* `GET api/quest/{quest_id}`
 
-    Load quest from database and make it available to edit.
+    Load or create draft of quest.
 Return JSON with information about quest ([example](example.md)).
-
-* `GET api/draft/quest/{quest_id}`
-    Load draft quest from user's draft quests. `quest_id` is
-    id in special container, all ids store in table draft_quests.
-Return JSON the same as for database quest.
 
 ## POST
 * Create new entity with params encountered in JSON 

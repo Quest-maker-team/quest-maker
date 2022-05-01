@@ -5,11 +5,11 @@ INSERT INTO authors (email, name, password, status_id) VALUES ('excursion@gmail.
     (SELECT status_id FROM statuses WHERE status_name= 'author'));
 
 --quest info
-INSERT INTO quests (title, author_id, description, password, time_open, time_close, lead_time, hidden) VALUES (
+INSERT INTO quests (title, author_id, description, keyword, password, time_open, time_close, lead_time, hidden) VALUES (
     'Не самые популярные достопримечательности Петербурга',
     (SELECT author_id FROM authors WHERE email= 'excursion@gmail.com'),
     'Это небольшой квест-экскурсия с простыми вопросами и несколькими удаленными друг от друга местами, которые нужно посетить. Места разбиты на три категории, одну из которых Вы выбираете в начале экскурсии. Некоторые места являются музеями и имеют свой режим работы, режим работы указывается в соответствующем сообщении.',
-    'password', '2022-04-04 00:00:00','2022-05-10 00:00:00','1 months','false');
+    'abcdefgh', 'password', '2022-04-04 00:00:00','2022-05-10 00:00:00','1 months','false');
 
 --places info
 --branch "Temple architecture"

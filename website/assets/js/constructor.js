@@ -140,7 +140,7 @@ window.onload = () => {
                     'movement_id': undefined,
                     'next_question_id': undefined,
                     'place': {
-                        'coords': '(0.0,0.0)',
+                        'coords': [0.0, 0.0],
                         'place_id': undefined,
                         'radius': 0,
                         'time_close': 'Sun, 12 Aug 2001 19:00:00 GMT',

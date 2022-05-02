@@ -125,24 +125,6 @@ export class BlockRedactor {
         }
     }
 
-    static addMovementForMovementBlock(form, question) {
-        form.insertAdjacentHTML('beforeend',
-            '<div class=\'col-8\'>'+
-                '<div class=\'input-group\'>' +
-                    '<span class="input-group-text"> Координаты </span>' +
-                    '<input type="text" class="form-control" id="moveCoords" ' +
-                            'value=' + question.movements[0].place.coords + '>' +
-                '</div>'+
-            '</div>'+
-            '<div class=\'col-8\'>'+
-                '<div class=\'input-group\'>' +
-                    '<span class="input-group-text"> Радиус(м) </span>' +
-                    '<input type="text" class="form-control" id="moveRadius"  ' +
-                            'value=' + question.movements[0].place.radius + '>' +
-                  '</div>'+
-            '</div>'
-        );
-    }
 
     static createStartRedactor(form, question, modal) {
         this.addTextRedactor(form, 'Приветственное сообщение:', question.text);
@@ -228,7 +210,7 @@ export class BlockRedactor {
 
         return valid;
     }
-
+  
     static updateOpenQuestion(question, specialState, instance, sourceEndpoint) {
         console.log(specialState);
         BlockRedactor.updateSpecialState(specialState.skip, 'skip', 'skipbx', question, instance, 'skip',
@@ -337,61 +319,131 @@ export class BlockRedactor {
             modal.hide();
         };
     }
+    static addOldPlaces(myMap, quest){
+        for(question in quest.data.questions){
+            for(movement in question.movements){
+                myMap.geoObjects.add(new ymaps.Placemark(movement.place.coords, {
+                    balloonContent: 'цвет <strong>голубой</strong>',
+                    iconCaption: 'Очень длиннный, но невероятно интересный текст'
+                }, {
+                    preset: 'islands#blueCircleDotIconWithCaption',
+                    iconCaptionMaxWidth: '50'
+                }));
+            }
+        }
+    }
+    static addMethodsToMap(myMap, question, res){
+            
+        let curRadius = 500.0;
+        let myCircle;
+        console.log(myMap);
+        console.log("JJ");
+       // console.log(myMap.geometry.center);
+        let placeMark = new ymaps.Placemark(myMap.getCenter(), {
+            balloonContentHeader: 'Новое место квеста',
+            balloonContentBody: 
+                '<p>Радиус точки: '+              
+                 '<input type="number" id="enterNewRadius" min="0" data-bind="value:replyNumber" />'+
 
+                 '</p>',
+                balloonContentFooter: '<sup>Вы можете выбрать новую точку</sup>',
+        }, {
+            preset: 'islands#redDotIconWithCaption'
+        });
+        //placeMark.options.draggable = true;
+        console.log(placeMark);
+        myMap.geoObjects.add(placeMark);
+        myCircle = new ymaps.Circle([
+            // Координаты центра круга.
+           myMap.getCenter(),
+            // Радиус круга в метрах.
+            curRadius
+        ], {
+            hintContent: "Радиус достижимости"
+        }, {
+            // Задаем опции круга.
+            // Включаем возможность перетаскивания круга.
+            draggable: false,
+            // Цвет заливки.
+            // Последний байт (77) определяет прозрачность.
+            // Прозрачность заливки также можно задать используя опцию "fillOpacity".
+            fillColor: "#DB709377",
+            // Цвет обводки.
+            strokeColor: "#990066",
+            // Прозрачность обводки.
+            strokeOpacity: 0.8,
+            // Ширина обводки в пикселях.
+            strokeWidth: 5
+        });
+        myMap.geoObjects.add(myCircle);
+        console.log(myCircle);
+        
+        
+        myMap.geoObjects.get(myMap.geoObjects.indexOf(placeMark)).balloon.open();
+        
+        myMap.events.add('click', function(e) {
+                    let coords = e.get('coords');
+                   // console.log(myMap.geoObjects.getLength());
+                      //console.log(placeMark.balloon);
+                      
+                        myMap.geoObjects.get(myMap.geoObjects.indexOf(placeMark)).geometry.setCoordinates(coords);
+                        myMap.geoObjects.get(myMap.geoObjects.indexOf(myCircle)).geometry.setCoordinates(coords);
+                        res = [coords, curRadius];
+                        question.movements[0].place.coords = coords;
+                        question.movements[0].place.radius = curRadius;
+                        
+                    
+                });        
+                
+        
+    }
     static createMovementRedactor(form, question, modal) {
         BlockRedactor.addTextRedactor(form, 'Перемещение', question.text);
         form.innerHTML+=
-        '<div class="z-depth-1-half map-container" style="height: 500px" id="map"></div>';
-        let myMap;
+        '<div class="z-depth-1-half map-container" style="height: 500px" id="map"></div>';    
         const mapId = document.getElementById('map');
-        console.log(mapId);
-        ymaps.ready(function() {
-            myMap = new ymaps.Map('map', {
-                center: [57.5262, 38.3061],
-                zoom: 11,
-            }, {
-                balloonMaxWidth: 200,
-                searchControlProvider: 'yandex#search',
-            });
-            console.log(myMap);
-            myMap.events.add('click', function(e) {
-                if (!myMap.balloon.isOpen()) {
-                    const coords = e.get('coords');
-                    myMap.balloon.open(coords, {
-                        contentHeader: 'Новое место квеста',
-                        contentBody: '<p></p>' +
-                            '<p>Координаты точки: ' + [
-                            coords[0].toPrecision(6),
-                            coords[1].toPrecision(6),
-                        ].join(', ') + '</p>',
-                        contentFooter: '<sup>Вы можете выбрать новую точку</sup>',
-                    });
-                    // console.log(coords[0]);
-                    question.movements[0].place.coords ='('+coords[0].toString()+','+coords[1].toString()+')';
-                    console.log( question.movements[0].place.coords);
-                    document.getElementById('moveCoords').value = question.movements[0].place.coords;
-                } else {
-                    myMap.balloon.close();
-                }
-            });
-
-            myMap.events.add('balloonopen', function(e) {
-                myMap.hint.close();
-            }); ;
+        let rez;   
+        ymaps.ready(function(){
+            console.log("Yandex ready");
+            let geolocation = ymaps.geolocation;          
+            let myPosition;
+            let myMap;
+            geolocation.get({
+                provider: 'yandex',
+                mapStateAutoApply: true
+            }).then(function (result) {
+                console.log("getting place ");
+                //console.log(result);
+                result.geoObjects.options.set('preset', 'islands#redCircleIcon');
+                result.geoObjects.get(0).properties.set({
+                    balloonContentBody: 'Мое местоположение'
+                });
+                console.log(result);
+                myPosition = result.geoObjects;
+                myMap = new ymaps.Map('map', {
+                    center: myPosition.position,
+                    zoom: 11,
+                }, {
+                    balloonMaxWidth: 200,
+                    searchControlProvider: 'yandex#search',
+                });
+                //myMap.geoObjects.add(myPosition);
+                //myMap._zoom = 11;
+                console.log(myMap);
+                
+                BlockRedactor.addMethodsToMap(myMap, question, rez);
+               // BlockRedactor.addOldPlaces(myMap, quest);
+                   });
         });
-        console.log(myMap);
-        BlockRedactor.addMovementForMovementBlock(form, question);
         document.getElementById('update').onclick = () => {
-            question.text = document.getElementById('formControlTextarea').value;
-            document.getElementById(question.question_id).getElementsByClassName('card-text')[0].textContent =
-                question.text;
-            question.movements[0].place.coords = document.getElementById('moveCoords').value;
-            question.movements[0].place.radius = document.getElementById('moveRadius').value;
+            console.log(rez);
+            question.movements[0].place.coords = rez[0];
+            question.movements[0].place.radius = rez[1];
             modal.hide();
         };
     }
 
-    static showRedactor(question, instance, sourceEndpoint) {
+    static showRedactor(question, instance, sourceEndpoint, quest) {
         const modal = new bootstrap.Modal(document.getElementById('redactor'));
         const form = document.getElementById('redactorForm');
         form.innerHTML = '';
@@ -406,7 +458,7 @@ export class BlockRedactor {
             BlockRedactor.createQuestionRedactor(form, question, instance, sourceEndpoint, modal);
             break;
         case 'movement':
-            BlockRedactor.createMovementRedactor(form, question, modal);
+            BlockRedactor.createMovementRedactor(form, question, modal, quest);
             break;
         case 'choice':
             BlockRedactor.createQuestionRedactor(form, question, instance, sourceEndpoint, modal);

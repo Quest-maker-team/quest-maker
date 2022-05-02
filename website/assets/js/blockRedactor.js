@@ -319,22 +319,63 @@ export class BlockRedactor {
             modal.hide();
         };
     }
-    static addOldPlaces(myMap, quest){
-        for(question in quest.data.questions){
-            for(movement in question.movements){
-                myMap.geoObjects.add(new ymaps.Placemark(movement.place.coords, {
-                    balloonContent: 'цвет <strong>голубой</strong>',
-                    iconCaption: 'Очень длиннный, но невероятно интересный текст'
-                }, {
-                    preset: 'islands#blueCircleDotIconWithCaption',
-                    iconCaptionMaxWidth: '50'
-                }));
+    static addOldPlaces(myMap, quest, newQuestion){
+ 
+        console.log("Adding old places");
+        console.log(quest.data.questions);
+        for(let ind in quest.data.questions){
+            let question = quest.data.questions[ind];
+            console.log("Try draw",ind);
+            if(question.question_id == newQuestion.question_id || question.type!='movement'){
+                continue;
             }
+            console.log("Draw",ind);
+            let placeMark = new ymaps.Placemark(question.movements[0].place.coords, {
+                balloonContentHeader: 'Добавленное место квеста',
+                balloonContentBody: 
+                    question.text,
+                    balloonContentFooter: '<sup>Вы можете выбрать новую точку</sup>',
+                    
+            }, {
+                preset: 'islands#blueDotIconWithCaption',
+                draggable: false
+            });
+            let myCircle = new ymaps.Circle([
+                // Координаты центра круга.
+               question.movements[0].place.coords,
+                // Радиус круга в метрах.
+                question.movements[0].place.radius
+            ], {
+                hintContent: "Радиус достижимости"
+            }, {
+                // Задаем опции круга.
+                draggable: false,
+                // Цвет заливки.
+                // Последний байт (77) определяет прозрачность.
+                // Прозрачность заливки также можно задать используя опцию "fillOpacity".
+                fillColor: "#DB709377",
+                // Цвет обводки.
+                strokeColor: "#00FA9A",
+                // Прозрачность обводки.
+                strokeOpacity: 0.8,
+                // Ширина обводки в пикселях.
+                strokeWidth: 3
+            });
+            myMap.geoObjects.add(myCircle);
+            myMap.geoObjects.add(placeMark);
         }
+        
+       
     }
-    static addMethodsToMap(myMap, question, res){
-            
-        let curRadius = 500.0;
+    static addMethodsToMap(myMap, question, res, quest){
+      
+        let curRadius = 50.0;
+        if(question.movements[0].place.radius>0){
+            curRadius = question.movements[0].place.radius;
+        }else{
+            res.coords = myMap.getCenter();
+            res.radius = curRadius;
+        }
         let myCircle;
         console.log(myMap);
         console.log("Add methods to map");
@@ -361,7 +402,7 @@ export class BlockRedactor {
         myMap.geoObjects.get(myMap.geoObjects.indexOf(myCircle)).options.set('visible', true);
                 myMap.geoObjects.get(myMap.geoObjects.indexOf(placeMark)).geometry.setCoordinates(coords);
                 myMap.geoObjects.get(myMap.geoObjects.indexOf(myCircle)).geometry.setCoordinates(coords);
-                res = [coords, curRadius];
+                res.coords = coords;
         });
         placeMark.events.add('dragstart', function(e){
             let coords =  e.get('target').geometry.getCoordinates();
@@ -394,29 +435,29 @@ export class BlockRedactor {
             let coords = e.get('coords');
            // console.log(myMap.geoObjects.getLength());
               //console.log(placeMark.balloon);
-                    curRadius =ymaps.coordSystem.geo.getDistance(coords,
-                         myMap.geoObjects.get(myMap.geoObjects.indexOf(myCircle)).geometry.getCoordinates());
-                    console.log(curRadius);
+                    curRadius = ymaps.coordSystem.geo.getDistance(coords,
+                   myMap.geoObjects.get(myMap.geoObjects.indexOf(myCircle)).geometry.getCoordinates());
+                    console.log("Radius changed", curRadius);
+                    res.radius = curRadius;
                     myMap.geoObjects.get(myMap.geoObjects.indexOf(myCircle)).geometry.setRadius(curRadius);
                    // myMap.geoObjects.get(myMap.geoObjects.indexOf(placeMark)).balloon.update();             
         }
         myMap.events.add('click', changeRadius );        
         myCircle.events.add('click', changeRadius);         
         myMap.geoObjects.add(myCircle);
-        console.log(myCircle);
-        console.log(placeMark);
-        myMap.geoObjects.add(placeMark);
-        res = [coords, curRadius];      
+        myMap.geoObjects.add(placeMark);      
         myMap.geoObjects.get(myMap.geoObjects.indexOf(placeMark)).balloon.open();
         
-      
     }
-    static createMovementRedactor(form, question, modal) {
+    static createMovementRedactor(form, question, modal, quest) {
         BlockRedactor.addTextRedactor(form, 'Перемещение', question.text);
         form.innerHTML+=
         '<div class="z-depth-1-half map-container" style="height: 500px" id="map"></div>';    
         const mapId = document.getElementById('map');
-        let rez;   
+        let rez = {
+            "coords":[0.0, 0.0],
+            "radius": 0.0
+          };   
         ymaps.ready(function(){
             console.log("Yandex ready");
             let geolocation = ymaps.geolocation;          
@@ -433,26 +474,47 @@ export class BlockRedactor {
                     balloonContentBody: 'Мое местоположение'
                 });
                 console.log(result);
-                myPosition = result.geoObjects;
+                myPosition = result.geoObjects.position;
+                console.log("Question coords:",question.movements[0].place.coords);
+                console.log("Question radius:",question.movements[0].place.radius);
+                if(question.movements[0].place.radius > 0.0)
+                {
+                      myPosition = question.movements[0].place.coords;
+                      console.log("Change coords");
+                }
                 myMap = new ymaps.Map('map', {
-                    center: myPosition.position,
+                    center: myPosition,
                     zoom: 11,
                 }, {
                     balloonMaxWidth: 200,
                     searchControlProvider: 'yandex#search',
+                    
                 });
                 //myMap.geoObjects.add(myPosition);
                 //myMap._zoom = 11;
                 console.log(myMap);
                 
-                BlockRedactor.addMethodsToMap(myMap, question, rez);
-               // BlockRedactor.addOldPlaces(myMap, quest);
+                BlockRedactor.addMethodsToMap(myMap, question, rez, quest);
+                BlockRedactor.addOldPlaces(myMap, quest, question);
+                //console.log(rez);
                    });
         });
         document.getElementById('update').onclick = () => {
-            console.log(rez);
-            question.movements[0].place.coords = rez[0];
-            question.movements[0].place.radius = rez[1];
+            console.log("Save values", rez);
+            for(let q in quest.data.questions){
+                console.log("Ind",quest.data.questions[q]);
+                if(quest.data.questions[q].question_id == question.question_id && quest.data.questions[q].type=='movement'){
+                    
+                    question.movements[0].place.coords = rez.coords;
+                    question.movements[0].place.radius = rez.radius;
+                    quest.data.questions[q].movements[0].place.coords = rez.coords;
+                    quest.data.questions[q].movements[0].place.radius = rez.radius;
+                    quest.data.questions[q].text = document.getElementById("formControlTextarea").value;
+                    console.log("Save",q);
+                    break;
+                }
+            }
+            
             modal.hide();
         };
     }

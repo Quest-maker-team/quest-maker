@@ -142,7 +142,7 @@ window.onload = () => {
                     'place': {
                         'coords': [0.0, 0.0],
                         'place_id': undefined,
-                        'radius': 0,
+                        'radius': 0.0,
                         'time_close': 'Sun, 12 Aug 2001 19:00:00 GMT',
                         'time_open': 'Sun, 12 Aug 2001 09:00:00 GMT',
                     },

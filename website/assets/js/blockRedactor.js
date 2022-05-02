@@ -12,12 +12,13 @@ export class BlockRedactor {
         );
     }
 
-    static addAnswerForQuestion(elementId, answer, question, instance) {
+    static addAnswerBox(elementId, state, id, text, points) {
         document.getElementById(elementId).insertAdjacentHTML('beforeend',
-            '<div class="row pb-1" id="ansblock' + answer.answer_option_id + '">' +
-                '<div class="col-8">'+
-                    '<input type="text" onkeydown="return (event.keyCode!=13);" class="form-control" id="answerText' +
-                        answer.answer_option_id + '" value="' + answer.text + '" placeholder="Вариант ответа">' +
+            '<div class="row pb-1" id="answer_' + state + '_' + id + '">' +
+                '<div class="col-8">' +
+                    '<input type="text" onkeydown="return (event.keyCode!=13);" class="form-control" ' +
+                        'name="answerText_'+ state + '" id="answerText_' + state + '_' + id + '" value="' +
+                        text + '" placeholder="Вариант ответа">' +
                     '<div class="invalid-feedback">' +
                         'Не используйте "skip" или пустую строку в качестве ответов. ' +
                         'Добавить возможность пропуска можно, установив соответствующий флаг.' +
@@ -27,11 +28,12 @@ export class BlockRedactor {
                     '<div class="input-group">' +
                         '<span class="input-group-text"> Очки </span>' +
                         '<input type="number" onkeydown="return (event.keyCode!=13);" class="form-control" ' +
-                            'id="answerPoints' + answer.answer_option_id + '" value="' + answer.points + '">' +
+                            'name="answerPoints_'+ state + '" id="answerPoints_' + state + '_' + id + '" value="' +
+                            points + '">' +
                     '</div>' +
                 '</div>' +
                 '<div class="col-1">' +
-                    '<button type="button" class="btn btn-danger" id="ansdel' + answer.answer_option_id + '">' +
+                    '<button type="button" class="btn btn-danger" id="ansdel_' + state + '_' + id + '">' +
                         '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" ' +
                                 'class="bi bi-trash" viewBox="0 0 16 16">' +
                             '<path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 ' +
@@ -46,8 +48,8 @@ export class BlockRedactor {
                 '</div>' +
             '</div>'
         );
-        document.getElementById('ansdel' + answer.answer_option_id).onclick = () => {
-            BlockRedactor.deleteAnswer(answer, question, instance, true);
+        document.getElementById('ansdel_' + state + '_' + id).onclick = () => {
+            document.getElementById('answer_' + state + '_' + id).remove();
         };
     }
 
@@ -72,7 +74,7 @@ export class BlockRedactor {
         document.getElementById(elementId).insertAdjacentHTML('beforeend',
             '<div class="row pb-1" id="hint_' + state + '_' + id + '">' +
                 '<div class="col-8">' +
-                    '<textarea class="form-control" name="hintText_' + state + '" id="hintText_' + state + '_' 
+                    '<textarea class="form-control" name="hintText_' + state + '" id="hintText_' + state + '_'
                             + id + '" rows="1" placeholder="Текст подсказки">' +
                         text +
                     '</textarea>' +
@@ -105,67 +107,29 @@ export class BlockRedactor {
         };
     }
 
-    static delete(optionId, elementIdPart, question, instance, special) {
-        const ans = document.getElementById('answer_option' + optionId);
-
-        if (!special) {
-            document.getElementById(elementIdPart + optionId).remove();
-        }
-
-        question.answer_options.splice(question.answer_options.findIndex((ans) =>
-            ans.answer_option_id == optionId), 1);
-        Render.deleteElemEndpoint(ans, instance);
-        ans.remove();
-        Quest.deleteEntity('answer_option', optionId);
-        Render.updateAnswersEndpoints(question, instance);
-    }
-
-    static deleteAnswer(answer, question, instance, withConfirm) {
-        let conf = true;
-        if (withConfirm) {
-            conf = confirm('Вы действительно хотите удалить вариант ответа? Отменить действие будет не возможно.');
-        }
-        if (conf) {
-            BlockRedactor.delete(answer.answer_option_id, 'ansblock', question, instance, false);
-        }
-    }
-
-    static loadAnswers(question, instance) {
-        const specialStates = {
-            skip: {
-                id: undefined,
-                isActive: false,
-            },
-            wrong: {
-                id: undefined,
-                isActive: false,
-            },
-        };
+    static loadAnswers(question) {
+        let skipActive = false;
+        let wrongActive = false;
         let skipPoints = 0;
         let wrongPoints = 0;
 
         for (const answer of question.answer_options) {
             if (answer.text === 'skip') {
                 document.getElementById('skip').checked = true;
-                specialStates.skip.id = answer.answer_option_id;
-                specialStates.skip.isActive = true;
+                skipActive = true;
                 skipPoints = answer.points;
                 continue;
             }
             if (answer.text === '') {
                 document.getElementById('wrong').checked = true;
-                specialStates.wrong.id = answer.answer_option_id;
-                specialStates.wrong.isActive = true;
+                wrongActive = true;
                 wrongPoints = answer.points;
                 continue;
             }
-            BlockRedactor.addAnswerForQuestion('QAnswers', answer, question, instance);
+            BlockRedactor.addAnswerBox('QAnswers', 'old', answer.answer_option_id, answer.text, answer.points);
         }
-        BlockRedactor.addSpecialBox('skipChbx', skipPoints, 'skipbx', 'skip', !specialStates.skip.isActive);
-        BlockRedactor.addSpecialBox('wrongChbx', wrongPoints, 'wrongbx', 'Любой другой ответ',
-            !specialStates.wrong.isActive);
-
-        return specialStates;
+        BlockRedactor.addSpecialBox('skipChbx', skipPoints, 'skipbx', 'skip', !skipActive);
+        BlockRedactor.addSpecialBox('wrongChbx', wrongPoints, 'wrongbx', 'Любой другой ответ', !wrongActive);
     }
 
     static loadHints(question, elementId) {
@@ -174,21 +138,73 @@ export class BlockRedactor {
         }
     }
 
-    static updateSpecialState(state, checkboxId, id, question, instance, text, sourceEndpoint) {
-        if (state.isActive === document.getElementById(checkboxId).checked) {
-            if (state.isActive) {
-                const answer = question.answer_options[question.answer_options.findIndex((ans) =>
-                    ans.answer_option_id == state.id)];
-                answer.points = document.getElementById('answerPoints' + id).value;
-                Quest.updateEntity('answer_option', state.id, JSON.stringify({
+    static updateAnswers(question, instance, sourceEndpoint) {
+        let idToDel = [];
+        for (const answer of question.answer_options) {
+            if (answer.text === '' || answer.text === 'skip') {
+                continue;
+            }
+            let elem = document.getElementById('answer_old_' + answer.answer_option_id);
+            if (elem === null) {
+                const ans = document.getElementById('answer_option' + answer.answer_option_id);
+                Render.deleteElemEndpoint(ans, instance);
+                ans.remove();
+                Quest.deleteEntity('answer_option', answer.answer_option_id);
+                idToDel.push(answer.answer_option_id);
+            } else {
+                answer.text = document.getElementById('answerText_old_' + answer.answer_option_id).value;
+                answer.points = document.getElementById('answerPoints_old_' + answer.answer_option_id).value;
+                document.getElementById('answer_option' + answer.answer_option_id).innerText = answer.text;
+                Quest.updateEntity('answer_option', answer.answer_option_id, JSON.stringify({
                     points: parseFloat(answer.points),
                     text: answer.text,
-                })).then((response) => console.log(response));
+                }));
             }
+        }
+        for (const id of idToDel) {
+            question.answer_options.splice(question.answer_options.findIndex((answer) =>
+                answer.answer_option_id == id), 1);
+        }
+
+        let newAnswers = document.getElementsByName('answerText_new');
+        for (const newAnswer of newAnswers) {
+            let id = newAnswer.id.split('_')[2];
+            Quest.addEntity('answer_option', JSON.stringify({
+                points: parseFloat(document.getElementById('answerPoints_new_' + id).value),
+                text: newAnswer.value,
+            })).then((response) => {
+                const answer = {
+                    answer_option_id: JSON.parse(response).answer_option_id,
+                    points: parseFloat(document.getElementById('answerPoints_new_' + id).value),
+                    text: newAnswer.value,
+                };
+                question.answer_options.push(answer);
+                Render.renderAnswer(answer, question, instance, sourceEndpoint);
+                Quest.connect('question', 'answer_option', question.question_id, answer.answer_option_id);
+            });
+        }
+    }
+
+    static updateSpecial(checkboxId, id, question, instance, text, sourceEndpoint) {
+        const specialId = question.answer_options.findIndex((answer) => answer.text === text);
+        if (specialId !== -1 && document.getElementById(checkboxId).checked) {
+            const answer = question.answer_options[specialId];
+            answer.points = document.getElementById('answerPoints' + id).value;
+            Quest.updateEntity('answer_option', answer.answer_option_id, JSON.stringify({
+                points: parseFloat(answer.points),
+                text: answer.text,
+            })).then((response) => console.log(response));
             return;
         }
-        if (state.isActive) {
-            BlockRedactor.delete(state.id, '', question, instance, true);
+        if (specialId === -1 && !document.getElementById(checkboxId).checked) {
+            return;
+        }
+        if (specialId !== -1) {
+            const ans = document.getElementById('answer_option' + question.answer_options[specialId].answer_option_id);
+            Render.deleteElemEndpoint(ans, instance);
+            ans.remove();
+            Quest.deleteEntity('answer_option', question.answer_options[specialId].answer_option_id);
+            question.answer_options.splice(specialId, 1);
         } else {
             Quest.addEntity('answer_option', JSON.stringify({
                 points: parseFloat(document.getElementById('answerPoints' + id).value),
@@ -264,27 +280,11 @@ export class BlockRedactor {
         return valid;
     }
 
-    static updateQuestion(question, specialState, instance, sourceEndpoint) {
-        BlockRedactor.updateSpecialState(specialState.skip, 'skip', 'skipbx', question, instance, 'skip',
-            sourceEndpoint);
-        BlockRedactor.updateSpecialState(specialState.wrong, 'wrong', 'wrongbx', question, instance, '',
-            sourceEndpoint);
+    static updateQuestion(question, instance, sourceEndpoint) {
+        BlockRedactor.updateSpecial('skip', 'skipbx', question, instance, 'skip', sourceEndpoint);
+        BlockRedactor.updateSpecial('wrong', 'wrongbx', question, instance, '', sourceEndpoint);
 
-        for (const answer of question.answer_options) {
-            const answerId = answer.answer_option_id;
-            if (document.getElementById('answerText' + answerId) === null) {
-                continue;
-            }
-
-            answer.text = document.getElementById('answerText' + answerId).value;
-            document.getElementById('answer_option' + answerId).innerText = answer.text;
-            answer.points = document.getElementById('answerPoints' + answerId).value;
-
-            Quest.updateEntity('answer_option', answerId, JSON.stringify({
-                points: parseFloat(answer.points),
-                text: answer.text,
-            })).then((response) => console.log(response));
-        }
+        BlockRedactor.updateAnswers(question, instance, sourceEndpoint);
 
         BlockRedactor.updateHints(question);
 
@@ -306,7 +306,8 @@ export class BlockRedactor {
                         'data-bs-target="#QHints">' +
                     '<label for="formControlTextarea" class="form-label mt-0">Подсказки:</label>' +
                 '</button>' +
-            '</div>');
+            '</div>'
+        );
         form.insertAdjacentHTML('beforeend', '<div class="collapse mt-2" id="QHints"></div>');
         form.insertAdjacentHTML('beforeend',
             '<hr class="mt-2">' +
@@ -315,7 +316,8 @@ export class BlockRedactor {
                         'data-bs-target="#QAnswers">' +
                     '<label for="formControlTextarea" class="form-label mt-0">Ответы:</label>' +
                 '</button>' +
-            '</div>');
+            '</div>'
+        );
         form.insertAdjacentHTML('beforeend', '<div class="collapse show mt-2" id="QAnswers"></div>');
         form.insertAdjacentHTML('beforeend',
             '<hr class="mt-2">' +
@@ -354,48 +356,25 @@ export class BlockRedactor {
             document.getElementById('wrongbx').hidden = !document.getElementById('wrongbx').hidden;
         };
 
-        const specialState = BlockRedactor.loadAnswers(question, instance);
+        BlockRedactor.loadAnswers(question, instance);
         BlockRedactor.loadHints(question, 'QHints');
 
-        const newAns = [];
+        let ansId = 0
         document.getElementById('addAnswer').onclick = () => {
-            Quest.addEntity('answer_option', JSON.stringify({
-                points: 0,
-                text: '',
-            })).then((response) => {
-                const answer = {
-                    answer_option_id: JSON.parse(response).answer_option_id,
-                    points: 0,
-                    text: '',
-                };
-                question.answer_options.push(answer);
-                BlockRedactor.addAnswerForQuestion('QAnswers', answer, question, instance);
-                Render.renderAnswer(answer, question, instance, sourceEndpoint);
-                newAns.push(answer);
-                Quest.connect('question', 'answer_option', question.question_id, answer.answer_option_id);
-            });
+            BlockRedactor.addAnswerBox('QAnswers', 'new', ansId, '', 0);
+            ansId += 1;
         };
-        let id = 0;
+        let hintId = 0;
         document.getElementById('addHint').onclick = () => {
-            BlockRedactor.addHintBox('QHints', 'new', id, '', 0);
-            id += 1;
-        };
-        document.getElementById('close').onclick = () => {
-            for (const ans of newAns) {
-                BlockRedactor.deleteAnswer(ans, question, instance, false);
-            }
-        };
-        document.getElementById('xclose').onclick = () => {
-            for (const ans of newAns) {
-                BlockRedactor.deleteAnswer(ans, question, instance, false);
-            }
+            BlockRedactor.addHintBox('QHints', 'new', hintId, '', 0);
+            hintId += 1;
         };
         document.getElementById('update').onclick = () => {
             if (!BlockRedactor.validateAnswers(question)) {
                 return false;
             }
 
-            BlockRedactor.updateQuestion(question, specialState, instance, sourceEndpoint);
+            BlockRedactor.updateQuestion(question, instance, sourceEndpoint);
 
             Render.updateAnswersEndpoints(question, instance);
             modal.hide();
@@ -404,15 +383,15 @@ export class BlockRedactor {
 
     static addMovementForMovementBlock(form, question) {
         form.insertAdjacentHTML('beforeend',
-            '<div class=\'col-8\'>'+
-                '<div class=\'input-group\'>' +
+            '<div class="col-8">'+
+                '<div class="input-group">' +
                     '<span class="input-group-text"> Координаты </span>' +
                     '<input type="text" class="form-control" id="moveCoords" ' +
                             'value=' + question.movements[0].place.coords + '>' +
                 '</div>'+
             '</div>'+
-            '<div class=\'col-8\'>'+
-                '<div class=\'input-group\'>' +
+            '<div class="col-8">'+
+                '<div class="input-group">' +
                     '<span class="input-group-text"> Радиус(м) </span>' +
                     '<input type="text" class="form-control" id="moveRadius"  ' +
                             'value=' + question.movements[0].place.radius + '>' +
@@ -423,8 +402,24 @@ export class BlockRedactor {
 
     static createMovementRedactor(form, question, modal) {
         BlockRedactor.addTextRedactor(form, 'Перемещение:', question.text);
-        form.innerHTML+=
-        '<div class="z-depth-1-half map-container" style="height: 500px" id="map"></div>';
+        form.insertAdjacentHTML('beforeend',
+            '<hr>' +
+            '<div class="col-12 mt-0">' +
+                '<button type="button" class="accordion-button collapsed p-0" data-bs-toggle="collapse" ' +
+                        'data-bs-target="#MHints">' +
+                    '<label for="formControlTextarea" class="form-label mt-0">Подсказки:</label>' +
+                '</button>' +
+            '</div>');
+        form.insertAdjacentHTML('beforeend', '<div class="collapse mt-2" id="MHints"></div><hr class="mt-2">');
+        form.insertAdjacentHTML('beforeend',
+            '<div class="col-auto mt-0">' +
+                '<button type="button" class="btn btn-primary" id="addHint">' +
+                    'Добавить подсказку' +
+                '</button>' +
+            '</div>'
+        );
+        form.insertAdjacentHTML('beforeend',
+            '<div class="z-depth-1-half map-container" style="height: 500px" id="map"></div>');
         let myMap;
         const mapId = document.getElementById('map');
         console.log(mapId);
@@ -464,7 +459,14 @@ export class BlockRedactor {
         });
         console.log(myMap);
         BlockRedactor.addMovementForMovementBlock(form, question);
+        BlockRedactor.loadHints(question, 'MHints');
+        let id = 0;
+        document.getElementById('addHint').onclick = () => {
+            BlockRedactor.addHintBox('MHints', 'new', id, '', 0);
+            id += 1;
+        };
         document.getElementById('update').onclick = () => {
+            BlockRedactor.updateHints(question);
             question.text = document.getElementById('formControlTextarea').value;
             document.getElementById(question.question_id).getElementsByClassName('card-text')[0].textContent =
                 question.text;

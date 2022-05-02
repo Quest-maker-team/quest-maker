@@ -337,22 +337,38 @@ export class BlockRedactor {
         let curRadius = 500.0;
         let myCircle;
         console.log(myMap);
-        console.log("JJ");
-       // console.log(myMap.geometry.center);
+        console.log("Add methods to map");
+          //let balloon =new YMaps.Balloon(MyBalloonContentLayout);
+          //balloon.setContent(MyBalloonContentLayout);
+        //console.log(MyBalloonContentLayout);
+        //myMap.geoObjects.add(objectManager);
         let placeMark = new ymaps.Placemark(myMap.getCenter(), {
             balloonContentHeader: 'Новое место квеста',
             balloonContentBody: 
-                '<p>Радиус точки: '+              
-                 '<input type="number" id="enterNewRadius" min="0" data-bind="value:replyNumber" />'+
-
+                '<p> '+       
+                 'Чтоб изменить радиус кликните на его новую границу, '+
+                 'для изменения координат - перетащите точку'+
                  '</p>',
                 balloonContentFooter: '<sup>Вы можете выбрать новую точку</sup>',
+                
         }, {
-            preset: 'islands#redDotIconWithCaption'
+            preset: 'islands#redDotIconWithCaption',
+            draggable: true
         });
-        //placeMark.options.draggable = true;
-        console.log(placeMark);
-        myMap.geoObjects.add(placeMark);
+        placeMark.events.add('dragend', function(e){
+            let coords =  e.get('target').geometry.getCoordinates();
+            console.log("Drag end", coords);
+        myMap.geoObjects.get(myMap.geoObjects.indexOf(myCircle)).options.set('visible', true);
+                myMap.geoObjects.get(myMap.geoObjects.indexOf(placeMark)).geometry.setCoordinates(coords);
+                myMap.geoObjects.get(myMap.geoObjects.indexOf(myCircle)).geometry.setCoordinates(coords);
+                res = [coords, curRadius];
+        });
+        placeMark.events.add('dragstart', function(e){
+            let coords =  e.get('target').geometry.getCoordinates();
+            console.log("Grag start", coords);
+                myMap.geoObjects.get(myMap.geoObjects.indexOf(myCircle)).options.set('visible', false);
+        });
+        
         myCircle = new ymaps.Circle([
             // Координаты центра круга.
            myMap.getCenter(),
@@ -362,7 +378,6 @@ export class BlockRedactor {
             hintContent: "Радиус достижимости"
         }, {
             // Задаем опции круга.
-            // Включаем возможность перетаскивания круга.
             draggable: false,
             // Цвет заливки.
             // Последний байт (77) определяет прозрачность.
@@ -373,29 +388,28 @@ export class BlockRedactor {
             // Прозрачность обводки.
             strokeOpacity: 0.8,
             // Ширина обводки в пикселях.
-            strokeWidth: 5
+            strokeWidth: 3
         });
+        let changeRadius = function(e) {
+            let coords = e.get('coords');
+           // console.log(myMap.geoObjects.getLength());
+              //console.log(placeMark.balloon);
+                    curRadius =ymaps.coordSystem.geo.getDistance(coords,
+                         myMap.geoObjects.get(myMap.geoObjects.indexOf(myCircle)).geometry.getCoordinates());
+                    console.log(curRadius);
+                    myMap.geoObjects.get(myMap.geoObjects.indexOf(myCircle)).geometry.setRadius(curRadius);
+                   // myMap.geoObjects.get(myMap.geoObjects.indexOf(placeMark)).balloon.update();             
+        }
+        myMap.events.add('click', changeRadius );        
+        myCircle.events.add('click', changeRadius);         
         myMap.geoObjects.add(myCircle);
         console.log(myCircle);
-        
-        
+        console.log(placeMark);
+        myMap.geoObjects.add(placeMark);
+        res = [coords, curRadius];      
         myMap.geoObjects.get(myMap.geoObjects.indexOf(placeMark)).balloon.open();
         
-        myMap.events.add('click', function(e) {
-                    let coords = e.get('coords');
-                   // console.log(myMap.geoObjects.getLength());
-                      //console.log(placeMark.balloon);
-                      
-                        myMap.geoObjects.get(myMap.geoObjects.indexOf(placeMark)).geometry.setCoordinates(coords);
-                        myMap.geoObjects.get(myMap.geoObjects.indexOf(myCircle)).geometry.setCoordinates(coords);
-                        res = [coords, curRadius];
-                        question.movements[0].place.coords = coords;
-                        question.movements[0].place.radius = curRadius;
-                        
-                    
-                });        
-                
-        
+      
     }
     static createMovementRedactor(form, question, modal) {
         BlockRedactor.addTextRedactor(form, 'Перемещение', question.text);

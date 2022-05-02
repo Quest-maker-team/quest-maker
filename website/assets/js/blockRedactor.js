@@ -75,8 +75,8 @@ export class BlockRedactor {
         document.getElementById(elementId).insertAdjacentHTML('beforeend',
             '<div class="row pb-1" id="hint_' + state + '_' + id + '">' +
                 '<div class="col-8">' +
-                    '<textarea class="form-control" name="hintText_' + state + '" id="hintText_' + state + '_'
-                            + id + '" rows="1" placeholder="Текст подсказки">' +
+                    '<textarea class="form-control" name="hintText_' + state + '" id="hintText_' + state + '_' +
+                            id + '" rows="1" placeholder="Текст подсказки">' +
                         text +
                     '</textarea>' +
                 '</div>' +
@@ -84,7 +84,8 @@ export class BlockRedactor {
                     '<div class="input-group">' +
                         '<span class="input-group-text"> Штраф </span>' +
                         '<input type="number" onkeydown="return (event.keyCode!=13);" class="form-control" ' +
-                            'name="hintFine_'+ state + '" id="hintFine_' + state + '_' + id + '" value="' + fine + '">' +
+                            'name="hintFine_'+ state + '" id="hintFine_' + state + '_' + id +
+                            '" value="' + fine + '">' +
                     '</div>' +
                 '</div>' +
                 '<div class="col-1">' +
@@ -140,12 +141,12 @@ export class BlockRedactor {
     }
 
     static updateAnswers(question, instance, sourceEndpoint) {
-        let idToDel = [];
+        const idToDel = [];
         for (const answer of question.answer_options) {
             if (answer.text === '' || answer.text === 'skip') {
                 continue;
             }
-            let elem = document.getElementById('answer_old_' + answer.answer_option_id);
+            const elem = document.getElementById('answer_old_' + answer.answer_option_id);
             if (elem === null) {
                 const ans = document.getElementById('answer_option' + answer.answer_option_id);
                 Render.deleteElemEndpoint(ans, instance);
@@ -167,9 +168,9 @@ export class BlockRedactor {
                 answer.answer_option_id == id), 1);
         }
 
-        let newAnswers = document.getElementsByName('answerText_new');
+        const newAnswers = document.getElementsByName('answerText_new');
         for (const newAnswer of newAnswers) {
-            let id = newAnswer.id.split('_')[2];
+            const id = newAnswer.id.split('_')[2];
             Quest.addEntity('answer_option', JSON.stringify({
                 points: parseFloat(document.getElementById('answerPoints_new_' + id).value),
                 text: newAnswer.value,
@@ -224,9 +225,9 @@ export class BlockRedactor {
     }
 
     static updateHints(question) {
-        let idToDel = [];
+        const idToDel = [];
         for (const hint of question.hints) {
-            let elem = document.getElementById('hint_old_' + hint.hint_id);
+            const elem = document.getElementById('hint_old_' + hint.hint_id);
             if (elem === null) {
                 Quest.deleteEntity('hint', hint.hint_id);
                 idToDel.push(hint.hint_id);
@@ -241,12 +242,12 @@ export class BlockRedactor {
         }
         for (const id of idToDel) {
             question.hints.splice(question.hints.findIndex((hint) =>
-                    hint.hint_id == id), 1);
+                hint.hint_id == id), 1);
         }
 
-        let newHints = document.getElementsByName('hintText_new');
+        const newHints = document.getElementsByName('hintText_new');
         for (const newHint of newHints) {
-            let id = newHint.id.split('_')[2];
+            const id = newHint.id.split('_')[2];
             Quest.addEntity('hint', JSON.stringify({
                 fine: parseFloat(document.getElementById('hintFine_new_' + id).value),
                 text: newHint.value,
@@ -376,7 +377,7 @@ export class BlockRedactor {
         BlockRedactor.loadAnswers(question, instance);
         BlockRedactor.loadHints(question, 'QHints');
 
-        let ansId = 0
+        let ansId = 0;
         document.getElementById('addAnswer').onclick = () => {
             BlockRedactor.addAnswerBox('QAnswers', 'new', ansId, '', 0);
             document.getElementById('ansAlert').hidden = true;
@@ -550,7 +551,7 @@ export class BlockRedactor {
 }
 
 
-export class QuestRedactor{
+export class QuestRedactor {
     static createQuestRedactor(form, quest) {
         form.insertAdjacentHTML('beforeend',
             '<div class="col-12" id="special">' +
@@ -578,8 +579,8 @@ export class QuestRedactor{
                         '<label class="form-check-label" for="private">' +
                             'Ключевое слово' +
                         '</label>' +
-                        '<input type="text" onkeydown="return (event.keyCode!=13);" class="form-control" id="questPassword"' +
-                            ' value="' + quest.data.password + '" placeholder="Ключевое слово">' +
+                        '<input type="text" onkeydown="return (event.keyCode!=13);" class="form-control" ' +
+                            'id="questPassword" value="' + quest.data.password + '" placeholder="Ключевое слово">' +
                     '</div>' +
             '</div>'
         );
@@ -600,15 +601,17 @@ export class QuestRedactor{
             Quest.updateEntity('quest', quest.data.quest_id, JSON.stringify({
                 title: document.getElementById('questTitle').value,
                 description: document.getElementById('questDescription').value,
-                password: document.getElementById('private').checked ? document.getElementById('questPassword').value : '',
+                password: document.getElementById('private').checked ?
+                    document.getElementById('questPassword').value : '',
             }));
 
             quest.data.title = document.getElementById('questTitle').value;
             quest.data.description = document.getElementById('questDescription').value;
-            quest.data.password = document.getElementById('private').checked ? document.getElementById('questPassword').value : '';
+            quest.data.password = document.getElementById('private').checked ?
+                document.getElementById('questPassword').value : '';
 
             modal.hide();
-        }
+        };
 
         modal.show();
     }

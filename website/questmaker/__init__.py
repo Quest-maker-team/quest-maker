@@ -31,8 +31,8 @@ def create_app(test_config=None):
     from .profile import prof
     app.register_blueprint(prof)
 
-    from api.constructor_api import constructor_api
-    from api.catalog_api import catalog_api
+    from .api.constructor import constructor_api
+    from .api.catalog import catalog_api
     app.register_blueprint(constructor_api, url_prefix='/api/constructor')
     app.register_blueprint(catalog_api, url_prefix='/api/catalog')
 

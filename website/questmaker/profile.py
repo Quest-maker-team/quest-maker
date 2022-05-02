@@ -6,9 +6,8 @@ from datetime import datetime
 from flask import Blueprint, render_template
 from flask_login import login_required, current_user
 
-from .db import get_drafts_by_author_id, get_quests_by_author_id
-
-import pickle
+from .db import get_quests_by_author_id
+import operator
 
 
 prof = Blueprint('profile', __name__)
@@ -30,13 +29,15 @@ def choose_state(quest):
     :param quest: quest whose state needs to be assessed
     :return: quest state and bootstrap color name for catalog row
     """
-    if quest['hidden']:
-        return 'Ждет одобрения', 'danger'
+    if not quest['published']:
+        return 'Не опубликован', 'secondary'
+    elif quest['hidden']:
+        return 'Ждет одобрения', 'warning'
     elif (quest['time_open'] == None or quest['time_open'] < datetime.now())\
             and (quest['time_close'] == None or quest['time_close'] > datetime.now()):
         return 'Активен', 'info'
     else:
-        return 'Неактивен', 'warning'
+        return 'Неактивен', 'light'
 
 
 @prof.route('/profile_catalog')
@@ -46,28 +47,21 @@ def catalog():
     Personal catalog page
     :return: personal catalog page
     """
-    drafts = get_drafts_by_author_id(current_user.author['author_id'])
-    cleans = get_quests_by_author_id(current_user.author['author_id'])
-    quests = []
+    quests = get_quests_by_author_id(current_user.author['author_id'])
+    catalog = []
 
-    for d in drafts:
-        q = {}
-        q['id'] = d['draft_id']
-        q['title'] = pickle.loads(bytes(d['container'])).quest.title
-        q['type'] = 'Черновик'
-        q['state'] = 'Черновик'
-        q['color'] = 'secondary'
-        quests.append(q)
-
-    for c in cleans:
-        q = {}
-        q['id'] = c['quest_id']
-        q['title'] = c['title']
-        if c['password'] != None:
-            q['type'] = 'Публичный'
+    for q in quests:
+        c = {}
+        c['id'] = q['quest_id']
+        c['keyword'] = q['keyword']
+        c['title'] = q['title']
+        if q['password'] != None:
+            c['type'] = 'Приватный'
         else:
-            q['type'] = 'Приватный'
-        q['state'], q['color'] = choose_state(c)
-        quests.append(q)
+            c['type'] = 'Публичный'
+        c['state'], c['color'] = choose_state(q)
+        catalog.append(c)
+    
+    catalog.sort(key=operator.itemgetter('title'))
 
-    return render_template('profile_catalog.html', user=current_user, quests=quests)
+    return render_template('profile_catalog.html', user=current_user, quests=catalog)

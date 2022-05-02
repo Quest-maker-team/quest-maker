@@ -23,19 +23,22 @@ CREATE TABLE quests (
     title CHARACTER VARYING NOT NULL,
     author_id INTEGER NOT NULL REFERENCES authors (author_id) ON DELETE CASCADE,
     description TEXT,
+    keyword VARCHAR(8),
     password CHARACTER VARYING(100),
     cover_url TEXT,
     time_open TIMESTAMP WITHOUT TIME ZONE,
     time_close TIMESTAMP WITHOUT TIME ZONE,
     lead_time INTERVAL,
-    hidden BOOLEAN NOT NULL
+    hidden BOOLEAN NOT NULL,
+    published BOOLEAN DEFAULT FALSE NOT NULL
 );
 
 DROP TABLE IF EXISTS drafts;
 CREATE TABLE drafts (
     draft_id SERIAL PRIMARY KEY,
     author_id INTEGER NOT NULL REFERENCES authors (author_id) ON DELETE CASCADE,
-    container BYTEA
+    container BYTEA,
+    quest_id INTEGER  DEFAULT NULL REFERENCES quests (quest_id)  ON DELETE CASCADE
 );
 
 DROP TABLE IF EXISTS places CASCADE;

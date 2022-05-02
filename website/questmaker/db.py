@@ -52,7 +52,7 @@ def init_db_command():
     click.echo('Initialized the database.')
 
 
-@click.command('test-museum')
+@click.command('test-excursion')
 @with_appcontext
 def load_test_db_command():
     """

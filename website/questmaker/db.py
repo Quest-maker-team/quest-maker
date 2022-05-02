@@ -248,7 +248,9 @@ def get_quest_tags(quest_id):
     :return: list of dictionaries with key tag_name
     """
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-        cursor.execute('SELECT tag_name FROM tags WHERE quest_id = %s', (quest_id,))
+        cursor.execute('SELECT tag_name '
+                       'FROM tags JOIN quest_tags USING (tag_id)'
+                       'WHERE quest_id = %s', (quest_id,))
         return cursor.fetchall()
 
 

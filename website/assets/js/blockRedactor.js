@@ -18,7 +18,8 @@ export class BlockRedactor {
                 '<div class="col-8">' +
                     '<input type="text" onkeydown="return (event.keyCode!=13);" class="form-control" ' +
                         'name="answerText_'+ state + '" id="answerText_' + state + '_' + id + '" value="' +
-                        text + '" placeholder="Вариант ответа">' +
+                        text + '" placeholder="Вариант ответа" onclick="document.getElementById(\'answerText_' +
+                        state + '_' + id + '\').className = \'form-control\'; return false;">' +
                     '<div class="invalid-feedback">' +
                         'Не используйте "skip" или пустую строку в качестве ответов. ' +
                         'Добавить возможность пропуска можно, установив соответствующий флаг.' +
@@ -261,14 +262,25 @@ export class BlockRedactor {
         }
     }
 
-    static validateAnswers(question) {
-        let valid = true;
+    static validateAnswers() {
+        const oldAns = document.getElementsByName('answerText_old');
+        const newAns = document.getElementsByName('answerText_new');
 
-        for (const answer of question.answer_options) {
-            const ans = document.getElementById('answerText' + answer.answer_option_id);
-            if (ans === null) {
-                continue;
+        if (oldAns.length === 0 && newAns.length === 0) {
+            document.getElementById('ansAlert').hidden = false;
+            return false;
+        }
+
+        let valid = true;
+        for (const ans of oldAns) {
+            if (ans.value === 'skip' || ans.value === '') {
+                ans.className = 'form-control is-invalid';
+                valid = false;
+            } else {
+                ans.className = 'form-control';
             }
+        }
+        for (const ans of newAns) {
             if (ans.value === 'skip' || ans.value === '') {
                 ans.className = 'form-control is-invalid';
                 valid = false;
@@ -320,6 +332,11 @@ export class BlockRedactor {
         );
         form.insertAdjacentHTML('beforeend', '<div class="collapse show mt-2" id="QAnswers"></div>');
         form.insertAdjacentHTML('beforeend',
+            '<div class="alert alert-warning" id="ansAlert" hidden>' +
+                'Должен быть хотя бы один вариант ответа' +
+            '</div>'
+        );
+        form.insertAdjacentHTML('beforeend',
             '<hr class="mt-2">' +
             '<div class="col-12 mt-0" id="special">' +
                 '<div class="form-check pb-1" id="skipChbx">' +
@@ -362,6 +379,7 @@ export class BlockRedactor {
         let ansId = 0
         document.getElementById('addAnswer').onclick = () => {
             BlockRedactor.addAnswerBox('QAnswers', 'new', ansId, '', 0);
+            document.getElementById('ansAlert').hidden = true;
             ansId += 1;
         };
         let hintId = 0;
@@ -370,7 +388,7 @@ export class BlockRedactor {
             hintId += 1;
         };
         document.getElementById('update').onclick = () => {
-            if (!BlockRedactor.validateAnswers(question)) {
+            if (!BlockRedactor.validateAnswers()) {
                 return false;
             }
 

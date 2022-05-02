@@ -1,6 +1,6 @@
 import {BlockRedactor} from './blockRedactor';
 import {consume} from '@jsplumb/browser-ui';
-import {Quest} from "./quest";
+import {Quest} from './quest';
 
 export class Render {
     static createEndpoint(instance, elem, anchors, options) {
@@ -185,13 +185,13 @@ export class Render {
                 block = Render.renderFinish(question, instance, targetEndpoint);
                 break;
             case 'open':
-                block = Render.renderQuestion(quest, question,"Открытый вопрос", instance, sourceEndpoint, targetEndpoint);
+                block = Render.renderQuestion(quest, question, 'Открытый вопрос', instance, sourceEndpoint, targetEndpoint);
                 break;
             case 'movement':
                 block = Render.renderMovement(quest, question, instance, sourceEndpoint, targetEndpoint);
                 break;
             case 'choice':
-                block = Render.renderQuestion(quest, question, "Вопрос с выбором ответа", instance, sourceEndpoint, targetEndpoint);
+                block = Render.renderQuestion(quest, question, 'Вопрос с выбором ответа', instance, sourceEndpoint, targetEndpoint);
                 break;
             default:
                 break;

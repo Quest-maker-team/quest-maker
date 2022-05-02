@@ -1,16 +1,16 @@
-from .quest import Quest, Question, Place, Hint, Answer, Movement, File, update_from_dict
-from .quest_container import EntityType, QuestContainer
-from .db import get_draft, update_draft, write_draft, remove_draft, get_draft_for_update
+from website.questmaker.quest import Quest, Question, Place, Hint, Answer, Movement, File, update_from_dict
+from website.questmaker.quest_container import EntityType, QuestContainer
+from website.questmaker.db import get_draft, update_draft, write_draft, remove_draft, get_draft_for_update
 from flask_login import current_user, login_required
 
 from flask import Blueprint, jsonify, request, g, session
 
 import pickle
 
-api = Blueprint('api', __name__)
+constructor_api = Blueprint('constructor_api', __name__)
 
 
-@api.before_request
+@constructor_api.before_request
 @login_required
 def before_request():
     """
@@ -31,7 +31,7 @@ def before_request():
         return 'You don\'t have loaded draft', 400
 
 
-@api.after_request
+@constructor_api.after_request
 @login_required
 def after_request(response):
     """
@@ -48,7 +48,7 @@ def after_request(response):
     return response
 
 
-@api.route('/quest/<int:quest_id>', methods=['GET'])
+@constructor_api.route('/quest/<int:quest_id>', methods=['GET'])
 def get_quest(quest_id):
     """
     Get quest for edit from drafts if draft exists or create new draft
@@ -83,7 +83,7 @@ def get_quest_from_db(quest_id):
     return jsonify(quest.to_dict())
 
 
-@api.route('/quest', methods=['POST'])
+@constructor_api.route('/quest', methods=['POST'])
 def create_quest():
     """
     Create new draft quest and add to container
@@ -109,7 +109,7 @@ def create_quest():
     return jsonify(quest.to_dict())
 
 
-@api.route('/question', methods=['POST'])
+@constructor_api.route('/question', methods=['POST'])
 def create_question():
     """
     Create new question and add to container
@@ -127,7 +127,7 @@ def create_question():
     return jsonify({'question_id': question.question_id})
 
 
-@api.route('/answer_option/<int:answer_id>/question/<int:question_id>', methods=['PUT'])
+@constructor_api.route('/answer_option/<int:answer_id>/question/<int:question_id>', methods=['PUT'])
 def add_question_to_answer(answer_id, question_id):
     """
     Link answer and next question that was created before
@@ -146,7 +146,7 @@ def add_question_to_answer(answer_id, question_id):
     return '', 200
 
 
-@api.route('/movement/<int:movement_id>/question/<int:question_id>', methods=['PUT'])
+@constructor_api.route('/movement/<int:movement_id>/question/<int:question_id>', methods=['PUT'])
 def add_question_to_movement(movement_id, question_id):
     """
     Link movement and next question that was created before
@@ -165,7 +165,7 @@ def add_question_to_movement(movement_id, question_id):
     return '', 200
 
 
-@api.route('/file', methods=['POST'])
+@constructor_api.route('/file', methods=['POST'])
 def create_file():
     """
     Create new file and add to container
@@ -182,7 +182,7 @@ def create_file():
     return jsonify({'file_id': file.file_id})
 
 
-@api.route('/<e_type_str>/<int:e_id>/file/<int:file_id>', methods=['PUT'])
+@constructor_api.route('/<e_type_str>/<int:e_id>/file/<int:file_id>', methods=['PUT'])
 def add_file(e_type_str, e_id, file_id):
     """
     Add file tp entity. File must be created before.
@@ -207,7 +207,7 @@ def add_file(e_type_str, e_id, file_id):
     return '', 200
 
 
-@api.route('/answer_option', methods=['POST'])
+@constructor_api.route('/answer_option', methods=['POST'])
 def create_answer():
     """
     Create new answer and add to container
@@ -224,7 +224,7 @@ def create_answer():
     return jsonify({'answer_option_id': ans.answer_option_id})
 
 
-@api.route('/question/<int:question_id>/answer_option/<int:answer_id>', methods=['PUT'])
+@constructor_api.route('/question/<int:question_id>/answer_option/<int:answer_id>', methods=['PUT'])
 def add_answer(question_id, answer_id):
     """
     Link question and answer that was created before
@@ -243,7 +243,7 @@ def add_answer(question_id, answer_id):
     return '', 200
 
 
-@api.route('/movement', methods=['POST'])
+@constructor_api.route('/movement', methods=['POST'])
 def create_movement():
     """
     Create new answer and add to container
@@ -260,7 +260,7 @@ def create_movement():
     return jsonify({'movement_id': move.movement_id})
 
 
-@api.route('/question/<int:question_id>/movement/<int:movement_id>', methods=['PUT'])
+@constructor_api.route('/question/<int:question_id>/movement/<int:movement_id>', methods=['PUT'])
 def add_movement(question_id, movement_id):
     """
     Link question and movement that was created before
@@ -279,7 +279,7 @@ def add_movement(question_id, movement_id):
     return '', 200
 
 
-@api.route('/hint', methods=['POST'])
+@constructor_api.route('/hint', methods=['POST'])
 def create_hint():
     """
     Create new hint and add to container
@@ -296,7 +296,7 @@ def create_hint():
     return jsonify({'hint_id': hint.hint_id})
 
 
-@api.route('/question/<int:question_id>/hint/<int:hint_id>', methods=['PUT'])
+@constructor_api.route('/question/<int:question_id>/hint/<int:hint_id>', methods=['PUT'])
 def add_hint(question_id, hint_id):
     """
     Link question and hint that was created before
@@ -315,7 +315,7 @@ def add_hint(question_id, hint_id):
     return '', 200
 
 
-@api.route('/place', methods=['POST'])
+@constructor_api.route('/place', methods=['POST'])
 def create_place():
     """
     Create new place and add to container
@@ -332,7 +332,7 @@ def create_place():
     return jsonify({'place_id': place.place_id})
 
 
-@api.route('/movement/<int:movement_id>/place/<int:place_id>', methods=['PUT'])
+@constructor_api.route('/movement/<int:movement_id>/place/<int:place_id>', methods=['PUT'])
 def add_place(movement_id, place_id):
     """
     Link movement and place that was created before
@@ -351,7 +351,7 @@ def add_place(movement_id, place_id):
     return '', 200
 
 
-@api.route('/<e_type_str>/<int:e_id>', methods=['PUT'])
+@constructor_api.route('/<e_type_str>/<int:e_id>', methods=['PUT'])
 def update_entity(e_type_str, e_id):
     """
     Set entity attributes from JSON
@@ -367,7 +367,7 @@ def update_entity(e_type_str, e_id):
     return ('', 200) if rc else ('Wrong JSON attributes', 400)
 
 
-@api.route('/<e_type_str>/<int:e_id>', methods=['DELETE'])
+@constructor_api.route('/<e_type_str>/<int:e_id>', methods=['DELETE'])
 def remove_entity(e_type_str, e_id):
     """
     Remove entity from quest graph
@@ -382,7 +382,7 @@ def remove_entity(e_type_str, e_id):
     return '', 200
 
 
-@api.route('/answer_option/<int:answer_id>/question', methods=['DELETE'])
+@constructor_api.route('/answer_option/<int:answer_id>/question', methods=['DELETE'])
 def remove_answer_question_link(answer_id):
     """
     Disconnect answer and next question
@@ -400,7 +400,7 @@ def remove_answer_question_link(answer_id):
         return 'No link', 400
 
 
-@api.route('/movement/<int:movement_id>/question', methods=['DELETE'])
+@constructor_api.route('/movement/<int:movement_id>/question', methods=['DELETE'])
 def remove_movement_question_link(movement_id):
     """
     Disconnect movement and next question
@@ -418,7 +418,7 @@ def remove_movement_question_link(movement_id):
         return 'No link', 400
 
 
-@api.route('/question/<int:question_id>/movement/<int:movement_id>', methods=['DELETE'])
+@constructor_api.route('/question/<int:question_id>/movement/<int:movement_id>', methods=['DELETE'])
 def remove_question_movement_link(question_id, movement_id):
     """
     Disconnect question and movement of this question
@@ -440,7 +440,7 @@ def remove_question_movement_link(question_id, movement_id):
         return 'No link', 400
 
 
-@api.route('/question/<int:question_id>/answer_option/<int:answer_id>', methods=['DELETE'])
+@constructor_api.route('/question/<int:question_id>/answer_option/<int:answer_id>', methods=['DELETE'])
 def remove_question_answer_link(question_id, answer_id):
     """
     Disconnect question and answer to this question
@@ -462,7 +462,7 @@ def remove_question_answer_link(question_id, answer_id):
         return 'No link', 400
 
 
-@api.route('/save/<int:quest_id>', methods=['POST'])
+@constructor_api.route('/save/<int:quest_id>', methods=['POST'])
 def save_quest(quest_id):
     """
     Save quest in database and remove from drafts

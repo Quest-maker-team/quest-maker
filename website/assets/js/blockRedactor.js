@@ -5,36 +5,11 @@ import {Render} from './render';
 export class BlockRedactor {
     static addTextRedactor(form, label, text) {
         form.insertAdjacentHTML('beforeend',
-            '<label for="formControlTextarea" class="form-label">' + label + '</label>' +
-            '<textarea class="form-control" id="formControlTextarea" rows="3">' +
-            text +
+            '<label for="formControlTextarea" class="form-label mt-2">' + label + '</label>' +
+            '<textarea class="form-control mt-0" id="formControlTextarea" rows="3">' +
+                text +
             '</textarea>'
         );
-    }
-
-    static delete(optionId, elementIdPart, question, instance, special) {
-        const ans = document.getElementById('answer_option' + optionId);
-
-        if (!special) {
-            document.getElementById(elementIdPart + optionId).remove();
-        }
-
-        question.answer_options.splice(question.answer_options.findIndex((ans) =>
-            ans.answer_option_id == optionId), 1);
-        Render.deleteElemEndpoint(ans, instance);
-        ans.remove();
-        Quest.deleteEntity('answer_option', optionId);
-        Render.updateAnswersEndpoints(question, instance);
-    }
-
-    static deleteAnswer(answer, question, instance, withConfirm) {
-        let conf = true;
-        if (withConfirm) {
-            conf = confirm('Вы действительно хотите удалить вариант ответа? Отменить действие будет не возможно.');
-        }
-        if (conf) {
-            BlockRedactor.delete(answer.answer_option_id, 'ansblock', question, instance, false);
-        }
     }
 
     static addAnswerForQuestion(elementId, answer, question, instance) {
@@ -93,83 +68,66 @@ export class BlockRedactor {
         );
     }
 
-    static updateSpecialState(state, checkboxId, id, question, instance, text, sourceEndpoint) {
-        if (state.isActive === document.getElementById(checkboxId).checked) {
-            if (state.isActive) {
-                const answer = question.answer_options[question.answer_options.findIndex((ans) =>
-                    ans.answer_option_id == state.id)];
-                answer.points = document.getElementById('answerPoints' + id).value;
-                Quest.updateAnswer(state.id, JSON.stringify({
-                    points: parseFloat(answer.points),
-                    text: answer.text,
-                })).then((response) => console.log(response));
-            }
-            return;
-        }
-        if (state.isActive) {
-            BlockRedactor.delete(state.id, '', question, instance, true);
-        } else {
-            Quest.addAnswer(JSON.stringify({
-                points: parseFloat(document.getElementById('answerPoints' + id).value),
-                text: text,
-            })).then((response) => {
-                const answer = {
-                    answer_option_id: JSON.parse(response).answer_option_id,
-                    points: parseFloat(document.getElementById('answerPoints' + id).value),
-                    text: text,
-                };
-                question.answer_options.push(answer);
-                Render.renderAnswer(answer, question, instance, sourceEndpoint, true);
-                return Quest.connect('question', 'answer_option', question.question_id, answer.answer_option_id);
-            }).then(result => console.log('special pidor'));
-        }
-    }
-
-    static addMovementForMovementBlock(form, question) {
-        form.insertAdjacentHTML('beforeend',
-            '<div class=\'col-8\'>'+
-                '<div class=\'input-group\'>' +
-                    '<span class="input-group-text"> Координаты </span>' +
-                    '<input type="text" class="form-control" id="moveCoords" ' +
-                            'value=' + question.movements[0].place.coords + '>' +
-                '</div>'+
-            '</div>'+
-            '<div class=\'col-8\'>'+
-                '<div class=\'input-group\'>' +
-                    '<span class="input-group-text"> Радиус(м) </span>' +
-                    '<input type="text" class="form-control" id="moveRadius"  ' +
-                            'value=' + question.movements[0].place.radius + '>' +
-                  '</div>'+
+    static addHintBox(elementId, state, id, text, fine) {
+        document.getElementById(elementId).insertAdjacentHTML('beforeend',
+            '<div class="row pb-1" id="hint_' + state + '_' + id + '">' +
+                '<div class="col-8">' +
+                    '<textarea class="form-control" name="hintText_' + state + '" id="hintText_' + state + '_' 
+                            + id + '" rows="1" placeholder="Текст подсказки">' +
+                        text +
+                    '</textarea>' +
+                '</div>' +
+                '<div class="col-3">' +
+                    '<div class="input-group">' +
+                        '<span class="input-group-text"> Штраф </span>' +
+                        '<input type="number" onkeydown="return (event.keyCode!=13);" class="form-control" ' +
+                            'name="hintFine_'+ state + '" id="hintFine_' + state + '_' + id + '" value="' + fine + '">' +
+                    '</div>' +
+                '</div>' +
+                '<div class="col-1">' +
+                    '<button type="button" class="btn btn-danger" id="hintdel_' + state + '_' + id + '">' +
+                        '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" ' +
+                                'class="bi bi-trash" viewBox="0 0 16 16">' +
+                            '<path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 ' +
+                                '.5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 ' +
+                                '0V6z"/>' +
+                            '<path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 ' +
+                                '1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 ' +
+                                '0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 ' +
+                                '4H4.118zM2.5 3V2h11v1h-11z"/>' +
+                        '</svg>' +
+                    '</button>' +
+                '</div>' +
             '</div>'
         );
-    }
-
-    static createStartRedactor(form, question, modal) {
-        this.addTextRedactor(form, 'Приветственное сообщение:', question.text);
-        document.getElementById('update').onclick = () => {
-            question.text = document.getElementById('formControlTextarea').value;
-            document.getElementById(question.question_id).getElementsByClassName('card-text')[0].textContent =
-                question.text;
-            Quest.updateQuestion(question.question_id, JSON.stringify({
-                type: question.type,
-                text: question.text,
-            })).then(() => console.log('success'));
-            modal.hide();
+        document.getElementById('hintdel_' + state + '_' + id).onclick = () => {
+            document.getElementById('hint_' + state + '_' + id).remove();
         };
     }
 
-    static createFinishRedactor(form, question, modal) {
-        this.addTextRedactor(form, 'Прощальное сообщение:', question.text);
-        document.getElementById('update').onclick = () => {
-            question.text = document.getElementById('formControlTextarea').value;
-            document.getElementById(question.question_id).getElementsByClassName('card-text')[0].textContent =
-                question.text;
-            Quest.updateQuestion(question.question_id, JSON.stringify({
-                type: question.type,
-                text: question.text,
-            })).then(() => console.log('success'));
-            modal.hide();
-        };
+    static delete(optionId, elementIdPart, question, instance, special) {
+        const ans = document.getElementById('answer_option' + optionId);
+
+        if (!special) {
+            document.getElementById(elementIdPart + optionId).remove();
+        }
+
+        question.answer_options.splice(question.answer_options.findIndex((ans) =>
+            ans.answer_option_id == optionId), 1);
+        Render.deleteElemEndpoint(ans, instance);
+        ans.remove();
+        Quest.deleteEntity('answer_option', optionId);
+        Render.updateAnswersEndpoints(question, instance);
+    }
+
+    static deleteAnswer(answer, question, instance, withConfirm) {
+        let conf = true;
+        if (withConfirm) {
+            conf = confirm('Вы действительно хотите удалить вариант ответа? Отменить действие будет не возможно.');
+        }
+        if (conf) {
+            BlockRedactor.delete(answer.answer_option_id, 'ansblock', question, instance, false);
+        }
     }
 
     static loadAnswers(question, instance) {
@@ -201,13 +159,90 @@ export class BlockRedactor {
                 wrongPoints = answer.points;
                 continue;
             }
-            BlockRedactor.addAnswerForQuestion('OQanswers', answer, question, instance);
+            BlockRedactor.addAnswerForQuestion('QAnswers', answer, question, instance);
         }
         BlockRedactor.addSpecialBox('skipChbx', skipPoints, 'skipbx', 'skip', !specialStates.skip.isActive);
         BlockRedactor.addSpecialBox('wrongChbx', wrongPoints, 'wrongbx', 'Любой другой ответ',
             !specialStates.wrong.isActive);
 
         return specialStates;
+    }
+
+    static loadHints(question, elementId) {
+        for (const hint of question.hints) {
+            BlockRedactor.addHintBox(elementId, 'old', hint.hint_id, hint.hint_text, hint.fine);
+        }
+    }
+
+    static updateSpecialState(state, checkboxId, id, question, instance, text, sourceEndpoint) {
+        if (state.isActive === document.getElementById(checkboxId).checked) {
+            if (state.isActive) {
+                const answer = question.answer_options[question.answer_options.findIndex((ans) =>
+                    ans.answer_option_id == state.id)];
+                answer.points = document.getElementById('answerPoints' + id).value;
+                Quest.updateEntity('answer_option', state.id, JSON.stringify({
+                    points: parseFloat(answer.points),
+                    text: answer.text,
+                })).then((response) => console.log(response));
+            }
+            return;
+        }
+        if (state.isActive) {
+            BlockRedactor.delete(state.id, '', question, instance, true);
+        } else {
+            Quest.addEntity('answer_option', JSON.stringify({
+                points: parseFloat(document.getElementById('answerPoints' + id).value),
+                text: text,
+            })).then((response) => {
+                const answer = {
+                    answer_option_id: JSON.parse(response).answer_option_id,
+                    points: parseFloat(document.getElementById('answerPoints' + id).value),
+                    text: text,
+                };
+                question.answer_options.push(answer);
+                Render.renderAnswer(answer, question, instance, sourceEndpoint, true);
+                Quest.connect('question', 'answer_option', question.question_id, answer.answer_option_id);
+            });
+        }
+    }
+
+    static updateHints(question) {
+        let idToDel = [];
+        for (const hint of question.hints) {
+            let elem = document.getElementById('hint_old_' + hint.hint_id);
+            if (elem === null) {
+                Quest.deleteEntity('hint', hint.hint_id);
+                idToDel.push(hint.hint_id);
+            } else {
+                hint.hint_text = document.getElementById('hintText_old_' + hint.hint_id).value;
+                hint.fine = document.getElementById('hintFine_old_' + hint.hint_id).value;
+                Quest.updateEntity('hint', hint.hint_id, JSON.stringify({
+                    fine: parseFloat(hint.fine),
+                    text: hint.hint_text,
+                }));
+            }
+        }
+        for (const id of idToDel) {
+            question.hints.splice(question.hints.findIndex((hint) =>
+                    hint.hint_id == id), 1);
+        }
+
+        let newHints = document.getElementsByName('hintText_new');
+        for (const newHint of newHints) {
+            let id = newHint.id.split('_')[2];
+            Quest.addEntity('hint', JSON.stringify({
+                fine: parseFloat(document.getElementById('hintFine_new_' + id).value),
+                text: newHint.value,
+            })).then((response) => {
+                const hint = {
+                    hint_id: JSON.parse(response).hint_id,
+                    fine: parseFloat(document.getElementById('hintFine_new_' + id).value),
+                    hint_text: newHint.value,
+                };
+                question.hints.push(hint);
+                Quest.connect('question', 'hint', question.question_id, hint.hint_id);
+            });
+        }
     }
 
     static validateAnswers(question) {
@@ -229,9 +264,10 @@ export class BlockRedactor {
         return valid;
     }
 
-    static updateOpenQuestion(question, specialState, instance, sourceEndpoint) {
-        console.log(specialState);
+    static updateQuestion(question, specialState, instance, sourceEndpoint) {
         BlockRedactor.updateSpecialState(specialState.skip, 'skip', 'skipbx', question, instance, 'skip',
+            sourceEndpoint);
+        BlockRedactor.updateSpecialState(specialState.wrong, 'wrong', 'wrongbx', question, instance, '',
             sourceEndpoint);
 
         for (const answer of question.answer_options) {
@@ -244,31 +280,46 @@ export class BlockRedactor {
             document.getElementById('answer_option' + answerId).innerText = answer.text;
             answer.points = document.getElementById('answerPoints' + answerId).value;
 
-            Quest.updateAnswer(answerId, JSON.stringify({
+            Quest.updateEntity('answer_option', answerId, JSON.stringify({
                 points: parseFloat(answer.points),
                 text: answer.text,
             })).then((response) => console.log(response));
         }
 
-        BlockRedactor.updateSpecialState(specialState.wrong, 'wrong', 'wrongbx', question, instance, '',
-            sourceEndpoint);
+        BlockRedactor.updateHints(question);
 
         question.text = document.getElementById('formControlTextarea').value;
         document.getElementById(question.question_id).getElementsByClassName('card-text')[0].textContent =
             question.text;
-        Quest.updateQuestion(question.question_id, JSON.stringify({
+        Quest.updateEntity('question', question.question_id, JSON.stringify({
             type: question.type,
             text: question.text,
         })).then(() => console.log('success'));
     }
 
     static createQuestionRedactor(form, question, instance, sourceEndpoint, modal) {
-        BlockRedactor.addTextRedactor(form, 'Вопрос', question.text);
+        BlockRedactor.addTextRedactor(form, 'Вопрос:', question.text);
         form.insertAdjacentHTML('beforeend',
-            '<hr><label for="formControlTextarea" class="form-label">Ответы:</label>');
-        form.insertAdjacentHTML('beforeend', '<div id="OQanswers"></div>');
+            '<hr>' +
+            '<div class="col-12 mt-0">' +
+                '<button type="button" class="accordion-button collapsed p-0" data-bs-toggle="collapse" ' +
+                        'data-bs-target="#QHints">' +
+                    '<label for="formControlTextarea" class="form-label mt-0">Подсказки:</label>' +
+                '</button>' +
+            '</div>');
+        form.insertAdjacentHTML('beforeend', '<div class="collapse mt-2" id="QHints"></div>');
         form.insertAdjacentHTML('beforeend',
-            '<div class="col-12" id="special">' +
+            '<hr class="mt-2">' +
+            '<div class="col-12 mt-0">' +
+                '<button type="button" class="accordion-button p-0" data-bs-toggle="collapse" ' +
+                        'data-bs-target="#QAnswers">' +
+                    '<label for="formControlTextarea" class="form-label mt-0">Ответы:</label>' +
+                '</button>' +
+            '</div>');
+        form.insertAdjacentHTML('beforeend', '<div class="collapse show mt-2" id="QAnswers"></div>');
+        form.insertAdjacentHTML('beforeend',
+            '<hr class="mt-2">' +
+            '<div class="col-12 mt-0" id="special">' +
                 '<div class="form-check pb-1" id="skipChbx">' +
                     '<input class="form-check-input" type="checkbox" id="skip">' +
                     '<label class="form-check-label" for="skip">' +
@@ -281,10 +332,17 @@ export class BlockRedactor {
                         'Добавить действие в случае неправильного ответа' +
                     '</label>' +
                 '</div>' +
-                '<div class="col-auto pt-2">' +
-                    '<button type="button" class="btn btn-primary" id="addAnswer">' +
-                        'Добавить ответ' +
-                    '</button>' +
+                '<div class="row pt-2">' +
+                    '<div class="col-auto pr-1">' +
+                        '<button type="button" class="btn btn-primary" id="addAnswer">' +
+                            'Добавить ответ' +
+                        '</button>' +
+                    '</div>' +
+                    '<div class="col-auto p-0">' +
+                        '<button type="button" class="btn btn-primary" id="addHint">' +
+                            'Добавить подсказку' +
+                        '</button>' +
+                    '</div>' +
                 '</div>' +
             '</div>'
         );
@@ -297,10 +355,11 @@ export class BlockRedactor {
         };
 
         const specialState = BlockRedactor.loadAnswers(question, instance);
+        BlockRedactor.loadHints(question, 'QHints');
 
         const newAns = [];
         document.getElementById('addAnswer').onclick = () => {
-            Quest.addAnswer(JSON.stringify({
+            Quest.addEntity('answer_option', JSON.stringify({
                 points: 0,
                 text: '',
             })).then((response) => {
@@ -310,11 +369,16 @@ export class BlockRedactor {
                     text: '',
                 };
                 question.answer_options.push(answer);
-                BlockRedactor.addAnswerForQuestion('OQanswers', answer, question, instance);
+                BlockRedactor.addAnswerForQuestion('QAnswers', answer, question, instance);
                 Render.renderAnswer(answer, question, instance, sourceEndpoint);
                 newAns.push(answer);
-                return Quest.connect('question', 'answer_option', question.question_id, answer.answer_option_id);
-            }).then(result => console.log('pidor'));
+                Quest.connect('question', 'answer_option', question.question_id, answer.answer_option_id);
+            });
+        };
+        let id = 0;
+        document.getElementById('addHint').onclick = () => {
+            BlockRedactor.addHintBox('QHints', 'new', id, '', 0);
+            id += 1;
         };
         document.getElementById('close').onclick = () => {
             for (const ans of newAns) {
@@ -331,15 +395,34 @@ export class BlockRedactor {
                 return false;
             }
 
-            BlockRedactor.updateOpenQuestion(question, specialState, instance, sourceEndpoint);
+            BlockRedactor.updateQuestion(question, specialState, instance, sourceEndpoint);
 
             Render.updateAnswersEndpoints(question, instance);
             modal.hide();
         };
     }
 
+    static addMovementForMovementBlock(form, question) {
+        form.insertAdjacentHTML('beforeend',
+            '<div class=\'col-8\'>'+
+                '<div class=\'input-group\'>' +
+                    '<span class="input-group-text"> Координаты </span>' +
+                    '<input type="text" class="form-control" id="moveCoords" ' +
+                            'value=' + question.movements[0].place.coords + '>' +
+                '</div>'+
+            '</div>'+
+            '<div class=\'col-8\'>'+
+                '<div class=\'input-group\'>' +
+                    '<span class="input-group-text"> Радиус(м) </span>' +
+                    '<input type="text" class="form-control" id="moveRadius"  ' +
+                            'value=' + question.movements[0].place.radius + '>' +
+                  '</div>'+
+            '</div>'
+        );
+    }
+
     static createMovementRedactor(form, question, modal) {
-        BlockRedactor.addTextRedactor(form, 'Перемещение', question.text);
+        BlockRedactor.addTextRedactor(form, 'Перемещение:', question.text);
         form.innerHTML+=
         '<div class="z-depth-1-half map-container" style="height: 500px" id="map"></div>';
         let myMap;
@@ -387,6 +470,34 @@ export class BlockRedactor {
                 question.text;
             question.movements[0].place.coords = document.getElementById('moveCoords').value;
             question.movements[0].place.radius = document.getElementById('moveRadius').value;
+            modal.hide();
+        };
+    }
+
+    static createStartRedactor(form, question, modal) {
+        this.addTextRedactor(form, 'Приветственное сообщение:', question.text);
+        document.getElementById('update').onclick = () => {
+            question.text = document.getElementById('formControlTextarea').value;
+            document.getElementById(question.question_id).getElementsByClassName('card-text')[0].textContent =
+                question.text;
+            Quest.updateEntity('question', question.question_id, JSON.stringify({
+                type: question.type,
+                text: question.text,
+            })).then(() => console.log('success'));
+            modal.hide();
+        };
+    }
+
+    static createFinishRedactor(form, question, modal) {
+        this.addTextRedactor(form, 'Прощальное сообщение:', question.text);
+        document.getElementById('update').onclick = () => {
+            question.text = document.getElementById('formControlTextarea').value;
+            document.getElementById(question.question_id).getElementsByClassName('card-text')[0].textContent =
+                question.text;
+            Quest.updateEntity('question', question.question_id, JSON.stringify({
+                type: question.type,
+                text: question.text,
+            })).then(() => console.log('success'));
             modal.hide();
         };
     }
@@ -466,7 +577,7 @@ export class QuestRedactor{
         };
 
         document.getElementById('update').onclick = () => {
-            Quest.updateQuest(quest.data.quest_id, JSON.stringify({
+            Quest.updateEntity('quest', quest.data.quest_id, JSON.stringify({
                 title: document.getElementById('questTitle').value,
                 description: document.getElementById('questDescription').value,
                 password: document.getElementById('private').checked ? document.getElementById('questPassword').value : '',

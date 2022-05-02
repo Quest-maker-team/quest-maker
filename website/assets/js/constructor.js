@@ -105,7 +105,7 @@ window.onload = () => {
         setInterval(() => {
             for (const question of quest.data.questions) {
                 const blok = document.getElementById(question.question_id);
-                Quest.updateQuestion(blok.id, JSON.stringify({
+                Quest.updateEntity('question', blok.id, JSON.stringify({
                     pos_x: parseInt(blok.style.left),
                     pos_y: parseInt(blok.style.top),
                 }));
@@ -181,7 +181,7 @@ window.onload = () => {
         document.getElementById('addQBtn').onclick = () => {
             const questionInd = createNewBlock('open', 'Новый открытый вопрос', Render.renderQuestion);
             Quest.addQuestion(quest, questionInd).then(data=>{
-                Quest.addAnswer(JSON.stringify({
+                Quest.addEntity('answer_option', JSON.stringify({
                     points: 0.0,
                     text: "Ответ"
                 })).then(rez => {
@@ -201,7 +201,7 @@ window.onload = () => {
         document.getElementById('addQCBtn').onclick = () => {
             const questionInd = createNewBlock('choice', 'Новый вопрос с выбором ответа', Render.renderQuestion);
             Quest.addQuestion(quest, questionInd, true).then(data=>{
-                Quest.addAnswer(JSON.stringify({
+                Quest.addEntity('answer_option', JSON.stringify({
                     points: 0.0,
                     text: "Ответ"
                 })).then(rez => {

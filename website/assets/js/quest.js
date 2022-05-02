@@ -47,24 +47,14 @@ export class Quest {
         })
     }
 
-    static addAnswer(answer) {
-        const url = 'api/answer_option';
-        return Quest.makeRequest('POST', url, answer);
+    static addEntity(type, data) {
+        const url = 'api/' + type;
+        return Quest.makeRequest('POST', url, data);
     }
 
-    static updateQuest(id, questParams){
-        const url = 'api/quest/' + id;
-        return Quest.makeRequest('PUT', url, questParams);
-    }
-
-    static updateAnswer(id, answer) {
-        const url = 'api/answer_option/' + id;
-        return Quest.makeRequest('PUT', url, answer);
-    }
-
-    static updateQuestion(id, question) {
-        const url = 'api/question/' + id;
-        return Quest.makeRequest('PUT', url, question);
+    static updateEntity(type, id, data) {
+        const url = 'api/' + type + '/' + id;
+        return Quest.makeRequest('PUT', url, data);
     }
 
     static connect(type1, type2, id1, id2) {

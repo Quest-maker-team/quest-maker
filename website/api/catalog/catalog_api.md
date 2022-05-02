@@ -55,7 +55,7 @@ All requests return `200 OK` if success else `400 Bad Request` with info about e
   * `sort_by` - sort key. Possible keys: `title`, `rating`. Default key is `id`.
   * `orber_by` - sort order. Possible values: `asc`, `desc` - ascending and descending.
   * `author` - name of author
-  * `tag` - tag for search. To search using multiple tags just repeat this param.
+  * `tags` - tags for search. To search using multiple tags just repeat this param.
   
 * `GET api/catalog/tags` - return list of tags.
    

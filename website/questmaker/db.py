@@ -878,9 +878,5 @@ def get_quests_from_catalog(limit, offset, sort_key, order, author, tags):
     query += f' {order} LIMIT {limit} OFFSET {offset}'
 
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-        try:
-            cursor.execute(query, tuple(params))
-        except:
-            pass
-        print(cursor.query)
+        cursor.execute(query, tuple(params))
         return cursor.fetchall()

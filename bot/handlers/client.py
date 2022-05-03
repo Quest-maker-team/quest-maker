@@ -128,6 +128,8 @@ class QuestPoint:
                 else:
                     question_info = get_question_by_id(points_info[i][2])
                     point = QuestPoint(question_info[0], question_info[2], question_info[1])
+                if "open" == self.type:
+                    points_info[i][0] = points_info[i][0].lower()
                 self.next_points[points_info[i][0]] = (points_info[i][1], point)
         except:
             #delete all the options, because for example, an error when loading the correct answer will
@@ -179,6 +181,8 @@ class QuestPoint:
         :return None if there is no such answer
         :return (None, None) in case of movement failure
         """
+        if self.type == "open":
+            point_name = point_name.lower()
         if self.type == "open" or self.type == "choice":
             name = ''
             if point_name in self.next_points:

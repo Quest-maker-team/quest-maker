@@ -220,7 +220,7 @@ def get_quest(quest_id):
     :return: dictionary with table attrs as keys
     """
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-        cursor.execute('SELECT title, author_id, description, keyword, password, '
+        cursor.execute('SELECT quest_id, title, author_id, description, keyword, password, '
                        'time_open, time_close, lead_time, cover_url, hidden '
                        'FROM quests '
                        'WHERE quest_id = %s', (quest_id,))
@@ -510,7 +510,7 @@ def set_quest(quest):
     """
     with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         if quest.id_in_db is not None:
-            cursor.execute('DELETE FROM quests WHERE quest_id = %s', (quest.id_in_db, ))
+            cursor.execute('DELETE FROM quests WHERE quest_id = %s', (quest.id_in_db,))
         cursor.execute('INSERT INTO quests (title, author_id, description, password, '
                        'time_open, time_close, lead_time, cover_url, hidden) '
                        'VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING quest_id',
@@ -817,7 +817,7 @@ def remove_draft(quest_id):
     Remove draft from db by related quest id
     """
     with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-        cursor.execute('DELETE from drafts WHERE quest_id = %s', (quest_id, ))
+        cursor.execute('DELETE from drafts WHERE quest_id = %s', (quest_id,))
 
 
 def check_uuid(uuid):
@@ -827,3 +827,60 @@ def check_uuid(uuid):
     with get_db().cursor() as cursor:
         cursor.execute('SELECT quest_id FROM quests WHERE keyword = %s', (uuid,))
         return not cursor.fetchone()
+
+
+def get_tags():
+    """
+    Return all tags that contain substring
+    """
+    with get_db().cursor() as cursor:
+        cursor.execute("SELECT tag_name FROM tags")
+        return cursor.fetchall()
+
+
+def get_quest_from_catalog(quest_id):
+    with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+        cursor.execute('SELECT * FROM quests_catalog WHERE quest_id = %s', (quest_id,))
+        return cursor.fetchone()
+
+
+def get_quests_from_catalog(limit, offset, sort_key, order, author, tags):
+    """
+    Select quests for catalog
+    """
+    query = 'SELECT * FROM quests_catalog '
+    params = []
+    if tags:
+        tags_str = ', '.join("'" + tag + "'" for tag in tags)
+        query += 'WHERE (SELECT COUNT(tag_id) FROM quests ' \
+                 'JOIN quest_tags USING (quest_id) JOIN tags USING (tag_id) ' \
+                 f'WHERE tag_name IN ({tags_str}) ' \
+                 'GROUP BY quest_id) ' \
+                 ' = %s '
+        params.append(len(tags))
+        if author:
+            query += ' AND author = %s '
+            params.append(author)
+    else:
+        if author:
+            query += ' WHERE author = %s '
+            params.append(author)
+
+    if sort_key == 'id':
+        query += f' ORDER BY quest_id '
+    elif sort_key == 'rating':
+        query += f' ORDER BY rating '
+    elif sort_key == 'title':
+        query += f' ORDER BY title '
+    else:
+        return
+
+    query += f' {order} LIMIT {limit} OFFSET {offset}'
+
+    with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+        try:
+            cursor.execute(query, tuple(params))
+        except:
+            pass
+        print(cursor.query)
+        return cursor.fetchall()

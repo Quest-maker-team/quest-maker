@@ -18,11 +18,11 @@ All requests return `200 OK` if success else `400 Bad Request` with info about e
       ],
       "keyword": "12345678",
       "rating": {
-        "one_star_amount": 0,
-        "two_star_amount": 0,
-        "three_star_amount": 0,
-        "four_star_amount": 0,
-        "five_star_amount": 1000
+        "one": 0,
+        "two": 0,
+        "three_": 0,
+        "four": 0,
+        "five": 1000
       },
       "tags": ["excursion"],
       "time_open": "",
@@ -51,13 +51,10 @@ All requests return `200 OK` if success else `400 Bad Request` with info about e
     ```
    
     Parameters:
-  * `limit` and `offset` - limit of number of quests and offset from start. Default values `inf` and `0`.
+  * `limit` and `offset` - limit of number of quests and offset from start. Default values `100` and `0`. Max limit is `500`.
   * `sort_by` - sort key. Possible keys: `title`, `rating`. Default key is `id`.
   * `orber_by` - sort order. Possible values: `asc`, `desc` - ascending and descending.
   * `author` - name of author
   * `tags` - tags for search. To search using multiple tags just repeat this param.
   
 * `GET api/catalog/tags` - return list of tags.
-   
-    Parameters:
-  * `like` tag substring

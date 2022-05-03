@@ -631,7 +631,7 @@ async def point_proc(message: types.Message, state: FSMContext, latitude, longit
             await send_files(message, msg, files, keyboard)
         elif data['quest'].cur_point.type == "movement":
             await send_files(message, msg, files, create_movement_keyboard(QuestPoint.no_geo_msg))
-            movement_info = get_movement(id)
+            movement_info = get_movement(data['quest'].cur_point.id)
             coords = re.findall("\d+.\d+", movement_info[1])
             await bot.send_location(message.chat.id, coords[0], coords[1])
         else:

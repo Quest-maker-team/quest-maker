@@ -338,6 +338,7 @@ class QuestStates(StatesGroup):
     naming = State()
     loading = State()
     session = State()
+    rating = State()
 
 
 async def cmd_start(message: types.Message):

@@ -1,4 +1,5 @@
 from configparser import ConfigParser
+from nis import match
 import psycopg2
 from psycopg2.extras import DictCursor
 import datetime
@@ -277,3 +278,30 @@ def get_history(quest_id, telegram_id):
                           'WHERE quest_id= %s AND telegram_id= %s', (quest_id, telegram_id, ))
     except:
         return None
+
+
+def update_rating(quest_id, rating):
+    """
+    Update rating
+    :param quest_id: quest id
+    :param rating: rating - 1, 2, 3, 4 or 5
+    :return: true if success, false - otherwise
+    """
+    query = "UPDATE ratings SET {0} = {0} + 1 WHERE quest_id = {1}"
+    table_column_names = {
+        1: "one_star_amount",
+        2: "two_star_amount",
+        3: "three_star_amount",
+        4: "four_star_amount",
+        5: "five_star_amount",
+    }
+    if rating not in table_column_names:
+        return False
+    try:
+        with Database().connect() as conn:
+            with conn.cursor(cursor_factory=DictCursor) as cursor:
+                cursor.execute(query.format(table_column_names[rating], quest_id))
+                conn.commit()
+        return True
+    except:
+        return False

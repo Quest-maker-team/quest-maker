@@ -26,7 +26,7 @@ def get_rating(star_string):
     for ch in star_string:
         if star_ch != ch:
             return None
-    len = len(star_string)
-    if len == 0 or len > 5:
+    length = len(star_string)
+    if length == 0 or length > 5:
         return None
-    return len
+    return length

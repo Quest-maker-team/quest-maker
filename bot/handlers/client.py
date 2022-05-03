@@ -691,6 +691,12 @@ async def rate_quest(message: types.Message, state: FSMContext):
     :param message: message from user
     :param state: state machine context
     """
+    rating = get_rating(message.text)
+    if rating is None:
+        await message.reply('Неправильная оценка. Воспользуйтесь клавиатурой.')
+    async with state.proxy() as data:
+        update_rating(data['quest'].cur_point.id, rating)
+        await message.answer('Спасибо за отзыв.', reply_markup=create_opening_menu_keyboard())
     await state.finish()
 
 

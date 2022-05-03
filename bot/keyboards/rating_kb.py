@@ -9,9 +9,8 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 star_ch = '★'
 
 
-def create_rating_keyboard(answers):
+def create_rating_keyboard():
     """Function to create keyboard.
-    :param answers: list of strings for answers.
     :return keyboard markup
     """
     kb_client = ReplyKeyboardMarkup(resize_keyboard=True)

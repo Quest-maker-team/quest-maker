@@ -482,8 +482,8 @@ async def name_quest(message: types.Message, state: FSMContext):
                 data['quest'].save(message.from_user.id, True)
                 await message.answer('Квест "' + data['quest'].name + '" закончен. '
                                      'Количество баллов: ' + str(data['quest'].score) + ".",
-                                     reply_markup=create_opening_menu_keyboard())
-                await state.finish()
+                                     reply_markup=create_rating_keyboard())
+                await QuestStates.rating.set()
     else:
         await message.reply('Квест с идентификатором "' + message.text + '" не найден',
             reply_markup=create_opening_menu_keyboard())
@@ -514,8 +514,8 @@ async def load_quest(message: types.Message, state: FSMContext):
                 data['quest'].save(message.from_user.id, True)
                 await message.answer('Квест "' + data['quest'].name + '" закончен. '
                                      'Количество баллов: ' + str(data['quest'].score) + ".",
-                                     reply_markup=create_opening_menu_keyboard())
-                await state.finish()
+                                     reply_markup=create_rating_keyboard())
+                await QuestStates.rating.set()
         else:
             if data['quest'].load(message.from_user.id):
                 await QuestStates.next()
@@ -540,10 +540,11 @@ async def cancel_handler(message: types.Message, state: FSMContext):
             data['quest'].save(message.from_user.id, False)
             await message.answer('Квест "' + data['quest'].name + '" закончен. '
                                  'Количество баллов: ' + str(data['quest'].score) + ".",
-                                 reply_markup=ReplyKeyboardRemove())
+                                 reply_markup=create_rating_keyboard())
+            await QuestStates.rating.set()
         else:
             await message.answer('Выберите квест командой /quest.', reply_markup=create_opening_menu_keyboard())
-        await state.finish()
+            await state.finish()
 
 
 async def tip_handler(message: types.Message, state: FSMContext):
@@ -600,10 +601,10 @@ async def skip_handler(message: types.Message, state: FSMContext):
                         await send_files(message, msg, files, ReplyKeyboardRemove())
                     if quest_ends == True:
                         data['quest'].save(message.from_user.id, True)
-                        await state.finish()
                         await message.answer('Квест "' + data['quest'].name + '" закончен. '
                                              'Количество баллов: ' + str(data['quest'].score) + ".",
-                                              reply_markup=create_opening_menu_keyboard())
+                                              reply_markup=create_rating_keyboard())
+                        await QuestStates.rating.set()
                 else:
                     await message.answer('Точка не поддерживает пропуск.')
             else:
@@ -642,10 +643,10 @@ async def point_proc(message: types.Message, state: FSMContext, latitude, longit
                 data['quest'].save(message.from_user.id, False)
             else:
                 data['quest'].save(message.from_user.id, True)
-            await state.finish()
             await message.answer('Квест "' + data['quest'].name + '" закончен. '
                                  'Количество баллов: ' + str(data['quest'].score) + ".",
-                                  reply_markup=create_opening_menu_keyboard())
+                                  reply_markup=create_rating_keyboard())
+            await QuestStates.rating.set()
 
 
 async def quest_proc(message: types.Message, state: FSMContext):
@@ -684,6 +685,15 @@ async def cmd_help(message: types.Message, state: FSMContext):
         else:
             await message.answer('Выберите квест.')
 
+
+async def rate_quest(message: types.Message, state: FSMContext):
+    """Rating quest state handler.
+    :param message: message from user
+    :param state: state machine context
+    """
+    await state.finish()
+
+
 def register_client_handlers(dp: Dispatcher):
     """Register message handlers.
     :param dp: dispatcher
@@ -698,5 +708,6 @@ def register_client_handlers(dp: Dispatcher):
     dp.register_message_handler(name_quest, state=QuestStates.naming)
     dp.register_message_handler(load_quest, state=QuestStates.loading)
     dp.register_message_handler(quest_proc, state=QuestStates.session)
+    dp.register_message_handler(rate_quest, state=QuestStates.rating)
     dp.register_message_handler(warning)
     dp.register_message_handler(handle_location, content_types=['location'], state=QuestStates.session)

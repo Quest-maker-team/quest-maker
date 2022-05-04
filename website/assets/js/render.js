@@ -99,7 +99,7 @@ export class Render {
     static renderAnswer(answer, question, instance, sourceEndpoint, special) {
         const ansTable = document.getElementById('anstab' + question.question_id);
         const tableElement = document.createElement('li');
-        tableElement.className = 'list-group-item';
+        tableElement.className = 'list-group-item text-truncate';
         tableElement.id = 'answer_option' + answer.answer_option_id;
 
         if (special === true && answer.text === '') {

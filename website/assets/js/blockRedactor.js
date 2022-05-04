@@ -6,13 +6,19 @@ export class BlockRedactor {
     static addTextRedactor(form, label, text) {
         form.insertAdjacentHTML('beforeend',
             '<label for="formControlTextarea" class="form-label mt-2">' + label + '</label>' +
-            '<textarea class="form-control mt-0" id="formControlTextarea" rows="3">' +
+            '<textarea class="form-control mt-0" id="formControlTextarea" rows="3" ' +
+                    'onclick="document.getElementById(\'formControlTextarea\').className = ' +
+                    '\'form-control mt-0\'; return false;">' +
                 text +
-            '</textarea>'
+            '</textarea>' +
+            '<div class="invalid-feedback">' +
+                'Не используйте пустую строку в качестве вопроса. ' +
+            '</div>'
         );
     }
 
-    static addAnswerBox(elementId, state, id, text, points) {
+    static addAnswerBox(elementId, isNew, id, text, points) {
+        const state = isNew ? 'new' : 'old';
         document.getElementById(elementId).insertAdjacentHTML('beforeend',
             '<div class="row pb-1" id="answer_' + state + '_' + id + '">' +
                 '<div class="col-8">' +
@@ -57,7 +63,7 @@ export class BlockRedactor {
     static addSpecialBox(elementId, points, id, text, hide) {
         document.getElementById(elementId).insertAdjacentHTML('afterend',
             '<div class="row pb-1" id="' + id + '"' + (hide ? ' hidden' : '') + '>' +
-                '<div class="col-8">'+
+                '<div class="col-8">' +
                     '<input type="text" class="form-control" placeholder="' + text + '" readonly>' +
                 '</div>' +
                 '<div class="col-3">' +
@@ -71,14 +77,19 @@ export class BlockRedactor {
         );
     }
 
-    static addHintBox(elementId, state, id, text, fine) {
+    static addHintBox(elementId, isNew, id, text, fine) {
+        const state = isNew ? 'new' : 'old';
         document.getElementById(elementId).insertAdjacentHTML('beforeend',
             '<div class="row pb-1" id="hint_' + state + '_' + id + '">' +
                 '<div class="col-8">' +
                     '<textarea class="form-control" name="hintText_' + state + '" id="hintText_' + state + '_' +
-                            id + '" rows="1" placeholder="Текст подсказки">' +
+                            id + '" rows="1" placeholder="Текст подсказки" onclick="document.getElementById(' +
+                            '\'hintText_' + state + '_' + id + '\').className = \'form-control\'; return false;">' +
                         text +
                     '</textarea>' +
+                    '<div class="invalid-feedback">' +
+                        'Не используйте пустую строку в качестве подсказки. ' +
+                    '</div>' +
                 '</div>' +
                 '<div class="col-3">' +
                     '<div class="input-group">' +
@@ -120,15 +131,13 @@ export class BlockRedactor {
                 document.getElementById('skip').checked = true;
                 skipActive = true;
                 skipPoints = answer.points;
-                continue;
-            }
-            if (answer.text === '') {
+            } else if (answer.text === '') {
                 document.getElementById('wrong').checked = true;
                 wrongActive = true;
                 wrongPoints = answer.points;
-                continue;
+            } else {
+                BlockRedactor.addAnswerBox('QAnswers', false, answer.answer_option_id, answer.text, answer.points);
             }
-            BlockRedactor.addAnswerBox('QAnswers', 'old', answer.answer_option_id, answer.text, answer.points);
         }
         BlockRedactor.addSpecialBox('skipChbx', skipPoints, 'skipbx', 'skip', !skipActive);
         BlockRedactor.addSpecialBox('wrongChbx', wrongPoints, 'wrongbx', 'Любой другой ответ', !wrongActive);
@@ -136,34 +145,33 @@ export class BlockRedactor {
 
     static loadHints(question, elementId) {
         for (const hint of question.hints) {
-            BlockRedactor.addHintBox(elementId, 'old', hint.hint_id, hint.hint_text, hint.fine);
+            BlockRedactor.addHintBox(elementId, false, hint.hint_id, hint.hint_text, hint.fine);
         }
     }
 
     static updateAnswers(question, instance, sourceEndpoint) {
         const idToDel = [];
         for (const answer of question.answer_options) {
-            if (answer.text === '' || answer.text === 'skip') {
-                continue;
-            }
-            const elem = document.getElementById('answer_old_' + answer.answer_option_id);
-            if (elem === null) {
-                const ans = document.getElementById('answer_option' + answer.answer_option_id);
-                Render.deleteElemEndpoint(ans, instance);
-                ans.remove();
-                Quest.deleteEntity('answer_option', answer.answer_option_id);
-                idToDel.push(answer.answer_option_id);
-            } else {
-                answer.text = document.getElementById('answerText_old_' + answer.answer_option_id).value;
-                answer.points = document.getElementById('answerPoints_old_' + answer.answer_option_id).value;
-                document.getElementById('answer_option' + answer.answer_option_id).innerText = answer.text;
-                Quest.updateEntity('answer_option', answer.answer_option_id, JSON.stringify({
-                    points: parseFloat(answer.points),
-                    text: answer.text,
-                }));
+            if (answer.text !== '' && answer.text !== 'skip') {
+                const elem = document.getElementById('answer_old_' + answer.answer_option_id);
+                if (elem === null) {
+                    idToDel.push(answer.answer_option_id);
+                } else {
+                    answer.text = document.getElementById('answerText_old_' + answer.answer_option_id).value;
+                    answer.points = document.getElementById('answerPoints_old_' + answer.answer_option_id).value;
+                    document.getElementById('answer_option' + answer.answer_option_id).innerText = answer.text;
+                    Quest.updateEntity('answer_option', answer.answer_option_id, JSON.stringify({
+                        points: parseFloat(answer.points),
+                        text: answer.text,
+                    }));
+                }
             }
         }
         for (const id of idToDel) {
+            const ans = document.getElementById('answer_option' + id);
+            Render.deleteElemEndpoint(ans, instance);
+            ans.remove();
+            Quest.deleteEntity('answer_option', id);
             question.answer_options.splice(question.answer_options.findIndex((answer) =>
                 answer.answer_option_id == id), 1);
         }
@@ -196,18 +204,13 @@ export class BlockRedactor {
                 points: parseFloat(answer.points),
                 text: answer.text,
             })).then((response) => console.log(response));
-            return;
-        }
-        if (specialId === -1 && !document.getElementById(checkboxId).checked) {
-            return;
-        }
-        if (specialId !== -1) {
+        } else if (specialId !== -1 && !document.getElementById(checkboxId).checked) {
             const ans = document.getElementById('answer_option' + question.answer_options[specialId].answer_option_id);
             Render.deleteElemEndpoint(ans, instance);
             ans.remove();
             Quest.deleteEntity('answer_option', question.answer_options[specialId].answer_option_id);
             question.answer_options.splice(specialId, 1);
-        } else {
+        } else if (specialId === -1 && document.getElementById(checkboxId).checked) {
             Quest.addEntity('answer_option', JSON.stringify({
                 points: parseFloat(document.getElementById('answerPoints' + id).value),
                 text: text,
@@ -229,7 +232,6 @@ export class BlockRedactor {
         for (const hint of question.hints) {
             const elem = document.getElementById('hint_old_' + hint.hint_id);
             if (elem === null) {
-                Quest.deleteEntity('hint', hint.hint_id);
                 idToDel.push(hint.hint_id);
             } else {
                 hint.hint_text = document.getElementById('hintText_old_' + hint.hint_id).value;
@@ -241,6 +243,7 @@ export class BlockRedactor {
             }
         }
         for (const id of idToDel) {
+            Quest.deleteEntity('hint', id);
             question.hints.splice(question.hints.findIndex((hint) =>
                 hint.hint_id == id), 1);
         }
@@ -264,24 +267,15 @@ export class BlockRedactor {
     }
 
     static validateAnswers() {
-        const oldAns = document.getElementsByName('answerText_old');
-        const newAns = document.getElementsByName('answerText_new');
+        const answers = document.querySelectorAll('input[name="answerText_old"], input[name="answerText_new"]');
 
-        if (oldAns.length === 0 && newAns.length === 0) {
+        if (answers.length === 0) {
             document.getElementById('ansAlert').hidden = false;
             return false;
         }
 
         let valid = true;
-        for (const ans of oldAns) {
-            if (ans.value === 'skip' || ans.value === '') {
-                ans.className = 'form-control is-invalid';
-                valid = false;
-            } else {
-                ans.className = 'form-control';
-            }
-        }
-        for (const ans of newAns) {
+        for (const ans of answers) {
             if (ans.value === 'skip' || ans.value === '') {
                 ans.className = 'form-control is-invalid';
                 valid = false;
@@ -291,6 +285,34 @@ export class BlockRedactor {
         }
 
         return valid;
+    }
+
+    static validateHints() {
+        const hints = document.querySelectorAll('textarea[name="hintText_old"], textarea[name="hintText_new"]');
+        let valid = true;
+
+        for (const hint of hints) {
+            if (hint.value === '') {
+                hint.className = 'form-control is-invalid';
+                valid = false;
+            } else {
+                hint.className = 'form-control';
+            }
+        }
+
+        return valid;
+    }
+
+    static validateQuestion() {
+        const question = document.getElementById('formControlTextarea');
+        
+        if (question.value === ''){
+            question.className = 'form-control mt-0 is-invalid';
+            return false;
+        } else {
+            question.className = 'form-control mt-0';
+            return true;
+        }
     }
 
     static updateQuestion(question, instance, sourceEndpoint) {
@@ -369,36 +391,36 @@ export class BlockRedactor {
             '</div>'
         );
 
+        BlockRedactor.loadAnswers(question, instance);
+        BlockRedactor.loadHints(question, 'QHints');
+
         document.getElementById('skip').onchange = () => {
             document.getElementById('skipbx').hidden = !document.getElementById('skipbx').hidden;
         };
         document.getElementById('wrong').onchange = () => {
             document.getElementById('wrongbx').hidden = !document.getElementById('wrongbx').hidden;
         };
-
-        BlockRedactor.loadAnswers(question, instance);
-        BlockRedactor.loadHints(question, 'QHints');
-
         let ansId = 0;
         document.getElementById('addAnswer').onclick = () => {
-            BlockRedactor.addAnswerBox('QAnswers', 'new', ansId, '', 0);
+            BlockRedactor.addAnswerBox('QAnswers', true, ansId, '', 0);
             document.getElementById('ansAlert').hidden = true;
             ansId += 1;
         };
         let hintId = 0;
         document.getElementById('addHint').onclick = () => {
-            BlockRedactor.addHintBox('QHints', 'new', hintId, '', 0);
+            BlockRedactor.addHintBox('QHints', true, hintId, '', 0);
             hintId += 1;
         };
         document.getElementById('update').onclick = () => {
-            if (!BlockRedactor.validateAnswers()) {
+            if (!(BlockRedactor.validateQuestion() && BlockRedactor.validateAnswers() &&
+                    BlockRedactor.validateHints())) {
                 return false;
+            } else {
+                BlockRedactor.updateQuestion(question, instance, sourceEndpoint);
+
+                Render.updateAnswersEndpoints(question, instance);
+                modal.hide();
             }
-
-            BlockRedactor.updateQuestion(question, instance, sourceEndpoint);
-
-            Render.updateAnswersEndpoints(question, instance);
-            modal.hide();
         };
     }
 
@@ -488,13 +510,17 @@ export class BlockRedactor {
             id += 1;
         };
         document.getElementById('update').onclick = () => {
-            BlockRedactor.updateHints(question);
-            question.text = document.getElementById('formControlTextarea').value;
-            document.getElementById(question.question_id).getElementsByClassName('card-text')[0].textContent =
-                question.text;
-            question.movements[0].place.coords = document.getElementById('moveCoords').value;
-            question.movements[0].place.radius = document.getElementById('moveRadius').value;
-            modal.hide();
+            if (!(BlockRedactor.validateQuestion() && BlockRedactor.validateHints())) {
+                return false;
+            } else {
+                BlockRedactor.updateHints(question);
+                question.text = document.getElementById('formControlTextarea').value;
+                document.getElementById(question.question_id).getElementsByClassName('card-text')[0].textContent =
+                    question.text;
+                question.movements[0].place.coords = document.getElementById('moveCoords').value;
+                question.movements[0].place.radius = document.getElementById('moveRadius').value;
+                modal.hide();
+            }
         };
     }
 

@@ -128,6 +128,8 @@ class QuestPoint:
                 else:
                     question_info = get_question_by_id(points_info[i][2])
                     point = QuestPoint(question_info[0], question_info[2], question_info[1])
+                if "open" == self.type:
+                    points_info[i][0] = points_info[i][0].lower()
                 self.next_points[points_info[i][0]] = (points_info[i][1], point)
         except:
             #delete all the options, because for example, an error when loading the correct answer will
@@ -179,6 +181,8 @@ class QuestPoint:
         :return None if there is no such answer
         :return (None, None) in case of movement failure
         """
+        if self.type == "open":
+            point_name = point_name.lower()
         if self.type == "open" or self.type == "choice":
             name = ''
             if point_name in self.next_points:
@@ -338,6 +342,7 @@ class QuestStates(StatesGroup):
     naming = State()
     loading = State()
     session = State()
+    rating = State()
 
 
 async def cmd_start(message: types.Message):
@@ -481,8 +486,8 @@ async def name_quest(message: types.Message, state: FSMContext):
                 data['quest'].save(message.from_user.id, True)
                 await message.answer('Квест "' + data['quest'].name + '" закончен. '
                                      'Количество баллов: ' + str(data['quest'].score) + ".",
-                                     reply_markup=create_opening_menu_keyboard())
-                await state.finish()
+                                     reply_markup=create_rating_keyboard())
+                await QuestStates.rating.set()
     else:
         await message.reply('Квест с идентификатором "' + message.text + '" не найден',
             reply_markup=create_opening_menu_keyboard())
@@ -513,8 +518,8 @@ async def load_quest(message: types.Message, state: FSMContext):
                 data['quest'].save(message.from_user.id, True)
                 await message.answer('Квест "' + data['quest'].name + '" закончен. '
                                      'Количество баллов: ' + str(data['quest'].score) + ".",
-                                     reply_markup=create_opening_menu_keyboard())
-                await state.finish()
+                                     reply_markup=create_rating_keyboard())
+                await QuestStates.rating.set()
         else:
             if data['quest'].load(message.from_user.id):
                 await QuestStates.next()
@@ -539,10 +544,11 @@ async def cancel_handler(message: types.Message, state: FSMContext):
             data['quest'].save(message.from_user.id, False)
             await message.answer('Квест "' + data['quest'].name + '" закончен. '
                                  'Количество баллов: ' + str(data['quest'].score) + ".",
-                                 reply_markup=ReplyKeyboardRemove())
+                                 reply_markup=create_rating_keyboard())
+            await QuestStates.rating.set()
         else:
             await message.answer('Выберите квест командой /quest.', reply_markup=create_opening_menu_keyboard())
-        await state.finish()
+            await state.finish()
 
 
 async def tip_handler(message: types.Message, state: FSMContext):
@@ -599,10 +605,10 @@ async def skip_handler(message: types.Message, state: FSMContext):
                         await send_files(message, msg, files, ReplyKeyboardRemove())
                     if quest_ends == True:
                         data['quest'].save(message.from_user.id, True)
-                        await state.finish()
                         await message.answer('Квест "' + data['quest'].name + '" закончен. '
                                              'Количество баллов: ' + str(data['quest'].score) + ".",
-                                              reply_markup=create_opening_menu_keyboard())
+                                              reply_markup=create_rating_keyboard())
+                        await QuestStates.rating.set()
                 else:
                     await message.answer('Точка не поддерживает пропуск.')
             else:
@@ -631,7 +637,7 @@ async def point_proc(message: types.Message, state: FSMContext, latitude, longit
             await send_files(message, msg, files, keyboard)
         elif data['quest'].cur_point.type == "movement":
             await send_files(message, msg, files, create_movement_keyboard(QuestPoint.no_geo_msg))
-            movement_info = get_movement(id)
+            movement_info = get_movement(data['quest'].cur_point.id)
             coords = re.findall("\d+.\d+", movement_info[1])
             await bot.send_location(message.chat.id, coords[0], coords[1])
         else:
@@ -641,10 +647,10 @@ async def point_proc(message: types.Message, state: FSMContext, latitude, longit
                 data['quest'].save(message.from_user.id, False)
             else:
                 data['quest'].save(message.from_user.id, True)
-            await state.finish()
             await message.answer('Квест "' + data['quest'].name + '" закончен. '
                                  'Количество баллов: ' + str(data['quest'].score) + ".",
-                                  reply_markup=create_opening_menu_keyboard())
+                                  reply_markup=create_rating_keyboard())
+            await QuestStates.rating.set()
 
 
 async def quest_proc(message: types.Message, state: FSMContext):
@@ -683,6 +689,21 @@ async def cmd_help(message: types.Message, state: FSMContext):
         else:
             await message.answer('Выберите квест.')
 
+
+async def rate_quest(message: types.Message, state: FSMContext):
+    """Rating quest state handler.
+    :param message: message from user
+    :param state: state machine context
+    """
+    rating = get_rating(message.text)
+    if rating is None:
+        await message.reply('Неправильная оценка. Воспользуйтесь клавиатурой.')
+    async with state.proxy() as data:
+        update_rating(data['quest'].cur_point.id, rating)
+        await message.answer('Спасибо за отзыв.', reply_markup=create_opening_menu_keyboard())
+    await state.finish()
+
+
 def register_client_handlers(dp: Dispatcher):
     """Register message handlers.
     :param dp: dispatcher
@@ -697,5 +718,6 @@ def register_client_handlers(dp: Dispatcher):
     dp.register_message_handler(name_quest, state=QuestStates.naming)
     dp.register_message_handler(load_quest, state=QuestStates.loading)
     dp.register_message_handler(quest_proc, state=QuestStates.session)
+    dp.register_message_handler(rate_quest, state=QuestStates.rating)
     dp.register_message_handler(warning)
     dp.register_message_handler(handle_location, content_types=['location'], state=QuestStates.session)

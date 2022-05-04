@@ -79,7 +79,7 @@ export class Quest {
 
     static addNewPlace(quest, place, questionInd) {
         const url = 'api/constructor/place';
-        return Quest.makeRequest('POST', url, place).then((result)=>{
+        return Quest.makeRequest('POST', url, place).then((result) => {
             console.log('success add new place '+ result);
             const id = JSON.parse(result).place_id;
             quest.data.questions[questionInd].movements[0].place.place_id = id;
@@ -109,10 +109,10 @@ export class Quest {
     static addMovement(quest, moveInd) {
         return Quest.makeRequest('POST', 'api/constructor/movement', JSON.stringify({}))
             .then((result) => {
-                console.log('success add new movement '+ result);
+                console.log('success add new movement ' + result);
                 const id = JSON.parse(result).movement_id;
                 quest.data.questions[moveInd].movements[0].movement_id = id;
-                console.log('id = '+ id);
+                console.log('id = ' + id);
                 return id;
             }, (error) => {
                 console.log('failed add new movement');

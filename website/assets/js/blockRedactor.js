@@ -445,6 +445,7 @@ export class BlockRedactor {
         myMap.geoObjects.get(myMap.geoObjects.indexOf(placeMark)).balloon.open();
     }
     static createMovementRedactor(form, question, modal, quest) {
+        console.log(quest);
         BlockRedactor.addTextRedactor(form, 'Перемещение', question.text);
         form.innerHTML+=
         '<div class="z-depth-1-half map-container" style="height: 500px" id="map"></div>';
@@ -511,7 +512,6 @@ export class BlockRedactor {
             modal.hide();
         };
     }
-
     static showRedactor(question, instance, sourceEndpoint, quest) {
         const modal = new bootstrap.Modal(document.getElementById('redactor'));
         const form = document.getElementById('redactorForm');

@@ -316,7 +316,8 @@ export class BlockRedactor {
             '<hr>' +
             '<div class="col-12 mt-0">' +
                 '<button type="button" class="accordion-button collapsed p-0" data-bs-toggle="collapse" ' +
-                        'data-bs-target="#QHints">' +
+                        'data-bs-target="#QHints" style="box-shadow: none !important; ' +
+                        'background-color: white !important; color: black !important">' +
                     '<label for="formControlTextarea" class="form-label mt-0">Подсказки:</label>' +
                 '</button>' +
             '</div>'
@@ -326,7 +327,8 @@ export class BlockRedactor {
             '<hr class="mt-2">' +
             '<div class="col-12 mt-0">' +
                 '<button type="button" class="accordion-button p-0" data-bs-toggle="collapse" ' +
-                        'data-bs-target="#QAnswers">' +
+                        'data-bs-target="#QAnswers" style="box-shadow: none !important; ' +
+                        'background-color: white !important; color: black !important">' +
                     '<label for="formControlTextarea" class="form-label mt-0">Ответы:</label>' +
                 '</button>' +
             '</div>'
@@ -425,7 +427,8 @@ export class BlockRedactor {
             '<hr>' +
             '<div class="col-12 mt-0">' +
                 '<button type="button" class="accordion-button collapsed p-0" data-bs-toggle="collapse" ' +
-                        'data-bs-target="#MHints">' +
+                        'data-bs-target="#MHints" style="box-shadow: none !important; ' +
+                        'background-color: white !important; color: black !important">' +
                     '<label for="formControlTextarea" class="form-label mt-0">Подсказки:</label>' +
                 '</button>' +
             '</div>');

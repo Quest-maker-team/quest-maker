@@ -180,7 +180,7 @@ VALUES
 
 DROP VIEW IF EXISTS quests_catalog;
 CREATE VIEW quests_catalog AS
-        SELECT quest_id, title, author, description, keyword,
+        SELECT quest_id, title, name AS author, description, keyword,
         1 * ratings.one_star_amount + 2 * ratings.two_star_amount +
         3 * ratings.three_star_amount + 4 * ratings.four_star_amount + 5 * ratings.five_star_amount AS rating,
         time_open, time_close, cover_url

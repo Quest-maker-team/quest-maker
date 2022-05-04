@@ -33,13 +33,13 @@ export class Quest {
     }
 
     static loadQuest(id) {
-        return Quest.makeRequest('GET', 'api/quest/' + id).then(data => {
+        return Quest.makeRequest('GET', 'api/constructor/quest/' + id).then(data => {
             return new Quest(JSON.parse(data));
         });
     }
 
     static makeNewQuest() {
-        return Quest.makeRequest('POST', 'api/quest', JSON.stringify({
+        return Quest.makeRequest('POST', 'api/constructor/quest', JSON.stringify({
             title: '',
             hidden: true,
         })).then(response => {
@@ -48,47 +48,47 @@ export class Quest {
     }
 
     static addAnswer(answer) {
-        const url = 'api/answer_option';
+        const url = 'api/constructor/answer_option';
         return Quest.makeRequest('POST', url, answer);
     }
 
     static updateQuest(id, questParams){
-        const url = 'api/quest/' + id;
+        const url = 'api/constructor/quest/' + id;
         return Quest.makeRequest('PUT', url, questParams);
     }
 
     static updateAnswer(id, answer) {
-        const url = 'api/answer_option/' + id;
+        const url = 'api/constructor/answer_option/' + id;
         return Quest.makeRequest('PUT', url, answer);
     }
 
     static updateQuestion(id, question) {
-        const url = 'api/question/' + id;
+        const url = 'api/constructor/question/' + id;
         return Quest.makeRequest('PUT', url, question);
     }
 
     static connect(type1, type2, id1, id2) {
-        const url = 'api/' + type1 + '/' + id1 + '/' + type2 + '/' + id2;
+        const url = 'api/constructor/' + type1 + '/' + id1 + '/' + type2 + '/' + id2;
         return Quest.makeRequest('PUT', url);
     }
 
     static disconnect(type1, type2, id1) {
-        const url = 'api/' + type1 + '/' + id1 + '/' + type2;
+        const url = 'api/constructor/' + type1 + '/' + id1 + '/' + type2;
         return Quest.makeRequest('DELETE', url);
     }
 
     static deleteEntity(type, id) {
-        const url = 'api/' + type + '/' + id;
+        const url = 'api/constructor/' + type + '/' + id;
         return Quest.makeRequest('DELETE', url);
     }
 
     static save(draft) {
-        const url = 'api/save/' + draft;
+        const url = 'api/constructor/save/' + draft;
         return Quest.makePostRequest(url);
     }
 
     static addNewPlace(quest, place, questionInd){
-        const url = 'api/place';
+        const url = 'api/constructor/place';
         return Quest.makeRequest('POST', url, place).then(result=>{
             console.log('success add new place '+ result);
             const id = JSON.parse(result).place_id;
@@ -99,7 +99,7 @@ export class Quest {
     }
 
     static addQuestion(quest, questionInd) {
-        return Quest.makeRequest('POST', 'api/question', JSON.stringify({
+        return Quest.makeRequest('POST', 'api/constructor/question', JSON.stringify({
             type: quest.data.questions[questionInd].type,
             text: " " ,
             pos_x: 0,
@@ -118,7 +118,7 @@ export class Quest {
     }
 
     static addMovement(quest, moveInd) {
-        return Quest.makeRequest('POST', 'api/movement', JSON.stringify({}))
+        return Quest.makeRequest('POST', 'api/constructor/movement', JSON.stringify({}))
         .then(result => {
             console.log('success add new movement '+ result);
             const id = JSON.parse(result).movement_id;

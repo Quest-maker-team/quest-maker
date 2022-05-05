@@ -33,7 +33,7 @@ export class Quest {
     }
 
     static loadQuest(id) {
-        return Quest.makeRequest('GET', 'api/constructor/quest/' + id).then(data => {
+        return Quest.makeRequest('GET', 'api/constructor/quest/' + id).then((data) => {
             return new Quest(JSON.parse(data));
         });
     }
@@ -42,29 +42,19 @@ export class Quest {
         return Quest.makeRequest('POST', 'api/constructor/quest', JSON.stringify({
             title: '',
             hidden: true,
-        })).then(response => {
+        })).then((response) => {
             return JSON.parse(response);
-        })
+        });
     }
 
-    static addAnswer(answer) {
-        const url = 'api/constructor/answer_option';
-        return Quest.makeRequest('POST', url, answer);
+    static addEntity(type, data) {
+        const url = 'api/constructor/' + type;
+        return Quest.makeRequest('POST', url, data);
     }
 
-    static updateQuest(id, questParams){
-        const url = 'api/constructor/quest/' + id;
-        return Quest.makeRequest('PUT', url, questParams);
-    }
-
-    static updateAnswer(id, answer) {
-        const url = 'api/constructor/answer_option/' + id;
-        return Quest.makeRequest('PUT', url, answer);
-    }
-
-    static updateQuestion(id, question) {
-        const url = 'api/constructor/question/' + id;
-        return Quest.makeRequest('PUT', url, question);
+    static updateEntity(type, id, data) {
+        const url = 'api/constructor/' + type + '/' + id;
+        return Quest.makeRequest('PUT', url, data);
     }
 
     static connect(type1, type2, id1, id2) {
@@ -87,9 +77,9 @@ export class Quest {
         return Quest.makePostRequest(url);
     }
 
-    static addNewPlace(quest, place, questionInd){
+    static addNewPlace(quest, place, questionInd) {
         const url = 'api/constructor/place';
-        return Quest.makeRequest('POST', url, place).then(result=>{
+        return Quest.makeRequest('POST', url, place).then((result) => {
             console.log('success add new place '+ result);
             const id = JSON.parse(result).place_id;
             quest.data.questions[questionInd].movements[0].place.place_id = id;
@@ -101,32 +91,31 @@ export class Quest {
     static addQuestion(quest, questionInd) {
         return Quest.makeRequest('POST', 'api/constructor/question', JSON.stringify({
             type: quest.data.questions[questionInd].type,
-            text: " " ,
+            text: ' ',
             pos_x: 0,
-            pos_y: 0
+            pos_y: 0,
         }))
-        .then(result => {
-            console.log('success add new question '+ result);
-            const id = JSON.parse(result).question_id;
-            quest.data.questions[questionInd].question_id = id;
-            console.log('id = '+ id);
-            return id;
-        }, error => {
-            console.log('failed add new question');
-        });
-    
+            .then((result) => {
+                console.log('success add new question '+ result);
+                const id = JSON.parse(result).question_id;
+                quest.data.questions[questionInd].question_id = id;
+                console.log('id = '+ id);
+                return id;
+            }, (error) => {
+                console.log('failed add new question');
+            });
     }
 
     static addMovement(quest, moveInd) {
         return Quest.makeRequest('POST', 'api/constructor/movement', JSON.stringify({}))
-        .then(result => {
-            console.log('success add new movement '+ result);
-            const id = JSON.parse(result).movement_id;
-            quest.data.questions[moveInd].movements[0].movement_id = id;
-            console.log('id = '+ id);
-            return id;
-        }, error => {
-            console.log('failed add new movement');
-        });
+            .then((result) => {
+                console.log('success add new movement ' + result);
+                const id = JSON.parse(result).movement_id;
+                quest.data.questions[moveInd].movements[0].movement_id = id;
+                console.log('id = ' + id);
+                return id;
+            }, (error) => {
+                console.log('failed add new movement');
+            });
     }
 }

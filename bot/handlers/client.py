@@ -225,13 +225,13 @@ def get_quest_info(quest_id):
     """Get quest info.
     :param quest_id: quest id
     :return start message, first point and title
-    :return ('', None, '') in case of failure
+    :return (None, '', None, '') in case of failure
     """
-    name = get_quest_title(quest_id)
-    start_msg, first_point_info = get_first_question(quest_id)
+    id, name = get_quest_title(quest_id)
+    start_msg, first_point_info = get_first_question(id)
     # here name can be None when, for example, the time of the quest activity came out
     if first_point_info is None or name is None:
-        return ('', None, '')
+        return (None, '', None, '')
 
     first_point = QuestPoint(first_point_info[0], first_point_info[2], first_point_info[1])
 
@@ -243,7 +243,7 @@ def get_quest_info(quest_id):
     if start_msg == '':
         start_msg += 'Доборо пожаловать на квест "' + name + '"'
 
-    return start_msg, first_point, name
+    return id, start_msg, first_point, name
 
 
 class Quest:
@@ -254,10 +254,9 @@ class Quest:
         :param self: instance
         :param quest_id: quest id
         """
-        self.quest_id = quest_id
         self.score = 0
-        self.start_msg, self.cur_point, self.name = get_quest_info(quest_id)
-        self.time_limits = get_quest_time_info(quest_id)
+        self.quest_id, self.start_msg, self.cur_point, self.name = get_quest_info(quest_id)
+        self.time_limits = get_quest_time_info(self.quest_id)
         self.time_start = datetime.datetime.now()
 
 
@@ -448,15 +447,15 @@ async def name_quest(message: types.Message, state: FSMContext):
     :param message: message from user
     :param state: state machine context
     """
-    if activate_quest(message.text):
+    quest_info = get_quest_title(message.text)
+    if quest_info:
         async with state.proxy() as data:
             data['quest'] = Quest(message.text)
             if data['quest'].cur_point is None:
                 await message.answer('Не удалось запустить квест.')
                 await state.finish()
                 return
-            
-            info = get_history(message.text, message.from_user.id)
+            info = get_history(quest_info[0], message.from_user.id)
             if info is None:
                 pass
             elif info[0] or (info[1] is None):
@@ -544,11 +543,10 @@ async def cancel_handler(message: types.Message, state: FSMContext):
             data['quest'].save(message.from_user.id, False)
             await message.answer('Квест "' + data['quest'].name + '" закончен. '
                                  'Количество баллов: ' + str(data['quest'].score) + ".",
-                                 reply_markup=create_rating_keyboard())
-            await QuestStates.rating.set()
+                                 reply_markup=create_opening_menu_keyboard())
         else:
             await message.answer('Выберите квест командой /quest.', reply_markup=create_opening_menu_keyboard())
-            await state.finish()
+    await state.finish()
 
 
 async def tip_handler(message: types.Message, state: FSMContext):

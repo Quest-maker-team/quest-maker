@@ -284,10 +284,15 @@ export class BlockRedactor {
             }
         }
 
+        if (!valid) {
+            document.getElementById('answersAccordion').className = 'accordion-button p-0';
+            document.getElementById('QAnswers').className = 'collapse show mt-2';
+        }
+
         return valid;
     }
 
-    static validateHints() {
+    static validateHints(accordionId, collapseId) {
         const hints = document.querySelectorAll('textarea[name="hintText_old"], textarea[name="hintText_new"]');
         let valid = true;
 
@@ -298,6 +303,11 @@ export class BlockRedactor {
             } else {
                 hint.className = 'form-control';
             }
+        }
+
+        if (!valid) {
+            document.getElementById(accordionId).className = 'accordion-button p-0';
+            document.getElementById(collapseId).className = 'collapse show mt-2';
         }
 
         return valid;
@@ -339,7 +349,8 @@ export class BlockRedactor {
             '<div class="col-12 mt-0">' +
                 '<button type="button" class="accordion-button collapsed p-0" data-bs-toggle="collapse" ' +
                         'data-bs-target="#QHints" style="box-shadow: none !important; ' +
-                        'background-color: white !important; color: black !important">' +
+                        'background-color: white !important; color: black !important" ' +
+                        'id="hintsAccordion">' +
                     '<label for="formControlTextarea" class="form-label mt-0">Подсказки:</label>' +
                 '</button>' +
             '</div>'
@@ -350,7 +361,8 @@ export class BlockRedactor {
             '<div class="col-12 mt-0">' +
                 '<button type="button" class="accordion-button p-0" data-bs-toggle="collapse" ' +
                         'data-bs-target="#QAnswers" style="box-shadow: none !important; ' +
-                        'background-color: white !important; color: black !important">' +
+                        'background-color: white !important; color: black !important" ' +
+                        'id="answersAccordion">' +
                     '<label for="formControlTextarea" class="form-label mt-0">Ответы:</label>' +
                 '</button>' +
             '</div>'
@@ -376,18 +388,6 @@ export class BlockRedactor {
                         'Добавить действие в случае неправильного ответа' +
                     '</label>' +
                 '</div>' +
-                '<div class="row pt-2">' +
-                    '<div class="col-auto pr-1">' +
-                        '<button type="button" class="btn btn-primary" id="addAnswer">' +
-                            'Добавить ответ' +
-                        '</button>' +
-                    '</div>' +
-                    '<div class="col-auto p-0">' +
-                        '<button type="button" class="btn btn-primary" id="addHint">' +
-                            'Добавить подсказку' +
-                        '</button>' +
-                    '</div>' +
-                '</div>' +
             '</div>'
         );
 
@@ -404,16 +404,20 @@ export class BlockRedactor {
         document.getElementById('addAnswer').onclick = () => {
             BlockRedactor.addAnswerBox('QAnswers', true, ansId, '', 0);
             document.getElementById('ansAlert').hidden = true;
+            document.getElementById('answersAccordion').className = 'accordion-button p-0';
+            document.getElementById('QAnswers').className = 'collapse show mt-2';
             ansId += 1;
         };
         let hintId = 0;
         document.getElementById('addHint').onclick = () => {
             BlockRedactor.addHintBox('QHints', true, hintId, '', 0);
+            document.getElementById('hintsAccordion').className = 'accordion-button p-0';
+            document.getElementById('QHints').className = 'collapse show mt-2';
             hintId += 1;
         };
         document.getElementById('update').onclick = () => {
             if (!(BlockRedactor.validateQuestion() && BlockRedactor.validateAnswers() &&
-                    BlockRedactor.validateHints())) {
+                    BlockRedactor.validateHints('hintsAccordion', 'QHints'))) {
                 return false;
             } else {
                 BlockRedactor.updateQuestion(question, instance, sourceEndpoint);
@@ -450,18 +454,12 @@ export class BlockRedactor {
             '<div class="col-12 mt-0">' +
                 '<button type="button" class="accordion-button collapsed p-0" data-bs-toggle="collapse" ' +
                         'data-bs-target="#MHints" style="box-shadow: none !important; ' +
-                        'background-color: white !important; color: black !important">' +
+                        'background-color: white !important; color: black !important" ' +
+                        'id="hintsAccordion">' +
                     '<label for="formControlTextarea" class="form-label mt-0">Подсказки:</label>' +
                 '</button>' +
             '</div>');
         form.insertAdjacentHTML('beforeend', '<div class="collapse mt-2" id="MHints"></div><hr class="mt-2">');
-        form.insertAdjacentHTML('beforeend',
-            '<div class="col-auto mt-0">' +
-                '<button type="button" class="btn btn-primary" id="addHint">' +
-                    'Добавить подсказку' +
-                '</button>' +
-            '</div>'
-        );
         form.insertAdjacentHTML('beforeend',
             '<div class="z-depth-1-half map-container" style="height: 500px" id="map"></div>');
         let myMap;
@@ -507,10 +505,12 @@ export class BlockRedactor {
         let id = 0;
         document.getElementById('addHint').onclick = () => {
             BlockRedactor.addHintBox('MHints', 'new', id, '', 0);
+            document.getElementById('hintsAccordion').className = 'accordion-button p-0';
+            document.getElementById('MHints').className = 'collapse show mt-2';
             id += 1;
         };
         document.getElementById('update').onclick = () => {
-            if (!(BlockRedactor.validateQuestion() && BlockRedactor.validateHints())) {
+            if (!(BlockRedactor.validateQuestion() && BlockRedactor.validateHints('hintsAccordion', 'MHints'))) {
                 return false;
             } else {
                 BlockRedactor.updateHints(question);
@@ -556,21 +556,66 @@ export class BlockRedactor {
         const modal = new bootstrap.Modal(document.getElementById('redactor'));
         const form = document.getElementById('redactorForm');
         form.innerHTML = '';
+        const buttons = document.getElementById('modalButtons');
+        if (buttons !== null) {
+            buttons.remove();
+        }
         switch (question.type) {
         case 'start':
+            document.getElementById('content').insertAdjacentHTML('beforeend',
+                '<div class="modal-footer" id="modalButtons">' +
+                    '<button type="button" class="btn btn-secondary" style="margin-right: 0.25em" ' +
+                        'data-bs-dismiss="modal" id="close">Закрыть</button>' +
+                    '<button type="button" class="btn btn-primary" id="update">Сохранить</button>' +
+                '</div>'
+            );
             BlockRedactor.createStartRedactor(form, question, modal);
             break;
         case 'end':
+            document.getElementById('content').insertAdjacentHTML('beforeend',
+                '<div class="modal-footer" id="modalButtons">' +
+                    '<button type="button" class="btn btn-secondary" style="margin-right: 0.25em" ' +
+                        'data-bs-dismiss="modal" id="close">Закрыть</button>' +
+                    '<button type="button" class="btn btn-primary" id="update">Сохранить</button>' +
+                '</div>'
+            );
             BlockRedactor.createFinishRedactor(form, question, modal);
             break;
         case 'open':
+        case 'choice':
+            document.getElementById('content').insertAdjacentHTML('beforeend',
+                '<div class="modal-footer justify-content-between" id="modalButtons">' +
+                    '<div>' +
+                        '<button type="button" class="btn btn-primary" id="addAnswer">' +
+                            'Добавить ответ' +
+                        '</button>' +
+                        '<button type="button" class="btn btn-primary" style="margin-left: 0.25em" id="addHint">' +
+                            'Добавить подсказку' +
+                        '</button>' +
+                    '</div>' +
+                    '<div>' +
+                        '<button type="button" class="btn btn-secondary" style="margin-right: 0.25em" ' +
+                            'data-bs-dismiss="modal" id="close">Закрыть</button>' +
+                        '<button type="button" class="btn btn-primary" id="update">Сохранить</button>' +
+                    '<div>' +
+                '</div>'
+            );
             BlockRedactor.createQuestionRedactor(form, question, instance, sourceEndpoint, modal);
             break;
         case 'movement':
+            document.getElementById('content').insertAdjacentHTML('beforeend',
+                '<div class="modal-footer justify-content-between" id="modalButtons">' +
+                    '<button type="button" class="btn btn-primary" id="addHint">' +
+                        'Добавить подсказку' +
+                    '</button>' +
+                    '<div>' +
+                        '<button type="button" class="btn btn-secondary" style="margin-right: 0.25em" ' +
+                            'data-bs-dismiss="modal" id="close">Закрыть</button>' +
+                        '<button type="button" class="btn btn-primary" id="update">Сохранить</button>' +
+                    '<div>' +
+                '</div>'
+            );
             BlockRedactor.createMovementRedactor(form, question, modal);
-            break;
-        case 'choice':
-            BlockRedactor.createQuestionRedactor(form, question, instance, sourceEndpoint, modal);
             break;
         default:
             break;

@@ -1,6 +1,6 @@
 from questmaker.quest import Quest, Question, Place, Hint, Answer, Movement, File, update_from_dict
 from questmaker.quest_container import EntityType, QuestContainer
-from questmaker.db import get_draft, update_draft, write_draft, remove_draft, get_draft_for_update, remove_quest
+from questmaker.db import get_draft, update_draft, write_draft, remove_draft, get_draft_for_update
 
 from flask_login import current_user, login_required
 from flask import Blueprint, jsonify, request, g, session

@@ -376,8 +376,9 @@ def remove_entity(e_type_str, e_id):
     :return: status code
     """
     e_type = EntityType.from_str(e_type_str)
-    if e_type is None:
+    if e_type is None or e_type == EntityType.QUEST:
         return 'Bad Request', 400
+
     g.container.remove_entity(e_type, e_id)
     return '', 200
 

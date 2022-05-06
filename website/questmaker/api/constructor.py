@@ -1,6 +1,6 @@
 from questmaker.quest import Quest, Question, Place, Hint, Answer, Movement, File, update_from_dict
 from questmaker.quest_container import EntityType, QuestContainer
-from questmaker.db import get_draft, update_draft, write_draft, remove_draft, get_draft_for_update
+from questmaker.db import get_draft, update_draft, write_draft, remove_draft, get_draft_for_update, remove_quest
 
 from flask_login import current_user, login_required
 from flask import Blueprint, jsonify, request, g, session
@@ -376,8 +376,9 @@ def remove_entity(e_type_str, e_id):
     :return: status code
     """
     e_type = EntityType.from_str(e_type_str)
-    if e_type is None:
+    if e_type is None or e_type == EntityType.QUEST:
         return 'Bad Request', 400
+
     g.container.remove_entity(e_type, e_id)
     return '', 200
 

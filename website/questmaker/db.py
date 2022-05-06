@@ -880,3 +880,12 @@ def get_quests_from_catalog(limit, offset, sort_key, order, author, tags):
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute(query, tuple(params))
         return cursor.fetchall()
+
+
+def remove_quest(quest_id):
+    with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+        cursor.execute('SELECT * from quests WHERE quest_id = %s', (quest_id,))
+        if not cursor.fetchone():
+            return False
+        cursor.execute('DELETE from quests WHERE quest_id = %s', (quest_id,))
+        return True

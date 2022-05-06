@@ -198,7 +198,7 @@ window.onload = () => {
         };
 
         document.getElementById('save').onclick = () =>{
-            console.log("Saving quest ", quest.data.quest_id);
+            console.log("Saving quest ", quest);
             Quest.save(quest.data.quest_id);
         }
         document.getElementById('addQCBtn').onclick = () => {

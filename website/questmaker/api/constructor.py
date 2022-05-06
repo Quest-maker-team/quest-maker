@@ -1,11 +1,12 @@
 from questmaker.quest import Quest, Question, Place, Hint, Answer, Movement, File, update_from_dict
 from questmaker.quest_container import EntityType, QuestContainer
-from questmaker.db import get_draft, update_draft, write_draft, remove_draft, get_draft_for_update
+from questmaker.db import get_draft, update_draft, write_draft, remove_draft, get_draft_for_update, get_db
 
 from flask_login import current_user, login_required
 from flask import Blueprint, jsonify, request, g, session
 
 import pickle
+
 
 constructor_api = Blueprint('constructor_api', __name__)
 
@@ -98,9 +99,13 @@ def create_quest():
         return 'Wrong JSON attributes', 400
 
     # TODO quest.to_db must return created quest's id if quest was created
-    quest_id, transaction_status = quest.to_db()
-    quest.id_in_db = quest_id
-
+    try:
+        quest_id = quest.to_db()
+    except Exception:
+        print("Load go wrong")
+    else:
+        get_db().commit()
+        print("Quest save")
     container = QuestContainer()
     container.add_quest(quest)
     draft_id = write_draft(current_user.author['author_id'], pickle.dumps(container), quest_id)

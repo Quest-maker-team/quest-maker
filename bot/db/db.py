@@ -94,26 +94,26 @@ def insert_or_update(query, params):
             conn.commit()
 
 
-def get_quest_title(quest_id):
+def get_quest_title(quest_keyword):
     """
     Find active quest title in table quest by id
-    :param quest_id: quest id
-    :return: name of the quest with the specified id
+    :param quest_keyword: quest keyword
+    :return: tuple (id, name) of the quest with the specified keyword
     :return: None if quest with the same id don't exist
     """
     try:
-        info = select_one("SELECT title, time_open, time_close FROM quests WHERE quest_id= %s AND hidden= %s",
-                          (quest_id, 'false',))
+        info = select_one("SELECT quest_id, title, time_open, time_close FROM quests WHERE keyword= %s AND hidden= %s",
+                          (quest_keyword, 'false',))
         if info:
             now = datetime.datetime.now()
             open = True
             not_close = True
-            if info[1] != None:
-                open = now > info[1]
             if info[2] != None:
-                not_close = now < info[2]
+                open = now > info[2]
+            if info[3] != None:
+                not_close = now < info[3]
             if open and not_close:
-                return info[0]
+                return info[0], info[1]
             else:
                 return None
         else:

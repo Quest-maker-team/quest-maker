@@ -33,63 +33,54 @@ export class Quest {
     }
 
     static loadQuest(id) {
-        return Quest.makeRequest('GET', 'api/quest/' + id).then(data => {
+        return Quest.makeRequest('GET', 'api/constructor/quest/' + id).then((data) => {
             return new Quest(JSON.parse(data));
         });
     }
 
     static makeNewQuest() {
-        return Quest.makeRequest('POST', 'api/quest', JSON.stringify({
+        return Quest.makeRequest('POST', 'api/constructor/quest', JSON.stringify({
             title: '',
             hidden: true,
-        })).then(response => {
+        })).then((response) => {
             return JSON.parse(response);
-        })
+        });
     }
 
-    static addAnswer(answer) {
-        const url = 'api/answer_option';
-        return Quest.makeRequest('POST', url, answer);
+    static addEntity(type, data) {
+        const url = 'api/constructor/' + type;
+        return Quest.makeRequest('POST', url, data);
     }
 
-    static updateQuest(id, questParams){
-        const url = 'api/quest/' + id;
-        return Quest.makeRequest('PUT', url, questParams);
-    }
-
-    static updateAnswer(id, answer) {
-        const url = 'api/answer_option/' + id;
-        return Quest.makeRequest('PUT', url, answer);
-    }
-
-    static updateQuestion(id, question) {
-        const url = 'api/question/' + id;
-        return Quest.makeRequest('PUT', url, question);
+    static updateEntity(type, id, data) {
+        const url = 'api/constructor/' + type + '/' + id;
+        return Quest.makeRequest('PUT', url, data);
     }
 
     static connect(type1, type2, id1, id2) {
-        const url = 'api/' + type1 + '/' + id1 + '/' + type2 + '/' + id2;
+        const url = 'api/constructor/' + type1 + '/' + id1 + '/' + type2 + '/' + id2;
         return Quest.makeRequest('PUT', url);
     }
 
     static disconnect(type1, type2, id1) {
-        const url = 'api/' + type1 + '/' + id1 + '/' + type2;
+        const url = 'api/constructor/' + type1 + '/' + id1 + '/' + type2;
         return Quest.makeRequest('DELETE', url);
     }
 
     static deleteEntity(type, id) {
-        const url = 'api/' + type + '/' + id;
+        const url = 'api/constructor/' + type + '/' + id;
         return Quest.makeRequest('DELETE', url);
     }
 
+
     static save(id) {
-        const url = 'api/save/' + id;
+        const url = 'api/constructor/save/' + id;
         return Quest.makeRequest('POST', url);
     }
 
-    static addNewPlace(quest, place, questionInd){
-        const url = 'api/place';
-        return Quest.makeRequest('POST', url, place).then(result=>{
+    static addNewPlace(quest, place, questionInd) {
+        const url = 'api/constructor/place';
+        return Quest.makeRequest('POST', url, place).then((result) => {
             console.log('success add new place '+ result);
             const id = JSON.parse(result).place_id;
             quest.data.questions[questionInd].movements[0].place.place_id = id;
@@ -99,34 +90,33 @@ export class Quest {
     }
 
     static addQuestion(quest, questionInd) {
-        return Quest.makeRequest('POST', 'api/question', JSON.stringify({
+        return Quest.makeRequest('POST', 'api/constructor/question', JSON.stringify({
             type: quest.data.questions[questionInd].type,
-            text: " " ,
+            text: ' ',
             pos_x: 0,
-            pos_y: 0
+            pos_y: 0,
         }))
-        .then(result => {
-            console.log('success add new question '+ result);
-            const id = JSON.parse(result).question_id;
-            quest.data.questions[questionInd].question_id = id;
-            console.log('id = '+ id);
-            return id;
-        }, error => {
-            console.log('failed add new question');
-        });
-    
+            .then((result) => {
+                console.log('success add new question '+ result);
+                const id = JSON.parse(result).question_id;
+                quest.data.questions[questionInd].question_id = id;
+                console.log('id = '+ id);
+                return id;
+            }, (error) => {
+                console.log('failed add new question');
+            });
     }
 
     static addMovement(quest, moveInd) {
-        return Quest.makeRequest('POST', 'api/movement', JSON.stringify({}))
-        .then(result => {
-            console.log('success add new movement '+ result);
-            const id = JSON.parse(result).movement_id;
-            quest.data.questions[moveInd].movements[0].movement_id = id;
-            console.log('id = '+ id);
-            return id;
-        }, error => {
-            console.log('failed add new movement');
-        });
+        return Quest.makeRequest('POST', 'api/constructor/movement', JSON.stringify({}))
+            .then((result) => {
+                console.log('success add new movement ' + result);
+                const id = JSON.parse(result).movement_id;
+                quest.data.questions[moveInd].movements[0].movement_id = id;
+                console.log('id = ' + id);
+                return id;
+            }, (error) => {
+                console.log('failed add new movement');
+            });
     }
 }

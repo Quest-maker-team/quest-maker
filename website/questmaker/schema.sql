@@ -53,8 +53,14 @@ CREATE TABLE places (
 DROP TABLE IF EXISTS tags CASCADE;
 CREATE TABLE tags (
     tag_id SERIAL PRIMARY KEY,
+    tag_name CHARACTER VARYING(100) NOT NULL UNIQUE
+);
+
+DROP TABLE IF EXISTS quest_tags CASCADE;
+CREATE TABLE quest_tags (
+    quest_tag_id SERIAL PRIMARY KEY,
     quest_id INTEGER NOT NULL REFERENCES quests (quest_id) ON DELETE CASCADE,
-    tag_name CHARACTER VARYING(100) NOT NULL
+    tag_id INTEGER NOT NULL REFERENCES tags (tag_id) ON DELETE CASCADE
 );
 
 DROP TABLE IF EXISTS file_types CASCADE;
@@ -171,3 +177,14 @@ VALUES
     (2, 'movement'),
     (3, 'start'),
     (4, 'end');
+
+DROP VIEW IF EXISTS quests_catalog;
+CREATE VIEW quests_catalog AS
+        SELECT quest_id, title, name AS author, description, keyword,
+        1 * ratings.one_star_amount + 2 * ratings.two_star_amount +
+        3 * ratings.three_star_amount + 4 * ratings.four_star_amount + 5 * ratings.five_star_amount AS rating,
+        time_open, time_close, cover_url
+        FROM quests
+        JOIN authors USING (author_id)
+        JOIN ratings USING (quest_id)
+        WHERE NOT hidden AND published;

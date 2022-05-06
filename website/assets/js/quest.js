@@ -82,9 +82,9 @@ export class Quest {
         return Quest.makeRequest('DELETE', url);
     }
 
-    static save(draft) {
-        const url = 'api/save/' + draft;
-        return Quest.makePostRequest(url);
+    static save(id) {
+        const url = 'api/save/' + id;
+        return Quest.makeRequest('POST', url);
     }
 
     static addNewPlace(quest, place, questionInd){

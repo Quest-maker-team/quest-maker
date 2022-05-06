@@ -98,7 +98,7 @@ def create_quest():
         return 'Wrong JSON attributes', 400
 
     # TODO quest.to_db must return created quest's id if quest was created
-    quest_id = quest.to_db()
+    quest_id, transaction_status = quest.to_db()
     quest.id_in_db = quest_id
 
     container = QuestContainer()

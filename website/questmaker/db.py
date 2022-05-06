@@ -52,7 +52,7 @@ def init_db_command():
     click.echo('Initialized the database.')
 
 
-@click.command('test-museum')
+@click.command('test-excursion')
 @with_appcontext
 def load_test_db_command():
     """
@@ -438,33 +438,21 @@ def get_question_types():
         return [row[0] for row in cursor.fetchall()]
 
 
-def set_file(file, cursor):
+def set_file(file):
     """
     Add rows to table files in database.
     :param file: file to load
-    :param cursor: cursor to loading file
-    :return: file id if success, False if not
+    :return: True if success, False if not
     """
-    if cursor is None:
-        ids = []
-        with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-            cursor.execute('SELECT f_type_id FROM file_types WHERE f_type_name = %s', (file.type,))
-            type_id = cursor.fetchone()['f_type_id']
-            if not (type_id is None):
-                cursor.execute('INSERT INTO files (url_for_file,f_type_id) '
-                               'VALUES (%s,%s) RETURNING f_id', (file.url, type_id))
-                return cursor.fetchone()['f_id']
-            else:
-                return False
-    else:
-        ids = []
+    with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('SELECT f_type_id FROM file_types WHERE f_type_name = %s', (file.type,))
         type_id = cursor.fetchone()['f_type_id']
         if not (type_id is None):
             cursor.execute('INSERT INTO files (url_for_file,f_type_id) '
                            'VALUES (%s,%s) RETURNING f_id', (file.url, type_id))
-            return cursor.fetchone()['f_id']
+            return True
         else:
+            print("File type_id is None")
             return False
 
 
@@ -500,21 +488,24 @@ def set_author(author):
             return False
 
 
-def set_quest(quest):
+def set_quest(quest, published):
     """
     Add row to table quest in database from Quest object and author email
     :param quest: quest to load in database
+    :param published: string value: 'TRUE' or 'FALSE' - is quest already published
     :return: quest id
     """
+    print(quest.title)
+    print(quest.author_id)
     with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         if quest.id_in_db is not None:
-            cursor.execute('DELETE FROM quests WHERE quest_id = %s', (quest.id_in_db, ))
-        cursor.execute('INSERT INTO quests (title, author_id, description, password, '
-                       'time_open, time_close, lead_time, cover_url, hidden) '
-                       'VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING quest_id',
-                       (quest.title, quest.author_id, quest.description,
+            cursor.execute('DELETE FROM quests WHERE quest_id = %s', (quest.id_in_db,))
+        cursor.execute('INSERT INTO quests (title, author_id, description, keyword, password, '
+                       'time_open, time_close, lead_time, cover_url, hidden, published) '
+                       'VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING quest_id',
+                       (quest.title, quest.author_id, quest.description, quest.keyword,
                         quest.password, quest.time_open, quest.time_close, quest.lead_time,
-                        quest.cover_url, str(quest.hidden).upper()))
+                        quest.cover_url, str(quest.hidden).upper(), published))
         return cursor.fetchone()['quest_id']
 
 
@@ -536,17 +527,25 @@ def set_rating(quest_id, rating: dict):
         return cursor.fetchone()['rating_id']
 
 
-def set_tags(quest, quest_id: int):
+def set_tags(tags, quest_id: int):
     """
     Add rows to table tags
-    :param quest: quest
+    :param tags: quest tags
     :param quest_id: quest id
     :return: True if tags are loaded
     """
     with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-        for tag in quest.tags:
-            cursor.execute('INSERT INTO tags (quest_id, tag_name) '
-                           'VALUES (%s, %s)', (quest_id, tag))
+        for tag in tags:
+            cursor.execute('SELECT tag_id FROM tags WHERE tag_name = %s', (tag,))
+            tag_id = cursor.fetchone()
+            print(tag_id)
+            if tag_id is None:
+                print("Creating new tag")
+                cursor.execute('INSERT INTO tags (tag_name) '
+                               'VALUES (%s) RETURNING tag_id', (tag,))
+                tag_id = cursor.fetchone()
+            cursor.execute('INSERT INTO quest_tags (quest_id, tag_id) '
+                           'VALUES (%s, %s)', (quest_id, tag_id['tag_id']))
 
     return True
 
@@ -579,24 +578,18 @@ def get_question_type_id(q_type_name: str):
         return cursor.fetchone()['q_type_id']
 
 
-def set_place(place, cursor):
+def set_place(place):
     """
     :param place: place to load
-    :param cursor: our connection to database, if None create new
-    :return:place id
+    :return: is transaction ok
     """
-
-    if not cursor:
-        with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-            cursor.execute('INSERT INTO places (coords, time_open, time_close, radius)'
-                           'VALUES (%s, %s, %s, %s) RETURNING place_id',
-                           (place.coords, place.time_open, place.time_close, place.radius))
-            return cursor.fetchone()['place_id']
-    else:
+    with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('INSERT INTO places (coords, time_open, time_close, radius)'
-                       'VALUES (%s, %s, %s, %s) RETURNING place_id',
+                       'VALUES (%s, %s, %s, %s) ',
                        (place.coords, place.time_open, place.time_close, place.radius))
-        return cursor.fetchone()['place_id']
+        return True
+
+
 
 
 def create_new_question(question, quest_id, cursor=None):
@@ -815,7 +808,7 @@ def remove_draft(quest_id):
     Remove draft from db by related quest id
     """
     with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-        cursor.execute('DELETE from drafts WHERE quest_id = %s', (quest_id, ))
+        cursor.execute('DELETE from drafts WHERE quest_id = %s', (quest_id,))
 
 
 def check_uuid(uuid):
@@ -825,3 +818,49 @@ def check_uuid(uuid):
     with get_db().cursor() as cursor:
         cursor.execute('SELECT quest_id FROM quests WHERE keyword = %s', (uuid,))
         return not cursor.fetchone()
+
+
+def set_question(question, quest_id):
+    with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+        cursor.execute('SELECT q_type_id FROM question_types WHERE q_type_name = %s', (question.type,))
+        type_id = cursor.fetchone()['q_type_id']
+        if type_id is None:
+            print("Type id is None")
+            return False
+        cursor.execute('INSERT INTO questions (quest_id, question_text, q_type_id, pos_x, pos_y) '
+                       'VALUES (%s, %s, %s, %s, %s) RETURNING question_id',
+                       (quest_id, question.text, type_id, question.pos_x, question.pos_y))
+    return True
+
+
+def set_entity_file(file, entity_id, table, name_id):
+    transaction_status = set_file(file)
+    with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+        cursor.execute('INSERT INTO %s (f_id, %s) '
+                       'VALUES (%s, %s)',
+                       (table, name_id, file.id, entity_id))
+    return transaction_status
+
+
+def set_hint(hint, question_id):
+    with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+        cursor.execute('INSERT INTO hints (question_id, hint_text, fine)'
+                       'VALUES (%s, %s, %s) RETURNING hint_id',
+                       (question_id, hint.text, hint.fine))
+    return True
+
+
+def set_movement(movement, question_id):
+    with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+        cursor.execute('INSERT INTO movements (question_id, place_id, next_question_id)'
+                       'VALUES (%s, %s, %s) ',
+                       (question_id, movement.place.place_id, movement.next_question.question_id))
+    return True
+
+
+def set_answer(answer, question_id):
+    with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+        cursor.execute('INSERT INTO answer_options (question_id, option_text, points, next_question_id)'
+                        'VALUES (%s, %s, %s, %s)',
+                        (question_id, answer.text, answer.points, answer.answer_option_id))
+    return True

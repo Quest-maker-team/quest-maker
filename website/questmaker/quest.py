@@ -3,8 +3,7 @@ Contains classes for database entities
 """
 
 from . import db
-from .db import set_author, set_quest, set_tags, set_quest_files, set_questions, \
-    create_new_question
+from .db import set_author, set_quest
 from .bfs import BFS
 
 from flask import g
@@ -25,6 +24,10 @@ def update_from_dict(entity, entity_dict):
         else:
             return False
     return True
+
+
+def is_transaction_pass(func_value, old_value):
+    return func_value and old_value
 
 
 class QuestEntity(ABC):
@@ -99,6 +102,23 @@ class File(QuestEntity):
     def check_creation_attrs(attrs):
         return all([(attr in attrs) for attr in ['type', 'url']])
 
+    def to_db(self, belonging, id):
+        transaction_status = True
+        match belonging:
+            case "quest":
+                transaction_status = is_transaction_pass(db.set_entity_file(self, id, "quest_files", "quest_id"),
+                                                      transaction_status)
+            case "question":
+                transaction_status = is_transaction_pass(db.set_entity_file(self, id, "question_files", "question_id"),
+                                                      transaction_status)
+            case "hint":
+                transaction_status = is_transaction_pass(db.set_entity_file(self, id, "hint_files", "hint_id"),
+                                                      transaction_status)
+            case _:
+                print("Not existing entity ", belonging)
+                transaction_status = False
+        return transaction_status
+
 
 class Author:
     def __init__(self, name, password, email, status, avatar_url):
@@ -166,6 +186,14 @@ class Hint(QuestEntity):
     def check_creation_attrs(attrs):
         return all([(attr in attrs) for attr in ['text']])
 
+    def to_db(self, question_id):
+        transaction_status = db.set_hint(self, question_id)
+        for hint_file in self.files:
+            transaction_status = is_transaction_pass(hint_file.to_db("hint", self.hint_id), transaction_status)
+        if not transaction_status:
+            print("Hint load failed id = ", self.hint_id)
+        return transaction_status
+
 
 class Answer(QuestEntity):
     """
@@ -203,6 +231,12 @@ class Answer(QuestEntity):
         self.points = points
         self.next_question = None
         self.parent = parent
+
+    def to_db(self, question_id):
+        transaction_status = db.set_answer(self, question_id)
+        if not transaction_status:
+            print("Answer load failed, id = ", self.answer_option_id)
+        return transaction_status
 
     def to_dict(self):
         return {'answer_option_id': self.answer_option_id,
@@ -286,6 +320,12 @@ class Place(QuestEntity):
     def check_creation_attrs(attrs):
         return all([(attr in attrs) for attr in ['coords', 'radius']])
 
+    def to_db(self):
+        transaction_status = db.set_place(self)
+        if not transaction_status:
+            print("Place load failed, id = ", self.place_id)
+        return transaction_status
+
 
 class Movement(QuestEntity):
     """
@@ -334,6 +374,12 @@ class Movement(QuestEntity):
         self.place = None
         self.next_question = None
         self.parent = None
+
+    def to_db(self, question_id):
+        transaction_status = True
+        transaction_status = is_transaction_pass(db.set_movement(self, question_id), transaction_status)
+        transaction_status = is_transaction_pass(self.place.to_db(), transaction_status)
+        return transaction_status
 
     @staticmethod
     def check_valid_update_attr(attr, val):
@@ -405,6 +451,21 @@ class Question(QuestEntity):
                 'movements': [move.to_dict() for move in self.movements],
                 'pos_x': self.pos_x,
                 'pos_y': self.pos_y}
+
+    def to_db(self, quest_id):
+        transaction_status = True
+        transaction_status = is_transaction_pass(db.set_question(self, quest_id), transaction_status)
+        for hint in self.hints:
+            transaction_status = is_transaction_pass(hint.to_db(self.question_id), transaction_status)
+        for movement in self.movements:
+            transaction_status = is_transaction_pass(movement.to_db(self.question_id), transaction_status)
+        for answer in self.answers:
+            transaction_status = is_transaction_pass(answer.to_db(self.question_id), is_transaction_pass)
+        for file in self.files:
+            transaction_status = is_transaction_pass(file.to_db(self.question_id), is_transaction_pass)
+        if not transaction_status:
+            print("Question load failed, id = ", self.question_id)
+        return transaction_status
 
     def remove_from_graph(self):
         for parent in self.parents:
@@ -491,18 +552,24 @@ class Quest(QuestEntity):
 
     def to_db(self):
         """
-        Write data from Quest object to database
+        Recursively load quest and related objects to database
+        :return: loaded quest id with
         """
-        quest_id = set_quest(self)
-        set_tags(self, quest_id)
-        question_id = create_new_question(self.first_question, quest_id)
-        questions = dict()
-        questions[self.first_question] = question_id
-        used_files = set_quest_files(self.files, quest_id)
-        if self.first_question.type != 'start':
-            return False
-        else:
-            return set_questions(used_files, self.first_question, quest_id, {}, question_id, questions, {}, {})
+        transaction_status = True
+        db.print_quest("test_file", self)
+        quest_id = set_quest(self, "TRUE")
+        if quest_id is None:
+            print("Quest load failed, quest id is None")
+            return None
+        transaction_status = is_transaction_pass(db.set_tags(self.tags, quest_id), transaction_status)
+        for file in self.files:
+            transaction_status = is_transaction_pass(file.to_db("quest", self.quest_id), transaction_status)
+        transaction_status = is_transaction_pass(db.set_rating(quest_id, self.rating), transaction_status)
+        for question in BFS(self.first_question):
+            transaction_status = is_transaction_pass(question.to_db(quest_id), transaction_status)
+        if not transaction_status:
+            print("Quest load failed, id=", quest_id)
+        return [quest_id, transaction_status]
 
     def to_dict(self):
         quest_dict = dict()

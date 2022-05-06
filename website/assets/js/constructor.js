@@ -197,7 +197,10 @@ window.onload = () => {
                 
             });
         };
-        
+        document.getElementById('save').onclick = () =>{
+            console.log("Saving quest ", quest.data.quest_id);
+            Quest.save(quest.data.quest_id);
+        }
         document.getElementById('addQCBtn').onclick = () => {
             const questionInd = createNewBlock('choice', 'Новый вопрос с выбором ответа', Render.renderQuestion);
             Quest.addQuestion(quest, questionInd, true).then(data=>{
@@ -217,5 +220,6 @@ window.onload = () => {
                 
             });
         };
+
     });
 }

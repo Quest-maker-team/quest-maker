@@ -316,7 +316,7 @@ export class BlockRedactor {
     static validateQuestion() {
         const question = document.getElementById('formControlTextarea');
         
-        if (question.value === ''){
+        if (question.value === '') {
             question.className = 'form-control mt-0 is-invalid';
             return false;
         } else {
@@ -437,6 +437,12 @@ export class BlockRedactor {
             if (question.question_id == newQuestion.question_id || question.type!='movement') {
                 continue;
             }
+            if (typeof(question.movements[0].place.coords)=='string' ){
+                let s = question.movements[0].place.coords.split(',');
+                let x = s[0].substring(1);
+                let y = s[1].substring(0, s[1].length-1);
+                question.movements[0].place.coords = [parseFloat(x), parseFloat(y)];
+            }
             console.log('Draw', ind);
             const placeMark = new ymaps.Placemark(question.movements[0].place.coords, {
                 balloonContentHeader: 'Добавленное место квеста',
@@ -547,14 +553,28 @@ export class BlockRedactor {
             myMap.geoObjects.get(myMap.geoObjects.indexOf(myCircle)).geometry.setRadius(curRadius);
             // myMap.geoObjects.get(myMap.geoObjects.indexOf(placeMark)).balloon.update();
         };
-        myMap.events.add('click', changeRadius );
-        myCircle.events.add('click', changeRadius);
+        const changePosition =  function(e) {
+            const coords = e.get('coords');
+            myMap.geoObjects.get(myMap.geoObjects.indexOf(placeMark)).geometry.setCoordinates(coords);
+            myMap.geoObjects.get(myMap.geoObjects.indexOf(myCircle)).geometry.setCoordinates(coords);
+            res.coords = coords;
+        }
+        myMap.events.add('click', changePosition );
+        myCircle.events.add('click', changePosition);
         myMap.geoObjects.add(myCircle);
         myMap.geoObjects.add(placeMark);
+        myCircle.editor.startFraming();
         myMap.geoObjects.get(myMap.geoObjects.indexOf(placeMark)).balloon.open();
     }
 
     static createMovementRedactor(form, question, modal, quest) {
+        if (typeof(question.movements[0].place.coords)=='string' ){
+            let s = question.movements[0].place.coords.split(',');
+            let x = s[0].substring(1);
+            let y = s[1].substring(0, s[1].length-1);
+            console.log("New x,y:",x,y,s);
+            question.movements[0].place.coords = [parseFloat(x), parseFloat(y)];
+        }
         BlockRedactor.addTextRedactor(form, 'Перемещение:', question.text);
         form.insertAdjacentHTML('beforeend',
             '<hr>' +
@@ -573,8 +593,8 @@ export class BlockRedactor {
         let myMap;
         const mapId = document.getElementById('map');
         const rez = {
-            'coords': [0.0, 0.0],
-            'radius': 0.0,
+            'coords':  question.movements[0].place.coords,
+            'radius':  question.movements[0].place.radius,
         };
         ymaps.ready(function() {
             console.log('Yandex ready');
@@ -614,26 +634,41 @@ export class BlockRedactor {
                 BlockRedactor.addMethodsToMap(myMap, question, rez, quest);
                 BlockRedactor.addOldPlaces(myMap, quest, question);
                 // console.log(rez);
+                console.log(myMap);
+                BlockRedactor.loadHints(question, 'MHints');
             });
         });
+
+        let id = 0;
+        document.getElementById('addHint').onclick = () => {
+            BlockRedactor.addHintBox('MHints', 'new', id, '', 0);
+            document.getElementById('hintsAccordion').className = 'accordion-button p-0';
+            document.getElementById('MHints').className = 'collapse show mt-2';
+            id += 1;
+        };
         document.getElementById('update').onclick = () => {
-            console.log('Save values', rez);
-            for (const q in quest.data.questions) {
-                console.log('Ind', quest.data.questions[q]);
-                if (quest.data.questions[q].question_id == question.question_id &&
-                        quest.data.questions[q].type=='movement') {
-                    question.movements[0].place.coords = rez.coords;
-                    question.movements[0].place.radius = rez.radius;
-                    quest.data.questions[q].movements[0].place.coords = rez.coords;
-                    quest.data.questions[q].movements[0].place.radius = rez.radius;
-                    quest.data.questions[q].text = document.getElementById('formControlTextarea').value;
-                    console.log('Save', q);
-                    break;
+            if (!(BlockRedactor.validateQuestion() && BlockRedactor.validateHints('hintsAccordion', 'MHints'))) {
+                return false;
+            } else {
+                BlockRedactor.updateHints(question);
+                for (const q in quest.data.questions) {
+                    console.log('Ind', quest.data.questions[q]);
+                    if (quest.data.questions[q].question_id == question.question_id &&
+                            quest.data.questions[q].type=='movement') {
+                        question.movements[0].place.coords = rez.coords;
+                        question.movements[0].place.radius = rez.radius;
+                        quest.data.questions[q].movements[0].place.coords = rez.coords;
+                        quest.data.questions[q].movements[0].place.radius = rez.radius;
+                        quest.data.questions[q].text = document.getElementById('formControlTextarea').value;
+                        console.log('Save', q);
+                        break;
+                    }
                 }
+                modal.hide();
             }
         };
     }
-    
+
     static createStartRedactor(form, question, modal) {
         this.addTextRedactor(form, 'Приветственное сообщение:', question.text);
         document.getElementById('update').onclick = () => {

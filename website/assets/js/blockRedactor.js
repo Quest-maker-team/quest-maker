@@ -471,6 +471,13 @@ export class BlockRedactor {
             if (question.question_id == newQuestion.question_id || question.type!='movement') {
                 continue;
             }
+            if (typeof(question.movements[0].place.coords)=='string' ){
+                let s = question.movements[0].place.coords.split(',');
+                let x = s[0].substring(1);
+                let y = s[1].substring(0, s[1].length-1);
+                console.log("New x,y:",x,y,s);
+                question.movements[0].place.coords = [parseFloat(x), parseFloat(y)];
+            }
             console.log('Draw', ind);
             const placeMark = new ymaps.Placemark(question.movements[0].place.coords, {
                 balloonContentHeader: 'Добавленное место квеста',
@@ -587,13 +594,15 @@ export class BlockRedactor {
         myMap.geoObjects.add(placeMark);
         myMap.geoObjects.get(myMap.geoObjects.indexOf(placeMark)).balloon.open();
     }
-    static createMovementRedactor(form, question, modal, quest) {
-        console.log(quest);
-        BlockRedactor.addTextRedactor(form, 'Перемещение', question.text);
-        form.innerHTML+=
-        '<div class="z-depth-1-half map-container" style="height: 500px" id="map"></div>';
 
-    static createMovementRedactor(form, question, modal) {
+    static createMovementRedactor(form, question, modal, quest) {
+        if (typeof(question.movements[0].place.coords)=='string' ){
+            let s = question.movements[0].place.coords.split(',');
+            let x = s[0].substring(1);
+            let y = s[1].substring(0, s[1].length-1);
+            console.log("New x,y:",x,y,s);
+            question.movements[0].place.coords = [parseFloat(x), parseFloat(y)];
+        }
         BlockRedactor.addTextRedactor(form, 'Перемещение:', question.text);
         form.insertAdjacentHTML('beforeend',
             '<hr>' +
@@ -652,12 +661,12 @@ export class BlockRedactor {
                 BlockRedactor.addMethodsToMap(myMap, question, rez, quest);
                 BlockRedactor.addOldPlaces(myMap, quest, question);
                 // console.log(rez);
+                console.log(myMap);
+                BlockRedactor.loadHints(question, 'MHints');
             });
         });
       
-        console.log(myMap);
-        BlockRedactor.addMovementForMovementBlock(form, question);
-        BlockRedactor.loadHints(question, 'MHints');
+        
         let id = 0;
         document.getElementById('addHint').onclick = () => {
             BlockRedactor.addHintBox('MHints', 'new', id, '', 0);
@@ -686,20 +695,7 @@ export class BlockRedactor {
         };
     }
 
-    static createStartRedactor(form, question, modal) {
-        this.addTextRedactor(form, 'Приветственное сообщение:', question.text);
-        document.getElementById('update').onclick = () => {
-            question.text = document.getElementById('formControlTextarea').value;
-            document.getElementById(question.question_id).getElementsByClassName('card-text')[0].textContent =
-                question.text;
-            Quest.updateEntity('question', question.question_id, JSON.stringify({
-                type: question.type,
-                text: question.text,
-            })).then(() => console.log('success'));
-            modal.hide();
-        };
     }
-
     static createFinishRedactor(form, question, modal) {
         this.addTextRedactor(form, 'Прощальное сообщение:', question.text);
         document.getElementById('update').onclick = () => {
@@ -776,7 +772,7 @@ export class BlockRedactor {
                     '<div>' +
                 '</div>'
             );
-            BlockRedactor.createMovementRedactor(form, question, modal);
+            BlockRedactor.createMovementRedactor(form, question, modal, quest);
             break;
         default:
             break;

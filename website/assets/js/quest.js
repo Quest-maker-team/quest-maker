@@ -33,16 +33,11 @@ export class Quest {
     }
 
     static loadQuest(id) {
-        return Quest.makeRequest('GET', 'api/db/quest/' + id.toString()).then((data) => {
-            return new Quest(JSON.parse(data));
-        });
-    }
-
-    static loadDraft(id) {
         return Quest.makeRequest('GET', 'api/constructor/quest/' + id).then((data) => {
             return new Quest(JSON.parse(data));
         });
     }
+
 
     static makeNewQuest() {
         return Quest.makeRequest('POST', 'api/constructor/quest', JSON.stringify({

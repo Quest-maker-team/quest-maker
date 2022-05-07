@@ -1,0 +1,1 @@
+* `DELETE api/personal_catalog/quest/<quest_id>` - remove quest and related draft.

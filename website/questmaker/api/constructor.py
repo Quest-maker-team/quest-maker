@@ -1,16 +1,16 @@
-from .quest import Quest, Question, Place, Hint, Answer, Movement, File, update_from_dict
-from .quest_container import EntityType, QuestContainer
-from .db import get_draft, update_draft, write_draft, remove_draft, get_draft_for_update
-from flask_login import current_user, login_required
+from questmaker.quest import Quest, Question, Place, Hint, Answer, Movement, File, update_from_dict
+from questmaker.quest_container import EntityType, QuestContainer
+from questmaker.db import get_draft, update_draft, write_draft, remove_draft, get_draft_for_update
 
+from flask_login import current_user, login_required
 from flask import Blueprint, jsonify, request, g, session
 
 import pickle
 
-api = Blueprint('api', __name__)
+constructor_api = Blueprint('constructor_api', __name__)
 
 
-@api.before_request
+@constructor_api.before_request
 @login_required
 def before_request():
     """
@@ -31,7 +31,7 @@ def before_request():
         return 'You don\'t have loaded draft', 400
 
 
-@api.after_request
+@constructor_api.after_request
 @login_required
 def after_request(response):
     """
@@ -48,7 +48,22 @@ def after_request(response):
     return response
 
 
-@api.route('/db/quest/<int:quest_id>', methods=['GET'])
+@constructor_api.route('/quest/<int:quest_id>', methods=['GET'])
+def get_quest(quest_id):
+    """
+    Get quest for edit from drafts if draft exists or create new draft
+    """
+    draft = get_draft(quest_id)
+    if draft:
+        if draft['author_id'] != current_user.author['author_id']:
+            return 'This is not your quest', 403
+        quest = pickle.loads(bytes(draft['container'])).quest
+        session['draft_id'] = draft['draft_id']
+        return jsonify(quest.to_dict()) if quest else ('Wrong quest id', 400)
+    else:
+        return get_quest_from_db(quest_id)
+
+
 def get_quest_from_db(quest_id):
     """
     Load quest from database to constructor
@@ -63,29 +78,12 @@ def get_quest_from_db(quest_id):
 
     container = QuestContainer()
     container.add_quest(quest)
-    quest.quest_id = write_draft(current_user.author['author_id'], pickle.dumps(container))
+    quest.quest_id = write_draft(current_user.author['author_id'], pickle.dumps(container), quest_id)
     session['draft_id'] = quest.quest_id
     return jsonify(quest.to_dict())
 
 
-@api.route('/draft/quest/<int:draft_id>', methods=['GET'])
-def get_quest_from_draft(draft_id):
-    """
-    Get draft quest
-    :param draft_id: draft id in drafts table
-    :return: json with quest or error message
-    """
-    draft = get_draft(draft_id)
-    if not draft:
-        return 'Draft does not exist', 400
-    if draft['author_id'] != current_user.author['author_id']:
-        return 'This is not your quest', 403
-    quest = pickle.loads(bytes(draft['container'])).quest
-    session['draft_id'] = draft_id
-    return jsonify(quest.to_dict()) if quest else ('Wrong quest id', 400)
-
-
-@api.route('/quest', methods=['POST'])
+@constructor_api.route('/quest', methods=['POST'])
 def create_quest():
     """
     Create new draft quest and add to container
@@ -99,18 +97,19 @@ def create_quest():
     if not rc:
         return 'Wrong JSON attributes', 400
 
+    # TODO quest.to_db must return created quest's id if quest was created
+    quest_id = quest.to_db()
+    quest.id_in_db = quest_id
+
     container = QuestContainer()
     container.add_quest(quest)
-    draft_id = write_draft(current_user.author['author_id'], pickle.dumps(container))
+    draft_id = write_draft(current_user.author['author_id'], pickle.dumps(container), quest_id)
     quest.quest_id = draft_id
     session['draft_id'] = draft_id
-    return jsonify({'quest_id': quest.quest_id,
-                    'start_question_id': quest.first_question.question_id,
-                    'first_answer_id': quest.first_question.answers[0].answer_option_id,
-                    'end_question_id': quest.first_question.answers[0].next_question.question_id})
+    return jsonify(quest.to_dict())
 
 
-@api.route('/question', methods=['POST'])
+@constructor_api.route('/question', methods=['POST'])
 def create_question():
     """
     Create new question and add to container
@@ -128,7 +127,7 @@ def create_question():
     return jsonify({'question_id': question.question_id})
 
 
-@api.route('/answer_option/<int:answer_id>/question/<int:question_id>', methods=['PUT'])
+@constructor_api.route('/answer_option/<int:answer_id>/question/<int:question_id>', methods=['PUT'])
 def add_question_to_answer(answer_id, question_id):
     """
     Link answer and next question that was created before
@@ -147,7 +146,7 @@ def add_question_to_answer(answer_id, question_id):
     return '', 200
 
 
-@api.route('/movement/<int:movement_id>/question/<int:question_id>', methods=['PUT'])
+@constructor_api.route('/movement/<int:movement_id>/question/<int:question_id>', methods=['PUT'])
 def add_question_to_movement(movement_id, question_id):
     """
     Link movement and next question that was created before
@@ -166,7 +165,7 @@ def add_question_to_movement(movement_id, question_id):
     return '', 200
 
 
-@api.route('/file', methods=['POST'])
+@constructor_api.route('/file', methods=['POST'])
 def create_file():
     """
     Create new file and add to container
@@ -183,7 +182,7 @@ def create_file():
     return jsonify({'file_id': file.file_id})
 
 
-@api.route('/<e_type_str>/<int:e_id>/file/<int:file_id>', methods=['PUT'])
+@constructor_api.route('/<e_type_str>/<int:e_id>/file/<int:file_id>', methods=['PUT'])
 def add_file(e_type_str, e_id, file_id):
     """
     Add file tp entity. File must be created before.
@@ -208,7 +207,7 @@ def add_file(e_type_str, e_id, file_id):
     return '', 200
 
 
-@api.route('/answer_option', methods=['POST'])
+@constructor_api.route('/answer_option', methods=['POST'])
 def create_answer():
     """
     Create new answer and add to container
@@ -225,7 +224,7 @@ def create_answer():
     return jsonify({'answer_option_id': ans.answer_option_id})
 
 
-@api.route('/question/<int:question_id>/answer_option/<int:answer_id>', methods=['PUT'])
+@constructor_api.route('/question/<int:question_id>/answer_option/<int:answer_id>', methods=['PUT'])
 def add_answer(question_id, answer_id):
     """
     Link question and answer that was created before
@@ -244,7 +243,7 @@ def add_answer(question_id, answer_id):
     return '', 200
 
 
-@api.route('/movement', methods=['POST'])
+@constructor_api.route('/movement', methods=['POST'])
 def create_movement():
     """
     Create new answer and add to container
@@ -261,7 +260,7 @@ def create_movement():
     return jsonify({'movement_id': move.movement_id})
 
 
-@api.route('/question/<int:question_id>/movement/<int:movement_id>', methods=['PUT'])
+@constructor_api.route('/question/<int:question_id>/movement/<int:movement_id>', methods=['PUT'])
 def add_movement(question_id, movement_id):
     """
     Link question and movement that was created before
@@ -280,7 +279,7 @@ def add_movement(question_id, movement_id):
     return '', 200
 
 
-@api.route('/hint', methods=['POST'])
+@constructor_api.route('/hint', methods=['POST'])
 def create_hint():
     """
     Create new hint and add to container
@@ -297,7 +296,7 @@ def create_hint():
     return jsonify({'hint_id': hint.hint_id})
 
 
-@api.route('/question/<int:question_id>/hint/<int:hint_id>', methods=['PUT'])
+@constructor_api.route('/question/<int:question_id>/hint/<int:hint_id>', methods=['PUT'])
 def add_hint(question_id, hint_id):
     """
     Link question and hint that was created before
@@ -316,7 +315,7 @@ def add_hint(question_id, hint_id):
     return '', 200
 
 
-@api.route('/place', methods=['POST'])
+@constructor_api.route('/place', methods=['POST'])
 def create_place():
     """
     Create new place and add to container
@@ -333,7 +332,7 @@ def create_place():
     return jsonify({'place_id': place.place_id})
 
 
-@api.route('/movement/<int:movement_id>/place/<int:place_id>', methods=['PUT'])
+@constructor_api.route('/movement/<int:movement_id>/place/<int:place_id>', methods=['PUT'])
 def add_place(movement_id, place_id):
     """
     Link movement and place that was created before
@@ -352,7 +351,7 @@ def add_place(movement_id, place_id):
     return '', 200
 
 
-@api.route('/<e_type_str>/<int:e_id>', methods=['PUT'])
+@constructor_api.route('/<e_type_str>/<int:e_id>', methods=['PUT'])
 def update_entity(e_type_str, e_id):
     """
     Set entity attributes from JSON
@@ -368,7 +367,7 @@ def update_entity(e_type_str, e_id):
     return ('', 200) if rc else ('Wrong JSON attributes', 400)
 
 
-@api.route('/<e_type_str>/<int:e_id>', methods=['DELETE'])
+@constructor_api.route('/<e_type_str>/<int:e_id>', methods=['DELETE'])
 def remove_entity(e_type_str, e_id):
     """
     Remove entity from quest graph
@@ -377,13 +376,14 @@ def remove_entity(e_type_str, e_id):
     :return: status code
     """
     e_type = EntityType.from_str(e_type_str)
-    if e_type is None:
+    if e_type is None or e_type == EntityType.QUEST:
         return 'Bad Request', 400
+
     g.container.remove_entity(e_type, e_id)
     return '', 200
 
 
-@api.route('/answer_option/<int:answer_id>/question', methods=['DELETE'])
+@constructor_api.route('/answer_option/<int:answer_id>/question', methods=['DELETE'])
 def remove_answer_question_link(answer_id):
     """
     Disconnect answer and next question
@@ -401,7 +401,7 @@ def remove_answer_question_link(answer_id):
         return 'No link', 400
 
 
-@api.route('/movement/<int:movement_id>/question', methods=['DELETE'])
+@constructor_api.route('/movement/<int:movement_id>/question', methods=['DELETE'])
 def remove_movement_question_link(movement_id):
     """
     Disconnect movement and next question
@@ -419,7 +419,7 @@ def remove_movement_question_link(movement_id):
         return 'No link', 400
 
 
-@api.route('/question/<int:question_id>/movement/<int:movement_id>', methods=['DELETE'])
+@constructor_api.route('/question/<int:question_id>/movement/<int:movement_id>', methods=['DELETE'])
 def remove_question_movement_link(question_id, movement_id):
     """
     Disconnect question and movement of this question
@@ -441,7 +441,7 @@ def remove_question_movement_link(question_id, movement_id):
         return 'No link', 400
 
 
-@api.route('/question/<int:question_id>/answer_option/<int:answer_id>', methods=['DELETE'])
+@constructor_api.route('/question/<int:question_id>/answer_option/<int:answer_id>', methods=['DELETE'])
 def remove_question_answer_link(question_id, answer_id):
     """
     Disconnect question and answer to this question
@@ -463,20 +463,21 @@ def remove_question_answer_link(question_id, answer_id):
         return 'No link', 400
 
 
-@api.route('/save/<int:draft_id>', methods=['POST'])
-def save_quest(draft_id):
+@constructor_api.route('/save/<int:quest_id>', methods=['POST'])
+def save_quest(quest_id):
     """
     Save quest in database and remove from drafts
-    :param draft_id: draft_id in drafts
+    :param quest_id: quest id in quests and drafts
     :return: status code
     """
     author_id = current_user.author['author_id']
-    draft = get_draft(draft_id)
+    draft = get_draft(quest_id)
     if not draft:
-        return 'No draft with this id', 400
+        return 'No quest with this id', 400
     if draft['author_id'] != author_id:
         return 'This is not your quest', 403
     container = pickle.loads(bytes(draft['container']))
+    container.quest.published = True
     container.quest.to_db()
-    remove_draft(draft_id)
+    remove_draft(quest_id)
     return '', 200

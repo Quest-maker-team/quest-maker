@@ -18,7 +18,7 @@ export class Quest {
                     if (xmlhttp.status === 200) {
                         resolve(xmlhttp.response);
                     } else {
-                        console.log(xmlhttp.responseText);
+                        // console.log(xmlhttp.responseText);
                         reject(xmlhttp.status);
                     }
                 }
@@ -39,112 +39,53 @@ export class Quest {
     }
 
     static loadDraft(id) {
-        return Quest.makeRequest('GET', 'api/draft/quest/' + id.toString()).then((data) => {
+        return Quest.makeRequest('GET', 'api/constructor/quest/' + id).then((data) => {
             return new Quest(JSON.parse(data));
         });
     }
 
     static makeNewQuest() {
-        return Quest.makeRequest('POST', 'api/quest', JSON.stringify({
+        return Quest.makeRequest('POST', 'api/constructor/quest', JSON.stringify({
             title: '',
             hidden: true,
         })).then((response) => {
-            const responseData = JSON.parse(response);
-            const data = {
-                quest_id: responseData.quest_id,
-                start_question_id: responseData.start_question_id,
-                title: '',
-                description: '',
-                password: '',
-                questions: [
-                    {
-                        question_id: responseData.start_question_id,
-                        answer_options: [
-                            {
-                                answer_option_id: responseData.first_answer_id,
-                                text: '',
-                                points: 0,
-                            },
-                        ],
-                        pos_x: 200,
-                        pos_y: 100,
-                        text: '',
-                        type: 'start',
-                    },
-                    {
-                        question_id: responseData.end_question_id,
-                        answer_options: [],
-                        pos_x: 400,
-                        pos_y: 300,
-                        text: '',
-                        type: 'end',
-                    },
-                ],
-            };
-            Quest.updateQuestion(responseData.start_question_id, JSON.stringify({
-                pos_x: 200,
-                pos_y: 100,
-                text: '',
-                type: 'start',
-            }));
-            Quest.updateAnswer(data.questions[0].answer_options[0].answer_option_id, JSON.stringify({
-                text: '',
-                points: 0,
-            })).then(() => {
-                Quest.connect('question', 'answer_option', responseData.start_question_id, data.questions[0].answer_options[0].answer_option_id);
-            });
-            Quest.updateQuestion(responseData.start_question_id, JSON.stringify({
-                pos_x: 400,
-                pos_y: 300,
-                text: '',
-                type: 'end'}));
-            return new Quest(data);
+            return JSON.parse(response);
         });
     }
 
-    static addAnswer(answer) {
-        const url = 'api/answer_option';
-        return Quest.makeRequest('POST', url, answer);
+    static addEntity(type, data) {
+        const url = 'api/constructor/' + type;
+        return Quest.makeRequest('POST', url, data);
     }
 
-    static updateQuest(id, questParams) {
-        const url = 'api/quest/' + id;
-        return Quest.makeRequest('PUT', url, questParams);
-    }
-
-    static updateAnswer(id, answer) {
-        const url = 'api/answer_option/' + id;
-        return Quest.makeRequest('PUT', url, answer);
-    }
-
-    static updateQuestion(id, question) {
-        const url = 'api/question/' + id;
-        return Quest.makeRequest('PUT', url, question);
+    static updateEntity(type, id, data) {
+        const url = 'api/constructor/' + type + '/' + id;
+        return Quest.makeRequest('PUT', url, data);
     }
 
     static connect(type1, type2, id1, id2) {
-        const url = 'api/' + type1 + '/' + id1 + '/' + type2 + '/' + id2;
+        const url = 'api/constructor/' + type1 + '/' + id1 + '/' + type2 + '/' + id2;
         return Quest.makeRequest('PUT', url);
     }
 
     static disconnect(type1, type2, id1) {
-        const url = 'api/' + type1 + '/' + id1 + '/' + type2;
+        const url = 'api/constructor/' + type1 + '/' + id1 + '/' + type2;
         return Quest.makeRequest('DELETE', url);
     }
 
     static deleteEntity(type, id) {
-        const url = 'api/' + type + '/' + id;
+        const url = 'api/constructor/' + type + '/' + id;
         return Quest.makeRequest('DELETE', url);
     }
 
     static save(draft) {
-        const url = 'api/save/' + draft;
+        const url = 'api/constructor/save/' + draft;
         return Quest.makePostRequest(url);
     }
 
     static addNewPlace(quest, place, questionInd) {
-        const url = 'api/place';
-        return Quest.makeRequest('POST', url, place).then((result)=>{
+        const url = 'api/constructor/place';
+        return Quest.makeRequest('POST', url, place).then((result) => {
             console.log('success add new place '+ result);
             const id = JSON.parse(result).place_id;
             quest.data.questions[questionInd].movements[0].place.place_id = id;
@@ -154,7 +95,7 @@ export class Quest {
     }
 
     static addQuestion(quest, questionInd) {
-        return Quest.makeRequest('POST', 'api/question', JSON.stringify({
+        return Quest.makeRequest('POST', 'api/constructor/question', JSON.stringify({
             type: quest.data.questions[questionInd].type,
             text: ' ',
             pos_x: 0,
@@ -172,12 +113,12 @@ export class Quest {
     }
 
     static addMovement(quest, moveInd) {
-        return Quest.makeRequest('POST', 'api/movement', JSON.stringify({}))
+        return Quest.makeRequest('POST', 'api/constructor/movement', JSON.stringify({}))
             .then((result) => {
-                console.log('success add new movement '+ result);
+                console.log('success add new movement ' + result);
                 const id = JSON.parse(result).movement_id;
                 quest.data.questions[moveInd].movements[0].movement_id = id;
-                console.log('id = '+ id);
+                console.log('id = ' + id);
                 return id;
             }, (error) => {
                 console.log('failed add new movement');

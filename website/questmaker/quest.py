@@ -421,9 +421,6 @@ class Question(QuestEntity):
                 'pos_x': self.pos_x,
                 'pos_y': self.pos_y}
 
-    def load_question_to_db(self, quest_id):
-        db.set_question(self, quest_id)
-
     def to_db(self):
         for hint in self.hints:
             hint.to_db(self.question_id)
@@ -522,21 +519,28 @@ class Quest(QuestEntity):
         Recursively load quest and related objects to database
         :return: loaded quest id with
         """
-        db.print_quest("test_file", self)
-        set_quest(self)
-        quest_id = self.id_in_db
-        if quest_id is None:
-            print("Quest load failed, quest id is None")
+        try:
+            db.print_quest("test_file", self)
+            set_quest(self)
+            quest_id = self.id_in_db
+            if quest_id is None:
+                print("Quest load failed, quest id is None")
+                return None
+            db.set_tags(self.tags, quest_id)
+            for file in self.files:
+                db.set_quest_file(file, self.quest_id)
+            db.set_rating(quest_id, self.rating)
+            for question in BFS(self.first_question):
+                db.set_question(question, quest_id)
+            for question in BFS(self.first_question):
+                question.to_db()
+        except Exception:
+            print("Load go wrong")
             return None
-        db.set_tags(self.tags, quest_id)
-        for file in self.files:
-            db.set_quest_file(file, self.quest_id)
-        db.set_rating(quest_id, self.rating)
-        for question in BFS(self.first_question):
-            question.load_question_to_db(quest_id)
-        for question in BFS(self.first_question):
-            question.to_db()
-        return quest_id
+        else:
+            db.get_db().commit()
+            print("Quest save")
+            return quest_id
 
     def to_dict(self):
         quest_dict = dict()

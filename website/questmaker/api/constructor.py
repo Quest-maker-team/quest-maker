@@ -99,13 +99,8 @@ def create_quest():
         return 'Wrong JSON attributes', 400
 
     # TODO quest.to_db must return created quest's id if quest was created
-    try:
-        quest_id = quest.to_db()
-    except Exception:
-        print("Load go wrong")
-    else:
-        get_db().commit()
-        print("Quest save")
+
+    quest_id = quest.to_db()
     container = QuestContainer()
     container.add_quest(quest)
     draft_id = write_draft(current_user.author['author_id'], pickle.dumps(container), quest_id)

@@ -475,7 +475,6 @@ export class BlockRedactor {
                 let s = question.movements[0].place.coords.split(',');
                 let x = s[0].substring(1);
                 let y = s[1].substring(0, s[1].length-1);
-                console.log("New x,y:",x,y,s);
                 question.movements[0].place.coords = [parseFloat(x), parseFloat(y)];
             }
             console.log('Draw', ind);
@@ -588,10 +587,17 @@ export class BlockRedactor {
             myMap.geoObjects.get(myMap.geoObjects.indexOf(myCircle)).geometry.setRadius(curRadius);
             // myMap.geoObjects.get(myMap.geoObjects.indexOf(placeMark)).balloon.update();
         };
-        myMap.events.add('click', changeRadius );
-        myCircle.events.add('click', changeRadius);
+        const changePosition =  function(e) {
+            const coords = e.get('coords');
+            myMap.geoObjects.get(myMap.geoObjects.indexOf(placeMark)).geometry.setCoordinates(coords);
+            myMap.geoObjects.get(myMap.geoObjects.indexOf(myCircle)).geometry.setCoordinates(coords);
+            res.coords = coords;
+        }
+        myMap.events.add('click', changePosition );
+        myCircle.events.add('click', changePosition);
         myMap.geoObjects.add(myCircle);
         myMap.geoObjects.add(placeMark);
+        myCircle.editor.startFraming();
         myMap.geoObjects.get(myMap.geoObjects.indexOf(placeMark)).balloon.open();
     }
 
@@ -620,8 +626,8 @@ export class BlockRedactor {
         let myMap;
         const mapId = document.getElementById('map');
         const rez = {
-            'coords': [0.0, 0.0],
-            'radius': 0.0,
+            'coords':  question.movements[0].place.coords,
+            'radius':  question.movements[0].place.radius,
         };
         ymaps.ready(function() {
             console.log('Yandex ready');

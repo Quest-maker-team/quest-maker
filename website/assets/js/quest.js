@@ -78,7 +78,7 @@ export class Quest {
         return Quest.makeRequest('POST', url);
     }
 
-    static addNewPlace(quest, place, question) {
+    static addNewPlace(place, question) {
         const url = 'api/constructor/place';
         return Quest.makeRequest('POST', url, place).then((result) => {
             console.log('success add new place '+ result);
@@ -89,7 +89,7 @@ export class Quest {
         });
     }
 
-    static addQuestion(quest, question) {
+    static addQuestion(question) {
         return Quest.makeRequest('POST', 'api/constructor/question', JSON.stringify({
             type: question.type,
             text: ' ',
@@ -106,7 +106,7 @@ export class Quest {
         });
     }
 
-    static addMovement(quest, move) {
+    static addMovement(move) {
         return Quest.makeRequest('POST', 'api/constructor/movement', JSON.stringify({})).then((result) => {
             console.log('success add new movement ' + result);
             const id = JSON.parse(result).movement_id;

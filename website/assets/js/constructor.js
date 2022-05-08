@@ -146,13 +146,13 @@ window.onload = () => {
 
         document.getElementById('addMBtn').onclick = () => {
             const question = createNewBlock('movement', 'Новое перемещение', quest);
-            Quest.addQuestion(quest, question).then((result) =>{
-                Quest.addMovement(quest, question).then((data)=>{
+            Quest.addQuestion(question).then((result) =>{
+                Quest.addMovement(question).then((data)=>{
                     const place = {
                         coords: [0.0, 0.0],
                         radius: 0.0,
                     };
-                    Quest.addNewPlace(quest, JSON.stringify(place), question).then((rez)=>{
+                    Quest.addNewPlace(JSON.stringify(place), question).then((rez)=>{
                         Quest.connect('question', 'movement',
                         question.question_id,
                         question.movements[0].movement_id);
@@ -168,7 +168,7 @@ window.onload = () => {
 
         document.getElementById('addQBtn').onclick = () => {
             const question = createNewBlock('open', 'Новый открытый вопрос', quest);
-            Quest.addQuestion(quest, question).then((data)=>{
+            Quest.addQuestion(question).then((data)=>{
                 Quest.addEntity('answer_option', JSON.stringify({
                     points: 0.0,
                     text: 'Ответ',
@@ -180,7 +180,7 @@ window.onload = () => {
                     Quest.connect('question', 'answer_option',
                     question.question_id,
                     question.answer_options[0].answer_option_id);
-                    Render.renderQuestion(question, 'Открытый вопрос', instance,
+                    Render.renderQuestion(quest, question, 'Открытый вопрос', instance,
                         sourceEndpoint, targetEndpoint);
                 });
             });
@@ -192,7 +192,7 @@ window.onload = () => {
         }
         document.getElementById('addQCBtn').onclick = () => {
             const question = createNewBlock('choice', 'Новый вопрос с выбором ответа', quest);
-            Quest.addQuestion(quest, questionInd).then((data)=>{
+            Quest.addQuestion(question).then((data)=>{
                 Quest.addEntity('answer_option', JSON.stringify({
                     points: 0.0,
                     text: 'Ответ',

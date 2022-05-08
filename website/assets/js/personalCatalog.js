@@ -1,4 +1,4 @@
-function deleteQuestRequest(questId) {
+export function deleteQuestRequest(questId) {
     return new Promise(function(resolve, reject) {
         const xmlhttp = new XMLHttpRequest();
         xmlhttp.open('DELETE', 'api/personal_catalog/quest/' + questId);

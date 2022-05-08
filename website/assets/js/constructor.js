@@ -5,7 +5,7 @@ import {Render} from './render';
 import {EVENT_CONNECTION_DETACHED, EVENT_CONNECTION} from '@jsplumb/core';
 import Panzoom from '@panzoom/panzoom';
 import {QuestRedactor} from './blockRedactor';
-
+import {deleteQuestRequest} from './personalCatalog';
 // load static images
 require.context(
     '../', // context folder
@@ -209,6 +209,12 @@ window.onload = () => {
         };
         document.getElementById('redactorQuest').onclick = () => {
             QuestRedactor.showQuestRedactor(quest);
+        };
+        document.getElementById('deleteQuest').onclick = () => {
+            if (confirm('Вы уверены, что хотите удалить квест? Отменить это действие будет невозможно.')){
+                deleteQuestRequest(quest.quest_id);
+                document.location.href = '../profile';
+            }
         };
     });
 };

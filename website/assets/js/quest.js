@@ -1,7 +1,6 @@
 import {newInstance} from '@jsplumb/browser-ui';
 import {Render} from './render';
 
-
 export class Quest {
     constructor(data) {
         this.data = data;
@@ -96,28 +95,26 @@ export class Quest {
             text: ' ',
             pos_x: 0,
             pos_y: 0,
-        }))
-            .then((result) => {
-                console.log('success add new question '+ result);
-                const id = JSON.parse(result).question_id;
-                quest.data.questions[questionInd].question_id = id;
-                console.log('id = '+ id);
-                return id;
-            }, (error) => {
-                console.log('failed add new question');
-            });
+        })).then((result) => {
+            console.log('success add new question '+ result);
+            const id = JSON.parse(result).question_id;
+            quest.data.questions[questionInd].question_id = id;
+            console.log('id = '+ id);
+            return id;
+        }, (error) => {
+            console.log('failed add new question');
+        });
     }
 
     static addMovement(quest, moveInd) {
-        return Quest.makeRequest('POST', 'api/constructor/movement', JSON.stringify({}))
-            .then((result) => {
-                console.log('success add new movement ' + result);
-                const id = JSON.parse(result).movement_id;
-                quest.data.questions[moveInd].movements[0].movement_id = id;
-                console.log('id = ' + id);
-                return id;
-            }, (error) => {
-                console.log('failed add new movement');
-            });
+        return Quest.makeRequest('POST', 'api/constructor/movement', JSON.stringify({})).then((result) => {
+            console.log('success add new movement ' + result);
+            const id = JSON.parse(result).movement_id;
+            quest.data.questions[moveInd].movements[0].movement_id = id;
+            console.log('id = ' + id);
+            return id;
+        }, (error) => {
+            console.log('failed add new movement');
+        });
     }
 }

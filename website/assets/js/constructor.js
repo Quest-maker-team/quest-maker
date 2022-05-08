@@ -116,7 +116,7 @@ window.onload = () => {
 
         return quest;
     }).then((quest) => {
-        const createNewBlock = function(type, text, renderFunction) {
+        const createNewBlock = (type, text, renderFunction) => {
             quest.data.questions.push( {
                 'answer_options': [],
                 'files': [],
@@ -140,9 +140,9 @@ window.onload = () => {
                     'movement_id': undefined,
                     'next_question_id': undefined,
                     'place': {
-                        'coords': '(0.0,0.0)',
+                        'coords': [0.0, 0.0],
                         'place_id': undefined,
-                        'radius': 0,
+                        'radius': 0.0,
                         'time_close': 'Sun, 12 Aug 2001 19:00:00 GMT',
                         'time_open': 'Sun, 12 Aug 2001 09:00:00 GMT',
                     },

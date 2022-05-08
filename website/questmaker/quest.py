@@ -403,7 +403,7 @@ class Question(QuestEntity):
     def __init__(self):
         self.question_id = None
         self.type = None
-        self.text = None
+        self.text = ''
         self.hints = []
         self.files = []
         self.answers = []
@@ -594,9 +594,13 @@ class Quest(QuestEntity):
         startQuestion.type = 'start'
         startQuestion.answers.append(Answer())
         startQuestion.answers[0].parent = startQuestion
+        startQuestion.pos_x = 500
+        startQuestion.pos_y = 320
         endQuestion = Question()
         endQuestion.type = 'end'
         endQuestion.parent = startQuestion.answers[0]
+        endQuestion.pos_x = 800
+        endQuestion.pos_y = 320
         startQuestion.answers[0].next_question = endQuestion
         self.first_question = startQuestion
         return True

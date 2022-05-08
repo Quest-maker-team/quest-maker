@@ -116,7 +116,7 @@ window.onload = () => {
 
         return quest;
     }).then((quest) => {
-        const createNewBlock = function(type, text, renderFunction) {
+        const createNewBlock = (type, text, renderFunction) => {
             quest.data.questions.push( {
                 'answer_options': [],
                 'files': [],

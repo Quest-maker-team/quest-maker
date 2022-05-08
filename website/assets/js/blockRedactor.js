@@ -499,7 +499,7 @@ export class BlockRedactor {
             strokeOpacity: 0.8,
             strokeWidth: 3,
         });
-        const changeGeometry = function(e) {
+        const changeGeometry = e => {
             const coords = e.get('target').geometry.getCoordinates();
             curRadius.value = myCircle.geometry.getRadius();
             curCoords.value = coords;
@@ -507,7 +507,7 @@ export class BlockRedactor {
                 myCircle.balloon.setPosition(coords);
             }
         };
-        const changePosition =  function(e) {
+        const changePosition =  e => {
             const coords = e.get('coords');
             myMap.geoObjects.get(myMap.geoObjects.indexOf(myCircle)).geometry.setCoordinates(coords);
             curCoords.value = coords;
@@ -545,7 +545,7 @@ export class BlockRedactor {
         let myMap;
         let curRadius = {'value': question.movements[0].place.radius};
         let curCoords = {'value': question.movements[0].place.coords};
-        ymaps.ready(function() {
+        ymaps.ready(() => {
             const geolocation = ymaps.geolocation;
             let myPosition;        
             geolocation.get({

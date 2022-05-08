@@ -1,6 +1,7 @@
 """
 Contains classes for database entities
 """
+import traceback
 
 from . import db
 from .db import set_author, set_quest
@@ -196,7 +197,7 @@ class Answer(QuestEntity):
 
         return answer
 
-    def __init__(self, text=None, points=0, parent=None):
+    def __init__(self, text='', points=0, parent=None):
         """
         Create answer object
         :param text: answer text
@@ -533,7 +534,7 @@ class Quest(QuestEntity):
             for question in BFS(self.first_question):
                 question.load_attachments()
         except Exception:
-            print("Load go wrong")
+            print(traceback.format_exc())
             return None
         else:
             db.get_db().commit()

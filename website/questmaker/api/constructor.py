@@ -101,14 +101,13 @@ def create_quest():
     if not rc:
         return 'Wrong JSON attributes', 400
 
-    quest_id = quest.to_db()
-    if quest_id is None:
+    quest.quest_id = quest.to_db()
+    if quest.quest_id is None:
         return 'Internal Server Error', 500
 
     container = QuestContainer()
     container.add_quest(quest)
-    draft_id = write_draft(current_user.author['author_id'], pickle.dumps(container), quest_id)
-    quest.quest_id = draft_id
+    draft_id = write_draft(current_user.author['author_id'], pickle.dumps(container), quest.quest_id)
     session['draft_id'] = draft_id
     return jsonify(quest.to_dict())
 

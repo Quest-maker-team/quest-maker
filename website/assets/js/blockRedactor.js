@@ -149,6 +149,15 @@ export class BlockRedactor {
         }
     }
 
+    static updateQuestionText(question) {
+        question.text = document.getElementById('formControlTextarea').value;
+        document.getElementById(question.question_id).getElementsByClassName('card-text')[0].textContent =
+            question.text;
+        Quest.updateEntity('question', question.question_id, JSON.stringify({
+            text: question.text,
+        }));
+    }
+
     static updateAnswers(question, instance, sourceEndpoint) {
         const idToDel = [];
         for (const answer of question.answer_options) {
@@ -266,6 +275,15 @@ export class BlockRedactor {
         }
     }
 
+    static updatePlace(question, coords, radius) {
+        question.movements[0].place.coords = coords;
+        question.movements[0].place.radius = radius;
+        Quest.updateEntity('place', question.movements[0].place.place_id, JSON.stringify({
+            coords: coords,
+            radius: radius,
+        })).catch((result) => console.log(result));
+    }
+
     static validateAnswers() {
         const answers = document.querySelectorAll('input[name="answerText_old"], input[name="answerText_new"]');
 
@@ -315,8 +333,8 @@ export class BlockRedactor {
 
     static validateQuestion() {
         const question = document.getElementById('formControlTextarea');
-        
-        if (question.value === ''){
+
+        if (question.value === '') {
             question.className = 'form-control mt-0 is-invalid';
             return false;
         } else {
@@ -328,18 +346,9 @@ export class BlockRedactor {
     static updateQuestion(question, instance, sourceEndpoint) {
         BlockRedactor.updateSpecial('skip', 'skipbx', question, instance, 'skip', sourceEndpoint);
         BlockRedactor.updateSpecial('wrong', 'wrongbx', question, instance, '', sourceEndpoint);
-
         BlockRedactor.updateAnswers(question, instance, sourceEndpoint);
-
         BlockRedactor.updateHints(question);
-
-        question.text = document.getElementById('formControlTextarea').value;
-        document.getElementById(question.question_id).getElementsByClassName('card-text')[0].textContent =
-            question.text;
-        Quest.updateEntity('question', question.question_id, JSON.stringify({
-            type: question.type,
-            text: question.text,
-        })).then(() => console.log('success'));
+        BlockRedactor.updateQuestionText(question);
     }
 
     static createQuestionRedactor(form, question, instance, sourceEndpoint, modal) {
@@ -428,26 +437,95 @@ export class BlockRedactor {
         };
     }
 
-    static addMovementForMovementBlock(form, question) {
-        form.insertAdjacentHTML('beforeend',
-            '<div class="col-8">'+
-                '<div class="input-group">' +
-                    '<span class="input-group-text"> Координаты </span>' +
-                    '<input type="text" class="form-control" id="moveCoords" ' +
-                            'value=' + question.movements[0].place.coords + '>' +
-                '</div>'+
-            '</div>'+
-            '<div class="col-8">'+
-                '<div class="input-group">' +
-                    '<span class="input-group-text"> Радиус(м) </span>' +
-                    '<input type="text" class="form-control" id="moveRadius"  ' +
-                            'value=' + question.movements[0].place.radius + '>' +
-                  '</div>'+
-            '</div>'
-        );
+    static addOldPlaces(myMap, quest, newQuestion) {
+        const questions = quest.data.questions.filter((question) =>
+            question.question_id !== newQuestion.question_id && question.type === 'movement');
+        for (const question of questions) {
+            if (typeof(question.movements[0].place.coords)=='string') {
+                const s = question.movements[0].place.coords.split(',');
+                const x = s[0].substring(1);
+                const y = s[1].substring(0, s[1].length-1);
+                question.movements[0].place.coords = [parseFloat(x), parseFloat(y)];
+            }
+            const placeMark = new ymaps.Placemark(question.movements[0].place.coords, {
+                balloonContentHeader: 'Добавленное место квеста',
+                balloonContentBody:
+                    question.text,
+            }, {
+                preset: 'islands#blueDotIconWithCaption',
+                draggable: false,
+            });
+            const myCircle = new ymaps.Circle([
+                question.movements[0].place.coords,
+                question.movements[0].place.radius,
+            ], {
+                hintContent: 'Радиус достижимости '+ question.movements[0].place.radius,
+            }, {
+                draggable: false,
+                fillColor: '#DB709377',
+                strokeColor: '#00FA9A',
+                strokeOpacity: 0.8,
+                strokeWidth: 3,
+            });
+            myMap.geoObjects.add(myCircle);
+            myMap.geoObjects.add(placeMark);
+        }
     }
 
-    static createMovementRedactor(form, question, modal) {
+    static addMethodsToMap(myMap, question, radius, coordinates) {
+        if (question.movements[0].place.radius>0) {
+            radius.value = question.movements[0].place.radius;
+        } else {
+            coordinates.value = myMap.getCenter();
+            radius.value = 25;
+        }
+        const myCircle = new ymaps.Circle([
+            myMap.getCenter(),
+            radius.value,
+        ], {
+            balloonContentHeader: 'Редактируемое место квеста',
+            balloonContentBody:
+                '<p>' +
+                 'Для изменения координат - кликните в любом месте или перетащите круг' +
+                 '</p>',
+            balloonContentFooter: 'Вы можете посмотеть информацию о других точках кликнув по ним',
+            hintContent: 'Радиус достижимости ',
+        },
+        {
+            draggable: true,
+            fillColor: '#DB709377',
+            strokeColor: '#990066',
+            strokeOpacity: 0.8,
+            strokeWidth: 3,
+        });
+        const changeGeometry = (e) => {
+            const coords = e.get('target').geometry.getCoordinates();
+            radius.value = myCircle.geometry.getRadius();
+            coordinates.value = coords;
+            if (myCircle.balloon.isOpen()) {
+                myCircle.balloon.setPosition(coords);
+            }
+        };
+        const changePosition = (e) => {
+            const coords = e.get('coords');
+            myMap.geoObjects.get(myMap.geoObjects.indexOf(myCircle)).geometry.setCoordinates(coords);
+            coordinates.value = coords;
+        };
+        myMap.events.add('click', changePosition );
+        myCircle.events.add('geometrychange', changeGeometry);
+        myMap.geoObjects.add(myCircle);
+        myCircle.editor.startEditing();
+        myMap.geoObjects.get(myMap.geoObjects.indexOf(myCircle)).balloon.open();
+    }
+
+    static createMovementRedactor(form, question, modal, quest) {
+        if (typeof(question.movements[0].place.coords)=='string' ) {
+            const s = question.movements[0].place.coords.split(',');
+            const x = s[0].substring(1);
+            const y = s[1].substring(0, s[1].length-1);
+
+            question.movements[0].place.coords = [parseFloat(x), parseFloat(y)];
+        }
         BlockRedactor.addTextRedactor(form, 'Перемещение:', question.text);
         form.insertAdjacentHTML('beforeend',
             '<hr>' +
@@ -458,50 +536,51 @@ export class BlockRedactor {
                         'id="hintsAccordion">' +
                     '<label for="formControlTextarea" class="form-label mt-0">Подсказки:</label>' +
                 '</button>' +
-            '</div>');
+            '</div>'
+        );
         form.insertAdjacentHTML('beforeend', '<div class="collapse mt-2" id="MHints"></div><hr class="mt-2">');
         form.insertAdjacentHTML('beforeend',
             '<div class="z-depth-1-half map-container" style="height: 500px" id="map"></div>');
         let myMap;
-        const mapId = document.getElementById('map');
-        console.log(mapId);
-        ymaps.ready(function() {
-            myMap = new ymaps.Map('map', {
-                center: [57.5262, 38.3061],
-                zoom: 11,
-            }, {
-                balloonMaxWidth: 200,
-                searchControlProvider: 'yandex#search',
-            });
-            console.log(myMap);
-            myMap.events.add('click', function(e) {
-                if (!myMap.balloon.isOpen()) {
-                    const coords = e.get('coords');
-                    myMap.balloon.open(coords, {
-                        contentHeader: 'Новое место квеста',
-                        contentBody: '<p></p>' +
-                            '<p>Координаты точки: ' + [
-                            coords[0].toPrecision(6),
-                            coords[1].toPrecision(6),
-                        ].join(', ') + '</p>',
-                        contentFooter: '<sup>Вы можете выбрать новую точку</sup>',
-                    });
-                    // console.log(coords[0]);
-                    question.movements[0].place.coords ='('+coords[0].toString()+','+coords[1].toString()+')';
-                    console.log( question.movements[0].place.coords);
-                    document.getElementById('moveCoords').value = question.movements[0].place.coords;
-                } else {
-                    myMap.balloon.close();
-                }
-            });
+        const radius = {'value': question.movements[0].place.radius};
+        const coordinates = {'value': question.movements[0].place.coords};
+        ymaps.ready(() => {
+            const geolocation = ymaps.geolocation;
+            let myPosition;
+            geolocation.get({
+                provider: 'yandex',
+                mapStateAutoApply: true,
+            }).then((result) => {
+                myPosition = result.geoObjects.position;
+                geolocation.get({
+                    provider: 'browser',
+                    mapStateAutoApply: true,
+                }).then((position) => {
+                    if (position !== undefined && question.movements[0].place.radius == 0.0) {
+                        myPosition = position.geoObjects.position;
+                        myMap.setCenter(myPosition);
+                        myMap.geoObjects.get(0).setCoordinates(myPosition);
+                        myMap.geoObjects.get(1).setCoordinates(myPosition);
+                    }
+                });
 
-            myMap.events.add('balloonopen', function(e) {
-                myMap.hint.close();
-            }); ;
+                if (question.movements[0].place.radius > 0.0) {
+                    myPosition = question.movements[0].place.coords;
+                }
+                myMap = new ymaps.Map('map', {
+                    center: myPosition,
+                    zoom: 11,
+                }, {
+                    balloonMaxWidth: 200,
+                    searchControlProvider: 'yandex#search',
+
+                });
+                BlockRedactor.addMethodsToMap(myMap, question, radius, coordinates);
+                BlockRedactor.addOldPlaces(myMap, quest, question);
+                BlockRedactor.loadHints(question, 'MHints');
+            });
         });
-        console.log(myMap);
-        BlockRedactor.addMovementForMovementBlock(form, question);
-        BlockRedactor.loadHints(question, 'MHints');
+
         let id = 0;
         document.getElementById('addHint').onclick = () => {
             BlockRedactor.addHintBox('MHints', 'new', id, '', 0);
@@ -514,11 +593,8 @@ export class BlockRedactor {
                 return false;
             } else {
                 BlockRedactor.updateHints(question);
-                question.text = document.getElementById('formControlTextarea').value;
-                document.getElementById(question.question_id).getElementsByClassName('card-text')[0].textContent =
-                    question.text;
-                question.movements[0].place.coords = document.getElementById('moveCoords').value;
-                question.movements[0].place.radius = document.getElementById('moveRadius').value;
+                BlockRedactor.updateQuestionText(question);
+                BlockRedactor.updatePlace(question, coordinates.value, curRadius.value);
                 modal.hide();
             }
         };
@@ -527,13 +603,7 @@ export class BlockRedactor {
     static createStartRedactor(form, question, modal) {
         this.addTextRedactor(form, 'Приветственное сообщение:', question.text);
         document.getElementById('update').onclick = () => {
-            question.text = document.getElementById('formControlTextarea').value;
-            document.getElementById(question.question_id).getElementsByClassName('card-text')[0].textContent =
-                question.text;
-            Quest.updateEntity('question', question.question_id, JSON.stringify({
-                type: question.type,
-                text: question.text,
-            })).then(() => console.log('success'));
+            BlockRedactor.updateQuestionText(question);
             modal.hide();
         };
     }
@@ -541,18 +611,12 @@ export class BlockRedactor {
     static createFinishRedactor(form, question, modal) {
         this.addTextRedactor(form, 'Прощальное сообщение:', question.text);
         document.getElementById('update').onclick = () => {
-            question.text = document.getElementById('formControlTextarea').value;
-            document.getElementById(question.question_id).getElementsByClassName('card-text')[0].textContent =
-                question.text;
-            Quest.updateEntity('question', question.question_id, JSON.stringify({
-                type: question.type,
-                text: question.text,
-            })).then(() => console.log('success'));
+            BlockRedactor.updateQuestionText(question);
             modal.hide();
         };
     }
 
-    static showRedactor(question, instance, sourceEndpoint) {
+    static showRedactor(question, instance, sourceEndpoint, quest) {
         const modal = new bootstrap.Modal(document.getElementById('redactor'));
         const form = document.getElementById('redactorForm');
         form.innerHTML = '';
@@ -615,7 +679,7 @@ export class BlockRedactor {
                     '<div>' +
                 '</div>'
             );
-            BlockRedactor.createMovementRedactor(form, question, modal);
+            BlockRedactor.createMovementRedactor(form, question, modal, quest);
             break;
         default:
             break;

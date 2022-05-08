@@ -7,6 +7,7 @@ from flask import Blueprint, jsonify, request, g, session
 
 import pickle
 
+
 constructor_api = Blueprint('constructor_api', __name__)
 
 
@@ -18,7 +19,8 @@ def before_request():
     """
     author_id = current_user.author['author_id']
     if request.method == 'GET' or \
-            (request.method == 'POST' and request.endpoint in ['api.create_quest', 'api.save_quest']):
+            (request.method == 'POST' and request.endpoint in ['constructor_api.create_quest',
+                                                               'constructor_api.save_quest']):
         return
     if 'draft_id' in session:
         draft = get_draft_for_update(session['draft_id'])
@@ -38,7 +40,8 @@ def after_request(response):
     Serialize container with draft quests and write to db
     """
     if request.method == 'GET' or \
-            (request.method == 'POST' and request.endpoint in ['api.create_quest', 'api.save_quest']):
+            (request.method == 'POST' and request.endpoint in ['constructor_api.create_quest',
+                                                               'constructor_api.save_quest']):
         return response
     if 'container' in g and 'draft_id' in session:
         update_draft(session['draft_id'], pickle.dumps(g.container))
@@ -93,18 +96,18 @@ def create_quest():
     if not Quest.check_creation_attrs(quest_dict.keys()):
         return 'Not enough JSON attributes for creating', 400
     quest = Quest()
+    quest.author_id = current_user.author['author_id']
     rc = quest.create_from_dict(quest_dict)
     if not rc:
         return 'Wrong JSON attributes', 400
 
-    # TODO quest.to_db must return created quest's id if quest was created
-    quest_id = quest.to_db()
-    quest.id_in_db = quest_id
+    quest.quest_id = quest.to_db()
+    if quest.quest_id is None:
+        return 'Internal Server Error', 500
 
     container = QuestContainer()
     container.add_quest(quest)
-    draft_id = write_draft(current_user.author['author_id'], pickle.dumps(container), quest_id)
-    quest.quest_id = draft_id
+    draft_id = write_draft(current_user.author['author_id'], pickle.dumps(container), quest.quest_id)
     session['draft_id'] = draft_id
     return jsonify(quest.to_dict())
 
@@ -376,8 +379,9 @@ def remove_entity(e_type_str, e_id):
     :return: status code
     """
     e_type = EntityType.from_str(e_type_str)
-    if e_type is None:
+    if e_type is None or e_type == EntityType.QUEST:
         return 'Bad Request', 400
+
     g.container.remove_entity(e_type, e_id)
     return '', 200
 

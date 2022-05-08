@@ -13,7 +13,7 @@ export class Render {
         }));
     }
 
-    static renderBlockBase(question, width, title, instance, sourceEndpoint) {
+    static renderBlockBase(question, width, title, instance, sourceEndpoint, quest) {
         const block = document.createElement('div');
         block.id = question.question_id;
         block.className = 'position-absolute card border-2 panzoom-exclude';
@@ -29,7 +29,7 @@ export class Render {
         block.append(blockBody);
 
         block.ondblclick = () => {
-            BlockRedactor.showRedactor(question, instance, sourceEndpoint);
+            BlockRedactor.showRedactor(question, instance, sourceEndpoint, quest);
         };
 
         document.getElementById('container').append(block);
@@ -158,7 +158,7 @@ export class Render {
     }
 
     static renderMovement(quest, question, instance, sourceEndpoint, targetEndpoint) {
-        const block = Render.renderBlockBase(question, '15rem', 'Перемещение', instance, sourceEndpoint);
+        const block = Render.renderBlockBase(question, '15rem', 'Перемещение', instance, sourceEndpoint, quest);
         block.className+=' border-warning';
         const answer = document.createElement('div');
         answer.id = 'movement' + question.movements[0].movement_id;

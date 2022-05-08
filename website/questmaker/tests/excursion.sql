@@ -13,7 +13,7 @@ INSERT INTO quests (title, author_id, description, keyword, password, time_open,
 
 --places info
 --branch "Temple architecture"
-INSERT INTO places (coords, radius) VALUES ('(59.8633917835336, 30.472641018135985)', 50);
+INSERT INTO places (coords, radius) VALUES ( '(59.8633917835336, 30.472641018135985)', 50);
 INSERT INTO places (coords, radius) VALUES ('(59.955110380034576, 30.323965457609386)', 50);
 INSERT INTO places (coords, radius) VALUES ('(59.98357858314067, 30.255901911586367)', 50);
 --branch "Yards and layouts"

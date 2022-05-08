@@ -39,7 +39,7 @@ const targetEndpoint = {
 function load(name, id) {
     if (name === 'new') {
         return Quest.makeNewQuest().then((response) => {
-            document.location = 'constructor.html?name=quest&id=' + response.id_in_db;
+            document.location = 'constructor.html?name=quest&id=' + response.quest_id;
             return;
         });
     } else {
@@ -112,7 +112,7 @@ window.onload = () => {
 
         return quest;
     }).then((quest) => {
-        const createNewBlock = function(type, text, renderFunction) {
+        const createNewBlock = (type, text, renderFunction) => {
             quest.data.questions.push( {
                 'answer_options': [],
                 'files': [],
@@ -136,9 +136,9 @@ window.onload = () => {
                     'movement_id': undefined,
                     'next_question_id': undefined,
                     'place': {
-                        'coords': '(0.0,0.0)',
+                        'coords': [0.0, 0.0],
                         'place_id': undefined,
-                        'radius': 0,
+                        'radius': 0.0,
                         'time_close': 'Sun, 12 Aug 2001 19:00:00 GMT',
                         'time_open': 'Sun, 12 Aug 2001 09:00:00 GMT',
                     },
@@ -193,6 +193,10 @@ window.onload = () => {
             });
         };
 
+        document.getElementById('save').onclick = () =>{
+            console.log("Saving quest ", quest);
+            Quest.save(quest.data.quest_id);
+        }
         document.getElementById('addQCBtn').onclick = () => {
             const questionInd = createNewBlock('choice', 'Новый вопрос с выбором ответа', Render.renderQuestion);
             Quest.addQuestion(quest, questionInd, true).then((data)=>{
@@ -216,5 +220,5 @@ window.onload = () => {
         document.getElementById('redactorQuest').onclick = () => {
             QuestRedactor.showQuestRedactor(quest);
         };
-    });
+
 };

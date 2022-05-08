@@ -33,8 +33,10 @@ def create_app(test_config=None):
 
     from .api.constructor import constructor_api
     from .api.catalog import catalog_api
+    from .api.personal_catalog import personal_catalog_api
     app.register_blueprint(constructor_api, url_prefix='/api/constructor')
     app.register_blueprint(catalog_api, url_prefix='/api/catalog')
+    app.register_blueprint(personal_catalog_api, url_prefix='/api/personal_catalog')
 
     manage_webpack = FlaskManageWebpack()
     manage_webpack.init_app(app)

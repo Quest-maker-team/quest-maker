@@ -220,5 +220,5 @@ window.onload = () => {
         document.getElementById('redactorQuest').onclick = () => {
             QuestRedactor.showQuestRedactor(quest);
         };
-
+    });
 };

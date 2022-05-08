@@ -421,7 +421,7 @@ class Question(QuestEntity):
                 'pos_x': self.pos_x,
                 'pos_y': self.pos_y}
 
-    def to_db(self):
+    def load_attachments(self):
         for hint in self.hints:
             hint.to_db(self.question_id)
         for movement in self.movements:
@@ -533,7 +533,7 @@ class Quest(QuestEntity):
             for question in BFS(self.first_question):
                 db.set_question(question, quest_id)
             for question in BFS(self.first_question):
-                question.to_db()
+                question.load_attachments()
         except Exception:
             print("Load go wrong")
             return None

@@ -446,10 +446,10 @@ def set_file(file):
     :param file: file to load
     :return: True if success, False if not
     """
-    with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+    with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('SELECT f_type_id FROM file_types WHERE f_type_name = %s', (file.type,))
         type_id = cursor.fetchone()['f_type_id']
-        if not (type_id is None):
+        if type_id is not None:
             cursor.execute('INSERT INTO files (url_for_file,f_type_id) '
                            'VALUES (%s,%s) RETURNING f_id', (file.url, type_id))
             file.file_id = cursor.fetchone()['f_id']
@@ -506,7 +506,7 @@ def set_quest(quest):
                        'VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING quest_id',
                        (quest.title, quest.author_id, quest.description, quest.keyword,
                         quest.password, quest.time_open, quest.time_close, quest.lead_time,
-                        quest.cover_url, str(quest.hidden).upper(), quest.published))
+                        quest.cover_url, quest.hidden, quest.published))
         quest.id_in_db = cursor.fetchone()['quest_id']
         return True
 

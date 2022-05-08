@@ -1,10 +1,10 @@
 """
 Contains classes for database entities
 """
+import traceback
 
 from . import db
-from .db import set_author, set_quest, set_tags, set_quest_files, set_questions, \
-    create_new_question
+from .db import set_author, set_quest
 from .bfs import BFS
 
 from flask import g
@@ -166,6 +166,11 @@ class Hint(QuestEntity):
     def check_creation_attrs(attrs):
         return all([(attr in attrs) for attr in ['text']])
 
+    def to_db(self, question_id):
+        db.set_hint(self, question_id)
+        for hint_file in self.files:
+            db.set_hint_file(hint_file, self.hint_id)
+
 
 class Answer(QuestEntity):
     """
@@ -192,7 +197,7 @@ class Answer(QuestEntity):
 
         return answer
 
-    def __init__(self, text=None, points=0, parent=None):
+    def __init__(self, text='', points=0, parent=None):
         """
         Create answer object
         :param text: answer text
@@ -203,6 +208,9 @@ class Answer(QuestEntity):
         self.points = points
         self.next_question = None
         self.parent = parent
+
+    def to_db(self, question_id):
+        db.set_answer(self, question_id)
 
     def to_dict(self):
         return {'answer_option_id': self.answer_option_id,
@@ -286,6 +294,9 @@ class Place(QuestEntity):
     def check_creation_attrs(attrs):
         return all([(attr in attrs) for attr in ['coords', 'radius']])
 
+    def to_db(self):
+        db.set_place(self)
+
 
 class Movement(QuestEntity):
     """
@@ -334,6 +345,10 @@ class Movement(QuestEntity):
         self.place = None
         self.next_question = None
         self.parent = None
+
+    def to_db(self, question_id):
+        self.place.to_db()
+        db.set_movement(self, question_id)
 
     @staticmethod
     def check_valid_update_attr(attr, val):
@@ -388,7 +403,7 @@ class Question(QuestEntity):
     def __init__(self):
         self.question_id = None
         self.type = None
-        self.text = None
+        self.text = ''
         self.hints = []
         self.files = []
         self.answers = []
@@ -405,6 +420,16 @@ class Question(QuestEntity):
                 'movements': [move.to_dict() for move in self.movements],
                 'pos_x': self.pos_x,
                 'pos_y': self.pos_y}
+
+    def load_attachments(self):
+        for hint in self.hints:
+            hint.to_db(self.question_id)
+        for movement in self.movements:
+            movement.to_db(self.question_id)
+        for answer in self.answers:
+            answer.to_db(self.question_id)
+        for file in self.files:
+            db.set_question_file(file, self.question_id)
 
     def remove_from_graph(self):
         for parent in self.parents:
@@ -491,18 +516,30 @@ class Quest(QuestEntity):
 
     def to_db(self):
         """
-        Write data from Quest object to database
+        Recursively load quest and related objects to database
+        :return: loaded quest id with
         """
-        quest_id = set_quest(self)
-        set_tags(self, quest_id)
-        question_id = create_new_question(self.first_question, quest_id)
-        questions = dict()
-        questions[self.first_question] = question_id
-        used_files = set_quest_files(self.files, quest_id)
-        if self.first_question.type != 'start':
-            return False
+        try:
+            set_quest(self)
+            quest_id = self.id_in_db
+            if quest_id is None:
+                print("Quest load failed, quest id is None")
+                return None
+            db.set_tags(self.tags, quest_id)
+            for file in self.files:
+                db.set_quest_file(file, self.quest_id)
+            db.set_rating(quest_id, self.rating)
+            for question in BFS(self.first_question):
+                db.set_question(question, quest_id)
+            for question in BFS(self.first_question):
+                question.load_attachments()
+        except Exception:
+            print(traceback.format_exc())
+            return None
         else:
-            return set_questions(used_files, self.first_question, quest_id, {}, question_id, questions, {}, {})
+            db.get_db().commit()
+            print("Quest save")
+            return quest_id
 
     def to_dict(self):
         quest_dict = dict()
@@ -557,9 +594,13 @@ class Quest(QuestEntity):
         startQuestion.type = 'start'
         startQuestion.answers.append(Answer())
         startQuestion.answers[0].parent = startQuestion
+        startQuestion.pos_x = 500
+        startQuestion.pos_y = 320
         endQuestion = Question()
         endQuestion.type = 'end'
         endQuestion.parent = startQuestion.answers[0]
+        endQuestion.pos_x = 800
+        endQuestion.pos_y = 320
         startQuestion.answers[0].next_question = endQuestion
         self.first_question = startQuestion
         return True

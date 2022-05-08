@@ -149,6 +149,15 @@ export class BlockRedactor {
         }
     }
 
+    static updateQuestionText(question) {
+        question.text = document.getElementById('formControlTextarea').value;
+        document.getElementById(question.question_id).getElementsByClassName('card-text')[0].textContent =
+            question.text;
+        Quest.updateEntity('question', question.question_id, JSON.stringify({
+            text: question.text,
+        }));
+    }
+
     static updateAnswers(question, instance, sourceEndpoint) {
         const idToDel = [];
         for (const answer of question.answer_options) {
@@ -328,18 +337,9 @@ export class BlockRedactor {
     static updateQuestion(question, instance, sourceEndpoint) {
         BlockRedactor.updateSpecial('skip', 'skipbx', question, instance, 'skip', sourceEndpoint);
         BlockRedactor.updateSpecial('wrong', 'wrongbx', question, instance, '', sourceEndpoint);
-
         BlockRedactor.updateAnswers(question, instance, sourceEndpoint);
-
         BlockRedactor.updateHints(question);
-
-        question.text = document.getElementById('formControlTextarea').value;
-        document.getElementById(question.question_id).getElementsByClassName('card-text')[0].textContent =
-            question.text;
-        Quest.updateEntity('question', question.question_id, JSON.stringify({
-            type: question.type,
-            text: question.text,
-        })).then(() => console.log('success'));
+        BlockRedactor.updateQuestionText(question);
     }
 
     static createQuestionRedactor(form, question, instance, sourceEndpoint, modal) {

@@ -46,7 +46,7 @@ function load(name, id) {
         return Quest.loadQuest(id);
     }
 }
-function createNewBlock(type, text, renderFunction){
+function createNewBlock(type, text, quest){
     let lastQuestion = {
         'answer_options': [],
         'files': [],
@@ -79,8 +79,7 @@ function createNewBlock(type, text, renderFunction){
         });
     }
     quest.data.questions.push(lastQuestion);
-    const newBlockInd = quest.data.questions.length - 1;
-    return newBlockInd;
+    return lastQuestion;
 }
 window.onload = () => {
     const query = window.location.href.split('?')[1];
@@ -144,24 +143,23 @@ window.onload = () => {
         }, 20000);
 
         Render.render(quest, instance, sourceEndpoint, targetEndpoint, panzoom);
+
         document.getElementById('addMBtn').onclick = () => {
-            const questionInd = createNewBlock('movement', 'Новое перемещение', Render.renderMovement);
-            Quest.addQuestion(quest, questionInd).then((result) =>{
-                Quest.addMovement(quest, questionInd).then((data)=>{
+            const question = createNewBlock('movement', 'Новое перемещение', quest);
+            Quest.addQuestion(quest, question).then((result) =>{
+                Quest.addMovement(quest, question).then((data)=>{
                     const place = {
                         coords: [0.0, 0.0],
                         radius: 0.0,
                     };
-                    Quest.addNewPlace(quest, JSON.stringify(place), questionInd).then((rez)=>{
-                        console.log('Render movement:');
-                        console.log(quest.data.questions[questionInd]);
+                    Quest.addNewPlace(quest, JSON.stringify(place), question).then((rez)=>{
                         Quest.connect('question', 'movement',
-                            quest.data.questions[questionInd].question_id,
-                            quest.data.questions[questionInd].movements[0].movement_id);
+                        question.question_id,
+                        question.movements[0].movement_id);
                         Quest.connect('movement', 'place',
-                            quest.data.questions[questionInd].movements[0].movement_id,
-                            quest.data.questions[questionInd].movements[0].place.place_id);
-                        Render.renderMovement(quest, quest.data.questions[questionInd], instance, sourceEndpoint,
+                        question.movements[0].movement_id,
+                        question.movements[0].place.place_id);
+                        Render.renderMovement(quest, question, instance, sourceEndpoint,
                             targetEndpoint);
                     });
                 });
@@ -169,21 +167,20 @@ window.onload = () => {
         };
 
         document.getElementById('addQBtn').onclick = () => {
-            const questionInd = createNewBlock('open', 'Новый открытый вопрос', Render.renderQuestion);
-            Quest.addQuestion(quest, questionInd).then((data)=>{
+            const question = createNewBlock('open', 'Новый открытый вопрос', quest);
+            Quest.addQuestion(quest, question).then((data)=>{
                 Quest.addEntity('answer_option', JSON.stringify({
                     points: 0.0,
                     text: 'Ответ',
                 })).then((rez) => {
                     console.log('Add new answer'+rez);
-                    quest.data.questions[questionInd].answer_options[0].answer_option_id =
+                    question.answer_options[0].answer_option_id =
                         JSON.parse(rez).answer_option_id;
                     console.log('Render question:');
-                    console.log(quest.data.questions[questionInd]);
                     Quest.connect('question', 'answer_option',
-                        quest.data.questions[questionInd].question_id,
-                        quest.data.questions[questionInd].answer_options[0].answer_option_id);
-                    Render.renderQuestion(quest, quest.data.questions[questionInd], 'Открытый вопрос', instance,
+                    question.question_id,
+                    question.answer_options[0].answer_option_id);
+                    Render.renderQuestion(question, 'Открытый вопрос', instance,
                         sourceEndpoint, targetEndpoint);
                 });
             });
@@ -194,21 +191,18 @@ window.onload = () => {
             Quest.save(quest.data.quest_id);
         }
         document.getElementById('addQCBtn').onclick = () => {
-            const questionInd = createNewBlock('choice', 'Новый вопрос с выбором ответа', Render.renderQuestion);
-            Quest.addQuestion(quest, questionInd, true).then((data)=>{
+            const question = createNewBlock('choice', 'Новый вопрос с выбором ответа', quest);
+            Quest.addQuestion(quest, questionInd).then((data)=>{
                 Quest.addEntity('answer_option', JSON.stringify({
                     points: 0.0,
                     text: 'Ответ',
                 })).then((rez) => {
-                    console.log('Add new answer'+rez);
-                    quest.data.questions[questionInd].answer_options[0].answer_option_id =
+                    question.answer_options[0].answer_option_id =
                         JSON.parse(rez).answer_option_id;
-                    console.log('Render question:');
-                    console.log(quest.data.questions[questionInd]);
                     Quest.connect('question', 'answer_option',
-                        quest.data.questions[questionInd].question_id,
-                        quest.data.questions[questionInd].answer_options[0].answer_option_id);
-                    Render.renderQuestion(quest, quest.data.questions[questionInd], 'Вопрос с выбором ответа',
+                        question.question_id,
+                        question.answer_options[0].answer_option_id);
+                    Render.renderQuestion(quest, question, 'Вопрос с выбором ответа',
                         instance, sourceEndpoint, targetEndpoint);
                 });
             });

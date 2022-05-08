@@ -78,27 +78,27 @@ export class Quest {
         return Quest.makeRequest('POST', url);
     }
 
-    static addNewPlace(quest, place, questionInd) {
+    static addNewPlace(quest, place, question) {
         const url = 'api/constructor/place';
         return Quest.makeRequest('POST', url, place).then((result) => {
             console.log('success add new place '+ result);
             const id = JSON.parse(result).place_id;
-            quest.data.questions[questionInd].movements[0].place.place_id = id;
+            question.movements[0].place.place_id = id;
             console.log('id = '+ id);
             return id;
         });
     }
 
-    static addQuestion(quest, questionInd) {
+    static addQuestion(quest, question) {
         return Quest.makeRequest('POST', 'api/constructor/question', JSON.stringify({
-            type: quest.data.questions[questionInd].type,
+            type: question.type,
             text: ' ',
             pos_x: 0,
             pos_y: 0,
         })).then((result) => {
             console.log('success add new question '+ result);
             const id = JSON.parse(result).question_id;
-            quest.data.questions[questionInd].question_id = id;
+            question.question_id = id;
             console.log('id = '+ id);
             return id;
         }, (error) => {
@@ -106,11 +106,11 @@ export class Quest {
         });
     }
 
-    static addMovement(quest, moveInd) {
+    static addMovement(quest, move) {
         return Quest.makeRequest('POST', 'api/constructor/movement', JSON.stringify({})).then((result) => {
             console.log('success add new movement ' + result);
             const id = JSON.parse(result).movement_id;
-            quest.data.questions[moveInd].movements[0].movement_id = id;
+            move.movements[0].movement_id = id;
             console.log('id = ' + id);
             return id;
         }, (error) => {

@@ -4,7 +4,7 @@ import {Render} from './render';
 export class Quest {
     constructor(data) {
         this.data = data;
-        console.log("Created quest", data);
+        console.log('Created quest', data);
     }
 
     static makeRequest(method, url, data) {

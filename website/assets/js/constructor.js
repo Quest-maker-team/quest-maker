@@ -46,8 +46,8 @@ function load(name, id) {
         return Quest.loadQuest(id);
     }
 }
-function createNewBlock(type, text, quest){
-    let lastQuestion = {
+function createNewBlock(type, text, quest) {
+    const lastQuestion = {
         'answer_options': [],
         'files': [],
         'hints': [],
@@ -57,7 +57,7 @@ function createNewBlock(type, text, quest){
         'type': type,
         'pos_x': 0,
         'pos_y': 0,
-    }
+    };
     if (type!=='movement') {
         lastQuestion.answer_options.push({
             'answer_option_id': undefined,
@@ -154,11 +154,11 @@ window.onload = () => {
                     };
                     Quest.addNewPlace(JSON.stringify(place), question).then((rez)=>{
                         Quest.connect('question', 'movement',
-                        question.question_id,
-                        question.movements[0].movement_id);
+                            question.question_id,
+                            question.movements[0].movement_id);
                         Quest.connect('movement', 'place',
-                        question.movements[0].movement_id,
-                        question.movements[0].place.place_id);
+                            question.movements[0].movement_id,
+                            question.movements[0].place.place_id);
                         Render.renderMovement(quest, question, instance, sourceEndpoint,
                             targetEndpoint);
                     });
@@ -178,8 +178,8 @@ window.onload = () => {
                         JSON.parse(rez).answer_option_id;
                     console.log('Render question:');
                     Quest.connect('question', 'answer_option',
-                    question.question_id,
-                    question.answer_options[0].answer_option_id);
+                        question.question_id,
+                        question.answer_options[0].answer_option_id);
                     Render.renderQuestion(quest, question, 'Открытый вопрос', instance,
                         sourceEndpoint, targetEndpoint);
                 });
@@ -187,9 +187,9 @@ window.onload = () => {
         };
 
         document.getElementById('save').onclick = () =>{
-            console.log("Saving quest ", quest);
+            console.log('Saving quest ', quest);
             Quest.save(quest.data.quest_id);
-        }
+        };
         document.getElementById('addQCBtn').onclick = () => {
             const question = createNewBlock('choice', 'Новый вопрос с выбором ответа', quest);
             Quest.addQuestion(question).then((data)=>{

@@ -439,10 +439,9 @@ export class BlockRedactor {
 
     static addOldPlaces(myMap, quest, newQuestion) {
         const questions = quest.data.questions.filter(question =>
-              question.question_id !== newQuestion.question_id && question.type === 'movement'
-              );
+              question.question_id !== newQuestion.question_id && question.type === 'movement');
         for (const question of questions) {
-            if (typeof(question.movements[0].place.coords)=='string' ){
+            if (typeof(question.movements[0].place.coords)=='string'){
                 let s = question.movements[0].place.coords.split(',');
                 let x = s[0].substring(1);
                 let y = s[1].substring(0, s[1].length-1);
@@ -473,16 +472,16 @@ export class BlockRedactor {
         }
     }
 
-    static addMethodsToMap(myMap, question, curRadius, curCoords) {
+    static addMethodsToMap(myMap, question, radius, coordinates) {
         if (question.movements[0].place.radius>0) {
-            curRadius.value = question.movements[0].place.radius;
+            radius.value = question.movements[0].place.radius;
         } else {
-            curCoords.value = myMap.getCenter();
-            curRadius.value = 25;
+            coordinates.value = myMap.getCenter();
+            radius.value = 25;
         }
         let myCircle = new ymaps.Circle([
             myMap.getCenter(),
-            curRadius.value,
+            radius.value,
         ],  {
             balloonContentHeader: 'Редактируемое место квеста',
             balloonContentBody:
@@ -501,8 +500,8 @@ export class BlockRedactor {
         });
         const changeGeometry = e => {
             const coords = e.get('target').geometry.getCoordinates();
-            curRadius.value = myCircle.geometry.getRadius();
-            curCoords.value = coords;
+            radius.value = myCircle.geometry.getRadius();
+            coordinates.value = coords;
             if(myCircle.balloon.isOpen()){
                 myCircle.balloon.setPosition(coords);
             }
@@ -510,7 +509,7 @@ export class BlockRedactor {
         const changePosition =  e => {
             const coords = e.get('coords');
             myMap.geoObjects.get(myMap.geoObjects.indexOf(myCircle)).geometry.setCoordinates(coords);
-            curCoords.value = coords;
+            coordinates.value = coords;
         }
         myMap.events.add('click', changePosition );
         myCircle.events.add('geometrychange', changeGeometry);
@@ -543,8 +542,8 @@ export class BlockRedactor {
         form.insertAdjacentHTML('beforeend',
             '<div class="z-depth-1-half map-container" style="height: 500px" id="map"></div>');
         let myMap;
-        let curRadius = {'value': question.movements[0].place.radius};
-        let curCoords = {'value': question.movements[0].place.coords};
+        let radius = {'value': question.movements[0].place.radius};
+        let coordinates = {'value': question.movements[0].place.coords};
         ymaps.ready(() => {
             const geolocation = ymaps.geolocation;
             let myPosition;        
@@ -577,7 +576,7 @@ export class BlockRedactor {
                     searchControlProvider: 'yandex#search',
 
                 });
-                BlockRedactor.addMethodsToMap(myMap, question, curRadius, curCoords);
+                BlockRedactor.addMethodsToMap(myMap, question, radius, coordinates);
                 BlockRedactor.addOldPlaces(myMap, quest, question);
                 BlockRedactor.loadHints(question, 'MHints');
             });
@@ -596,7 +595,7 @@ export class BlockRedactor {
             } else {
                 BlockRedactor.updateHints(question);
                 BlockRedactor.updateQuestionText(question);
-                BlockRedactor.updatePlace(question, curCoords.value, curRadius.value);
+                BlockRedactor.updatePlace(question, coordinates.value, curRadius.value);
                 modal.hide();
             }
         };

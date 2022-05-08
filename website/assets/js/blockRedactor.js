@@ -594,7 +594,7 @@ export class BlockRedactor {
             } else {
                 BlockRedactor.updateHints(question);
                 BlockRedactor.updateQuestionText(question);
-                BlockRedactor.updatePlace(question, coordinates.value, curRadius.value);
+                BlockRedactor.updatePlace(question, coordinates.value, radius.value);
                 modal.hide();
             }
         };

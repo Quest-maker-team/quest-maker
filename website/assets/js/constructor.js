@@ -46,7 +46,42 @@ function load(name, id) {
         return Quest.loadQuest(id);
     }
 }
-
+function createNewBlock(type, text, renderFunction){
+    let lastQuestion = {
+        'answer_options': [],
+        'files': [],
+        'hints': [],
+        'movements': [],
+        'question_id': undefined,
+        'text': text,
+        'type': type,
+        'pos_x': 0,
+        'pos_y': 0,
+    }
+    if (type!=='movement') {
+        lastQuestion.answer_options.push({
+            'answer_option_id': undefined,
+            'next_question_id': undefined,
+            'points': 0.0,
+            'text': 'Ответ',
+        });
+    } else {
+        lastQuestion.movements.push( {
+            'movement_id': undefined,
+            'next_question_id': undefined,
+            'place': {
+                'coords': [0.0, 0.0],
+                'place_id': undefined,
+                'radius': 0.0,
+                'time_close': 'Sun, 12 Aug 2001 19:00:00 GMT',
+                'time_open': 'Sun, 12 Aug 2001 09:00:00 GMT',
+            },
+        });
+    }
+    quest.data.questions.push(lastQuestion);
+    const newBlockInd = quest.data.questions.length - 1;
+    return newBlockInd;
+}
 window.onload = () => {
     const query = window.location.href.split('?')[1];
     const queryParams = query.split('&');
@@ -109,45 +144,6 @@ window.onload = () => {
         }, 20000);
 
         Render.render(quest, instance, sourceEndpoint, targetEndpoint, panzoom);
-
-        return quest;
-    }).then((quest) => {
-        const createNewBlock = (type, text, renderFunction) => {
-            quest.data.questions.push( {
-                'answer_options': [],
-                'files': [],
-                'hints': [],
-                'movements': [],
-                'question_id': undefined,
-                'text': text,
-                'type': type,
-                'pos_x': 0,
-                'pos_y': 0,
-            });
-            if (quest.data.questions.slice(-1)[0].type!=='movement') {
-                quest.data.questions.slice(-1)[0].answer_options.push({
-                    'answer_option_id': undefined,
-                    'next_question_id': undefined,
-                    'points': 0.0,
-                    'text': 'Ответ',
-                });
-            } else {
-                quest.data.questions.slice(-1)[0].movements.push( {
-                    'movement_id': undefined,
-                    'next_question_id': undefined,
-                    'place': {
-                        'coords': [0.0, 0.0],
-                        'place_id': undefined,
-                        'radius': 0.0,
-                        'time_close': 'Sun, 12 Aug 2001 19:00:00 GMT',
-                        'time_open': 'Sun, 12 Aug 2001 09:00:00 GMT',
-                    },
-                });
-            }
-            console.log(quest.data.questions.slice(-1)[0]);
-            const newBlockInd = quest.data.questions.length - 1;
-            return newBlockInd;
-        };
         document.getElementById('addMBtn').onclick = () => {
             const questionInd = createNewBlock('movement', 'Новое перемещение', Render.renderMovement);
             Quest.addQuestion(quest, questionInd).then((result) =>{

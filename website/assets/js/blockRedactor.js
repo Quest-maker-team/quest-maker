@@ -438,8 +438,10 @@ export class BlockRedactor {
     }
 
     static addOldPlaces(myMap, quest, newQuestion) {
-        const questionsForSaving = quest.data.questions.filter(question =>{ return question.question_id !== newQuestion.question_id && question.type === 'movement'});
-        for (const question of questionsForSaving) {
+        const questions = quest.data.questions.filter(question =>
+              question.question_id !== newQuestion.question_id && question.type === 'movement'
+              );
+        for (const question of questions) {
             if (typeof(question.movements[0].place.coords)=='string' ){
                 let s = question.movements[0].place.coords.split(',');
                 let x = s[0].substring(1);
@@ -450,7 +452,6 @@ export class BlockRedactor {
                 balloonContentHeader: 'Добавленное место квеста',
                 balloonContentBody:
                     question.text,
-                balloonContentFooter: '<sup>Вы можете выбрать новую точку</sup>',
             }, {
                 preset: 'islands#blueDotIconWithCaption',
                 draggable: false,
@@ -472,24 +473,23 @@ export class BlockRedactor {
         }
     }
 
-    static addMethodsToMap(myMap, question, res, quest) {
+    static addMethodsToMap(myMap, question, curRadius, curCoords) {
         if (question.movements[0].place.radius>0) {
-            res.radius = question.movements[0].place.radius;
+            curRadius.value = question.movements[0].place.radius;
         } else {
-            res.coords = myMap.getCenter();
-            res.radius = 25;
+            curCoords.value = myMap.getCenter();
+            curRadius.value = 25;
         }
-        let myCircle;
-        myCircle = new ymaps.Circle([
+        let myCircle = new ymaps.Circle([
             myMap.getCenter(),
-            res.radius,
+            curRadius.value,
         ],  {
             balloonContentHeader: 'Редактируемое место квеста',
             balloonContentBody:
                 '<p>' +
-                 'Для изменения координат - перетащите точку' +
+                 'Для изменения координат - кликните в любом месте или перетащите круг' +
                  '</p>',
-            balloonContentFooter: '<sup>Вы можете посмотеть информацию о других точках кликнув по ним</sup>',
+            balloonContentFooter: 'Вы можете посмотеть информацию о других точках кликнув по ним',
             hintContent: 'Радиус достижимости ',
         },
      {
@@ -499,19 +499,21 @@ export class BlockRedactor {
             strokeOpacity: 0.8,
             strokeWidth: 3,
         });
-        const changeRadius = function(e) {
+        const changeGeometry = function(e) {
             const coords = e.get('target').geometry.getCoordinates();
-            res.radius = myCircle.geometry.getRadius();
-            res.coords = coords;
-            
+            curRadius.value = myCircle.geometry.getRadius();
+            curCoords.value = coords;
+            if(myCircle.balloon.isOpen()){
+                myCircle.balloon.setPosition(coords);
+            }
         };
         const changePosition =  function(e) {
             const coords = e.get('coords');
             myMap.geoObjects.get(myMap.geoObjects.indexOf(myCircle)).geometry.setCoordinates(coords);
-            res.coords = coords;
+            curCoords.value = coords;
         }
         myMap.events.add('click', changePosition );
-        myCircle.events.add('geometrychange', changeRadius);
+        myCircle.events.add('geometrychange', changeGeometry);
         myMap.geoObjects.add(myCircle);
         myCircle.editor.startEditing();
         myMap.geoObjects.get(myMap.geoObjects.indexOf(myCircle)).balloon.open();
@@ -541,16 +543,11 @@ export class BlockRedactor {
         form.insertAdjacentHTML('beforeend',
             '<div class="z-depth-1-half map-container" style="height: 500px" id="map"></div>');
         let myMap;
-        const mapId = document.getElementById('map');
-        const rez = {
-            'coords':  question.movements[0].place.coords,
-            'radius':  question.movements[0].place.radius,
-        };
+        let curRadius = {'value': question.movements[0].place.radius};
+        let curCoords = {'value': question.movements[0].place.coords};
         ymaps.ready(function() {
             const geolocation = ymaps.geolocation;
-            let myPosition;
-            let myMap;
-            
+            let myPosition;        
             geolocation.get({
                 provider: 'yandex',
                 mapStateAutoApply: true,
@@ -560,17 +557,17 @@ export class BlockRedactor {
                     provider: 'browser',
                     mapStateAutoApply: true
                 }).then(position => {
-                    if (position !== undefined){
+                    if (position !== undefined && question.movements[0].place.radius == 0.0){
                         myPosition = position.geoObjects.position;
                         myMap.setCenter(myPosition);
                         myMap.geoObjects.get(0).setCoordinates(myPosition);
-                        myMap.geoObjects.get(1).setCoordinates(myPosition);
-                        
-                    }
+                        myMap.geoObjects.get(1).setCoordinates(myPosition);                      
+                    }              
+                    
                 });               
+
                 if (question.movements[0].place.radius > 0.0) {
-                    myPosition = question.movements[0].place.coords;
-                    console.log('Change coords');
+                    myPosition = question.movements[0].place.coords;                       
                 }
                 myMap = new ymaps.Map('map', {
                     center: myPosition,
@@ -580,7 +577,7 @@ export class BlockRedactor {
                     searchControlProvider: 'yandex#search',
 
                 });
-                BlockRedactor.addMethodsToMap(myMap, question, rez, quest);
+                BlockRedactor.addMethodsToMap(myMap, question, curRadius, curCoords);
                 BlockRedactor.addOldPlaces(myMap, quest, question);
                 BlockRedactor.loadHints(question, 'MHints');
             });
@@ -599,7 +596,7 @@ export class BlockRedactor {
             } else {
                 BlockRedactor.updateHints(question);
                 BlockRedactor.updateQuestionText(question);
-                BlockRedactor.updatePlace(question, rez.coords, rez.radius);
+                BlockRedactor.updatePlace(question, curCoords.value, curRadius.value);
                 modal.hide();
             }
         };

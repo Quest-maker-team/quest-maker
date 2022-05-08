@@ -7,69 +7,60 @@
         <div class="position-absolute d-flex min-vw-100 min-vh-100">
                             <!--  MENU begin -->
                             
-                <aside class="bd-sidebar col-2 mt-4 bg-light">
-                        <div class="collapse bd-links mt-5 d-grid gap-3">
-                            <li class="mb-0">
-                                <button class="btn d-inline-flex align-items-center rounded collapsed" data-bs-toggle="collapse" data-bs-target="#getting-started-collapse" aria-expanded="false">
+                <aside class="bd-sidebar col-2 mt-4 gy-4 bg-light text-center" style="z-index: 1">
+                            <div class="mt-5">
+                                <button class="accordion-button flex align-items-center collapsed" data-bs-toggle="collapse" data-bs-target="#getting-started-collapse" aria-expanded="false">
                                   Редактировать квест
                                 </button>
                         
-                                <div class="collapse" id="getting-started-collapse" style="">
-                                  <ul class="list-unstyled fw-normal pb-1 small">
-                                      <li><button type="button" class="btn btn-primary mt-2" id="redactorQuest">
+                                <div class="collapse gap-2" id="getting-started-collapse" style="">
+                                      <button type="button" class="btn btn-outline-secondary mt-1" id="redactorQuest">
                                         Изменить описание квеста
                                     </button>
-                                </li>
-                                      <li> <button type="button" class="btn btn-success mt-2" id="addMBtn" >
+                                
+                                      <button type="button" class="btn btn-outline-warning mt-1" id="addMBtn" >
                                         Добавить блок перемещения
-                                    </button></li>
-                                    <li> <button type="button" class="btn btn-success mt-2" id="addQBtn">
+                                    </button>
+                                     <button type="button" class="btn btn-outline-primary mt-1" id="addQBtn">
                                         Добавить открытый вопрос
-                                    </button></li>
-                                    <li> <button type="button" class="btn btn-success mt-2" id="addQCBtn">
+                                    </button>
+                                     <button type="button" class="btn btn-outline-info mt-1" id="addQCBtn">
                                         Добавить вопрос с выбором
-                                    </button></li>
-                                  </ul>
+                                    </button>
+                                  
                                 </div>
-                              </li>
                             
-                            </li>
-                            <li class="mb-1">
-                                <button class="btn d-inline-flex align-items-center rounded collapsed" data-bs-toggle="collapse" data-bs-target="#getting-started-collapse2" aria-expanded="false">
+                            
+                            </div>
+                            <div class="mt-0">
+                                <button class="accordion-button flex align-items-center rounded collapsed" data-bs-toggle="collapse" data-bs-target="#getting-started-collapse2" aria-expanded="false">
                                  Удалить квест
                                 </button>
                         
-                                <div class="collapse" id="getting-started-collapse2" style="">
-                                  <ul class="list-unstyled fw-normal pb-1 small">
-                                      <li><button type="button" class="btn btn-danger mt-2" id="deleteQuest">
+                                <div class="collapse gap-2" id="getting-started-collapse2" >
+                                      <button type="button" class="btn btn-outline-danger mt-1" id="deleteQuest">
                                         Удалить текущий квест
                                     </button>
-                                </li>
-                                  </ul>
+                                
                                 </div>
-                              </li>
+                             
                             
-                            </li>
-                            <li class="mb-1">
-                                <button class="btn d-inline-flex align-items-center rounded collapsed" data-bs-toggle="collapse" data-bs-target="#getting-started-collapse3" aria-expanded="false">
+                            </div>
+                            <div class="mt-0">
+                                <button class="accordion-button d-inline-flex align-items-center rounded collapsed" data-bs-toggle="collapse" data-bs-target="#getting-started-collapse3" aria-expanded="false">
                                  Новый квест
                                 </button>
-                                <div class="collapse" id="getting-started-collapse3" style="">
-                                  <ul class="list-unstyled fw-normal pb-1 small">
-                                      <li><button type="button" class="btn btn-success mt-2" onclick="window.location.href='/constructor.html?name=new&id=0'" id="createNewQuest">
+                                <div class="collapse gap-2" id="getting-started-collapse3" >
+                                      <button type="button" class="btn btn-outline-success mt-1" onclick="window.location.href='/constructor.html?name=new&id=0'" id="createNewQuest">
                                         Создать новый квест
-                                    </button>
-                                </li>
-                                  </ul>
+                                      </button> 
                                 </div>
-                              </li>
                             
-                            </li>
+                            </div>
                             <!--<button type="button" class="btn btn-primary" id="save">
                                 Сохранить
                             </button>-->
                             
-                        </div>
                     
                      
            

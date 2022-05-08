@@ -97,10 +97,6 @@ window.onload = () => {
                 console.log('disconnect success'));
         });
 
-        document.getElementById('redactorQuest').onclick = () => {
-            QuestRedactor.showQuestRedactor(quest);
-        };
-
 
         setInterval(() => {
             for (const question of quest.data.questions) {
@@ -216,6 +212,9 @@ window.onload = () => {
                         instance, sourceEndpoint, targetEndpoint);
                 });
             });
+        };
+        document.getElementById('redactorQuest').onclick = () => {
+            QuestRedactor.showQuestRedactor(quest);
         };
     });
 };

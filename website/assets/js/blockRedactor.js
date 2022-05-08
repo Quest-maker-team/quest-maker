@@ -663,6 +663,7 @@ export class QuestRedactor {
     static showQuestRedactor(quest) {
         const modal = new bootstrap.Modal(document.getElementById('redactor'));
         const form = document.getElementById('redactorForm');
+        console.log(form, modal);
         form.innerHTML = '';
 
         QuestRedactor.createQuestRedactor(form, quest);

@@ -137,6 +137,9 @@ export class Render {
 
     static renderQuestion(quest, question, title, instance, sourceEndpoint, targetEndpoint) {
         const block = Render.renderBlockBase(question, '15rem', title, instance, sourceEndpoint);
+        if(question.type==='choice')
+            block.className+=' border-info';
+        else
         block.className+=' border-primary';
         const answerTable = document.createElement('ul');
         answerTable.className = 'list-group list-group-flush';

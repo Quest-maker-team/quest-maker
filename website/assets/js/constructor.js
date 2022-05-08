@@ -39,7 +39,7 @@ const targetEndpoint = {
 function load(name, id) {
     if (name === 'new') {
         return Quest.makeNewQuest().then((response) => {
-            document.location = 'constructor.html?name=quest&id=' + response.id_in_db;
+            document.location = 'constructor.html?name=quest&id=' + response.quest_id;
             return;
         });
     } else {

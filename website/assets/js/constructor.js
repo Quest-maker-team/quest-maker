@@ -212,8 +212,9 @@ window.onload = () => {
         };
         document.getElementById('deleteQuest').onclick = () => {
             if (confirm('Вы уверены, что хотите удалить квест? Отменить это действие будет невозможно.')){
-                deleteQuestRequest(quest.quest_id);
-                document.location.href = '../profile';
+                console.log(quest);
+                deleteQuestRequest(quest.data.quest_id).then(() =>
+                    document.location.href = '../profile_catalog');
             }
         };
     });

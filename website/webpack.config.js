@@ -20,6 +20,7 @@ module.exports = {
     entry: {
         general: path.join(__dirname, 'assets', 'js', 'general.js'),
         constructor_js: path.join(__dirname, 'assets', 'js', 'constructor.js'),
+        personalCatalog_js: path.join(__dirname, 'assets', 'js', 'personalCatalog.js'),
         index_css: path.join(__dirname, 'assets', 'css', 'index.css'),
         forms_css: path.join(__dirname, 'assets', 'css', 'forms.css'),
         roboto_css: path.join(__dirname, 'assets', 'css', 'roboto.css'),

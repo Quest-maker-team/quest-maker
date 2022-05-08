@@ -297,7 +297,6 @@ class Place(QuestEntity):
         db.set_place(self)
 
 
-
 class Movement(QuestEntity):
     """
     Movement representation class
@@ -520,7 +519,6 @@ class Quest(QuestEntity):
         :return: loaded quest id with
         """
         try:
-            db.print_quest("test_file", self)
             set_quest(self)
             quest_id = self.id_in_db
             if quest_id is None:

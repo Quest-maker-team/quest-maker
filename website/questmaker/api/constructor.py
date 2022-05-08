@@ -96,6 +96,7 @@ def create_quest():
     if not Quest.check_creation_attrs(quest_dict.keys()):
         return 'Not enough JSON attributes for creating', 400
     quest = Quest()
+    quest.author_id = current_user.author['author_id']
     rc = quest.create_from_dict(quest_dict)
     if not rc:
         return 'Wrong JSON attributes', 400

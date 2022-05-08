@@ -495,7 +495,6 @@ def set_quest(quest):
     """
     Add row to table quest in database from Quest object and author email
     :param quest: quest to load in database
-    :param published: string value: 'TRUE' or 'FALSE' - is quest already published
     :return: quest id
     """
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:

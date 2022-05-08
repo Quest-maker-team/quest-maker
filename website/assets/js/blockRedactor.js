@@ -594,7 +594,7 @@ export class BlockRedactor {
             } else {
                 BlockRedactor.updateHints(question);
                 BlockRedactor.updateQuestionText(question);
-                BlockRedactor.updatePlace(question, coordinates.value, curRadius.value);
+                BlockRedactor.updatePlace(question, coordinates.value, radius.value);
                 modal.hide();
             }
         };
@@ -727,6 +727,7 @@ export class QuestRedactor {
     static showQuestRedactor(quest) {
         const modal = new bootstrap.Modal(document.getElementById('redactor'));
         const form = document.getElementById('redactorForm');
+        console.log(form, modal);
         form.innerHTML = '';
 
         QuestRedactor.createQuestRedactor(form, quest);

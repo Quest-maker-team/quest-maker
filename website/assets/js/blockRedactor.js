@@ -275,6 +275,15 @@ export class BlockRedactor {
         }
     }
 
+    static updatePlace(question, coords, radius){
+        question.movements[0].place.coords = coords;
+        question.movements[0].place.radius = radius;
+        Quest.updateEntity('place', question.movements[0].place.place_id, JSON.stringify({
+            coords: coords,
+            radius: radius
+        })).catch((result) => console.log(result));
+    }
+
     static validateAnswers() {
         const answers = document.querySelectorAll('input[name="answerText_old"], input[name="answerText_new"]');
 
@@ -589,11 +598,8 @@ export class BlockRedactor {
                 return false;
             } else {
                 BlockRedactor.updateHints(question);
-                const questionForSave = quest.data.questions.find(q=>{return question.question_id===q.question_id});
-                console.log(questionForSave);
-                questionForSave.movements[0].place.coords = rez.coords;
-                questionForSave.movements[0].place.radius = rez.radius;
-                questionForSave.text = document.getElementById('formControlTextarea').value;
+                BlockRedactor.updateQuestionText(question);
+                BlockRedactor.updatePlace(question, rez.coords, rez.radius);
                 modal.hide();
             }
         };

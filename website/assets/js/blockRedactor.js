@@ -275,12 +275,12 @@ export class BlockRedactor {
         }
     }
 
-    static updatePlace(question, coords, radius){
+    static updatePlace(question, coords, radius) {
         question.movements[0].place.coords = coords;
         question.movements[0].place.radius = radius;
         Quest.updateEntity('place', question.movements[0].place.place_id, JSON.stringify({
             coords: coords,
-            radius: radius
+            radius: radius,
         })).catch((result) => console.log(result));
     }
 
@@ -333,7 +333,7 @@ export class BlockRedactor {
 
     static validateQuestion() {
         const question = document.getElementById('formControlTextarea');
-        
+
         if (question.value === '') {
             question.className = 'form-control mt-0 is-invalid';
             return false;
@@ -438,13 +438,13 @@ export class BlockRedactor {
     }
 
     static addOldPlaces(myMap, quest, newQuestion) {
-        const questions = quest.data.questions.filter(question =>
-              question.question_id !== newQuestion.question_id && question.type === 'movement');
+        const questions = quest.data.questions.filter((question) =>
+            question.question_id !== newQuestion.question_id && question.type === 'movement');
         for (const question of questions) {
-            if (typeof(question.movements[0].place.coords)=='string'){
-                let s = question.movements[0].place.coords.split(',');
-                let x = s[0].substring(1);
-                let y = s[1].substring(0, s[1].length-1);
+            if (typeof(question.movements[0].place.coords)=='string') {
+                const s = question.movements[0].place.coords.split(',');
+                const x = s[0].substring(1);
+                const y = s[1].substring(0, s[1].length-1);
                 question.movements[0].place.coords = [parseFloat(x), parseFloat(y)];
             }
             const placeMark = new ymaps.Placemark(question.movements[0].place.coords, {
@@ -479,10 +479,10 @@ export class BlockRedactor {
             coordinates.value = myMap.getCenter();
             radius.value = 25;
         }
-        let myCircle = new ymaps.Circle([
+        const myCircle = new ymaps.Circle([
             myMap.getCenter(),
             radius.value,
-        ],  {
+        ], {
             balloonContentHeader: 'Редактируемое место квеста',
             balloonContentBody:
                 '<p>' +
@@ -491,26 +491,26 @@ export class BlockRedactor {
             balloonContentFooter: 'Вы можете посмотеть информацию о других точках кликнув по ним',
             hintContent: 'Радиус достижимости ',
         },
-     {
+        {
             draggable: true,
             fillColor: '#DB709377',
             strokeColor: '#990066',
             strokeOpacity: 0.8,
             strokeWidth: 3,
         });
-        const changeGeometry = e => {
+        const changeGeometry = (e) => {
             const coords = e.get('target').geometry.getCoordinates();
             radius.value = myCircle.geometry.getRadius();
             coordinates.value = coords;
-            if(myCircle.balloon.isOpen()){
+            if (myCircle.balloon.isOpen()) {
                 myCircle.balloon.setPosition(coords);
             }
         };
-        const changePosition =  e => {
+        const changePosition = (e) => {
             const coords = e.get('coords');
             myMap.geoObjects.get(myMap.geoObjects.indexOf(myCircle)).geometry.setCoordinates(coords);
             coordinates.value = coords;
-        }
+        };
         myMap.events.add('click', changePosition );
         myCircle.events.add('geometrychange', changeGeometry);
         myMap.geoObjects.add(myCircle);
@@ -519,10 +519,10 @@ export class BlockRedactor {
     }
 
     static createMovementRedactor(form, question, modal, quest) {
-        if (typeof(question.movements[0].place.coords)=='string' ){
-            let s = question.movements[0].place.coords.split(',');
-            let x = s[0].substring(1);
-            let y = s[1].substring(0, s[1].length-1);
+        if (typeof(question.movements[0].place.coords)=='string' ) {
+            const s = question.movements[0].place.coords.split(',');
+            const x = s[0].substring(1);
+            const y = s[1].substring(0, s[1].length-1);
 
             question.movements[0].place.coords = [parseFloat(x), parseFloat(y)];
         }
@@ -542,31 +542,30 @@ export class BlockRedactor {
         form.insertAdjacentHTML('beforeend',
             '<div class="z-depth-1-half map-container" style="height: 500px" id="map"></div>');
         let myMap;
-        let radius = {'value': question.movements[0].place.radius};
-        let coordinates = {'value': question.movements[0].place.coords};
+        const radius = {'value': question.movements[0].place.radius};
+        const coordinates = {'value': question.movements[0].place.coords};
         ymaps.ready(() => {
             const geolocation = ymaps.geolocation;
-            let myPosition;        
+            let myPosition;
             geolocation.get({
                 provider: 'yandex',
                 mapStateAutoApply: true,
-            }).then(result => {
+            }).then((result) => {
                 myPosition = result.geoObjects.position;
                 geolocation.get({
                     provider: 'browser',
-                    mapStateAutoApply: true
-                }).then(position => {
-                    if (position !== undefined && question.movements[0].place.radius == 0.0){
+                    mapStateAutoApply: true,
+                }).then((position) => {
+                    if (position !== undefined && question.movements[0].place.radius == 0.0) {
                         myPosition = position.geoObjects.position;
                         myMap.setCenter(myPosition);
                         myMap.geoObjects.get(0).setCoordinates(myPosition);
-                        myMap.geoObjects.get(1).setCoordinates(myPosition);                      
-                    }              
-                    
-                });               
+                        myMap.geoObjects.get(1).setCoordinates(myPosition);
+                    }
+                });
 
                 if (question.movements[0].place.radius > 0.0) {
-                    myPosition = question.movements[0].place.coords;                       
+                    myPosition = question.movements[0].place.coords;
                 }
                 myMap = new ymaps.Map('map', {
                     center: myPosition,

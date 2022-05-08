@@ -608,13 +608,7 @@ export class BlockRedactor {
     static createStartRedactor(form, question, modal) {
         this.addTextRedactor(form, 'Приветственное сообщение:', question.text);
         document.getElementById('update').onclick = () => {
-            question.text = document.getElementById('formControlTextarea').value;
-            document.getElementById(question.question_id).getElementsByClassName('card-text')[0].textContent =
-                question.text;
-            Quest.updateEntity('question', question.question_id, JSON.stringify({
-                type: question.type,
-                text: question.text,
-            })).then(() => console.log('success'));
+            BlockRedactor.updateQuestionText(question);
             modal.hide();
         };
     }
@@ -622,13 +616,7 @@ export class BlockRedactor {
     static createFinishRedactor(form, question, modal) {
         this.addTextRedactor(form, 'Прощальное сообщение:', question.text);
         document.getElementById('update').onclick = () => {
-            question.text = document.getElementById('formControlTextarea').value;
-            document.getElementById(question.question_id).getElementsByClassName('card-text')[0].textContent =
-                question.text;
-            Quest.updateEntity('question', question.question_id, JSON.stringify({
-                type: question.type,
-                text: question.text,
-            })).then(() => console.log('success'));
+            BlockRedactor.updateQuestionText(question);
             modal.hide();
         };
     }

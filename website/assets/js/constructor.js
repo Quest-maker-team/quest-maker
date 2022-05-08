@@ -39,7 +39,7 @@ const targetEndpoint = {
 function load(name, id) {
     if (name === 'new') {
         return Quest.makeNewQuest().then((response) => {
-            document.location = 'constructor.html?name=quest&id=' + response.id_in_db;
+            document.location = 'constructor.html?name=quest&id=' + response.quest_id;
             return;
         });
     } else {
@@ -197,6 +197,10 @@ window.onload = () => {
             });
         };
 
+        document.getElementById('save').onclick = () =>{
+            console.log("Saving quest ", quest);
+            Quest.save(quest.data.quest_id);
+        }
         document.getElementById('addQCBtn').onclick = () => {
             const questionInd = createNewBlock('choice', 'Новый вопрос с выбором ответа', Render.renderQuestion);
             Quest.addQuestion(quest, questionInd, true).then((data)=>{
@@ -217,5 +221,6 @@ window.onload = () => {
                 });
             });
         };
+
     });
 };

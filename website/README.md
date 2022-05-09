@@ -1,5 +1,7 @@
 # QuestMaker website
-Web application for creating and managing quests. 
+Web application for creating and managing quests.
+## User guide
+Use our website [quest-maker on heroku](https://quest-maker.herokuapp.com/) or websites that use our project.
 ## Installation
 Use `git clone  https://github.com/Quest-maker-team/quest-maker` to load repo in your computer.
 ## Dependencies

@@ -3,7 +3,7 @@
                          ('/constructor.html?name=new&id=0', 'constructor', 'Новый квест'),
                          ('/catalog.html', 'catalog', 'Каталог')] %}
 {% block header %}
-    <header class="border-bottom position-sticky top-0" style="z-index: 1000">
+    <header class="border-bottom {% if active_page == 'constructor' %}position-fixed{% else %}position-sticky{% endif %} top-0 w-100" style="z-index: 1000">
             <nav class="navbar navbar-expand-lg navbar-light bg-light flex-column">
                 <div class="container-fluid w-100">
                     <div>

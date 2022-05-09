@@ -161,7 +161,7 @@ window.onload = () => {
                             '<p class="card-text"> ID: ' +
                             quest.keyword +
                             '</p>' +
-                            '<a href="#" class="btn btn-primary">Подробнее</a>' +
+                            '<!--<a href="#" class="btn btn-primary">Подробнее</a>-->' +
                         '</div>\n' +
                     '</div>');
             }

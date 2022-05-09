@@ -23,10 +23,15 @@ function makeRequest(method, url, data) {
     });
 }
 
-function load(offset, limit) {
-    return makeRequest('GET', 'api/catalog/quests' +
-                                        '?offset=' + offset.toString() +
-                                        '&limit=' + limit.toString()).then((result) => {
+function load(offset, limit, tags) {
+    let url = 'api/catalog/quests' +
+              '?offset=' + offset.toString() +
+              '&limit=' + limit.toString();
+    for (const tagInd in tags) {
+        if (document.getElementById('tag' + tagInd).checked)
+            url += '&tags=' + tags[tagInd];
+    }
+    return makeRequest('GET', url).then((result) => {
         return JSON.parse(result);
     });
 }
@@ -91,17 +96,35 @@ function addPagination(limit, offset, total) {
             '</li>');
 }
 
-function addTags() {
+function addTags(offset, limit, chekedTag) {
     const filters = document.getElementById('filters');
-    makeRequest('GET', 'api/catalog/tags').then((result) => {
+    return makeRequest('GET', 'api/catalog/tags').then((result) => {
         tags = JSON.parse(result).tags;
         console.log(tags);
         for (const tagInd in tags){
             filters.insertAdjacentHTML('beforeend',
                 '<div class="form-check">' +
-                    '<input class="form-check-input" type="checkbox" value="" id=' + tagInd + '>' +
-                    '<label class="form-check-label" for=' + tagInd + '>' + tags[tagInd] + '</label>' +
+                    '<input class="form-check-input" type="checkbox" value="" id=tag' + tagInd + '>' +
+                    '<label class="form-check-label" for=tag' + tagInd + '>' + tags[tagInd] + '</label>' +
                 '</div>');
+        }
+        for (const tag of chekedTag){
+            document.getElementById('tag' + tags.findIndex((rez) => tag === rez)).checked = true;
+        }
+        document.getElementById('reset').onclick = () => {
+            for (const tagInd in tags) {
+                document.getElementById('tag' + tagInd).checked = false;
+            }
+        };
+        document.getElementById('apply').onclick = () => {
+            let url = '/catalog.html' +
+                                '?offset=' + offset +
+                                '&limit=' + limit.toString();
+            for (const tagInd in tags) {
+                if (document.getElementById('tag' + tagInd).checked)
+                    url += '&tags=' + tags[tagInd];
+            }
+            document.location = url;
         }
     });
 }
@@ -111,31 +134,38 @@ window.onload = () => {
     const queryParams = query.split('&');
     const offset = parseInt(queryParams[0].split('=')[1]);
     const limit = parseInt(queryParams[1].split('=')[1]);
-    load(offset, limit).then((result) => {
-        console.log(result);
-        const container = document.getElementById('container');
-        for (const quest of result.quests) {
-            container.insertAdjacentHTML('beforeend',
-                '<div class="card">' +
-                    '<div class="card-body">' +
-                        '<h5 class="card-title">' + quest.title + '</h5>' +
-                        '<h6 class="card-subtitle mb-2 text-muted">Автор: ' + quest.author + '</h6>' +
-                        '<p class="card-text" style="overflow: hidden;' +
-                                                    'display: -webkit-box;' +
-                                                    '-webkit-line-clamp: 5;\n' +
-                                                    '-webkit-box-orient: vertical;\n' +
-                                                    'line-height: 1.3em;\n' +
-                                                    'height: 6.6em;">' +
-                            quest.description +
-                        '</p>' +
-                        '<p class="card-text"> ID: ' +
-                        quest.keyword +
-                        '</p>' +
-                        '<a href="#" class="btn btn-primary">Подробнее</a>' +
-                    '</div>\n' +
-                '</div>');
-        }
-        addPagination(limit, offset, result.total);
-        addTags();
+    const tags = [];
+
+    for (const param of queryParams){
+        if (param.split('=')[0] === 'tags')
+            tags.push(param.split('=')[1]);
+    }
+        addTags(offset, limit, tags).then(() => {
+            load(offset, limit, tags).then((result) => {
+            console.log(result);
+            const container = document.getElementById('container');
+            for (const quest of result.quests) {
+                container.insertAdjacentHTML('beforeend',
+                    '<div class="card">' +
+                        '<div class="card-body">' +
+                            '<h5 class="card-title">' + quest.title + '</h5>' +
+                            '<h6 class="card-subtitle mb-2 text-muted">Автор: ' + quest.author + '</h6>' +
+                            '<p class="card-text" style="overflow: hidden;' +
+                                                        'display: -webkit-box;' +
+                                                        '-webkit-line-clamp: 5;\n' +
+                                                        '-webkit-box-orient: vertical;\n' +
+                                                        'line-height: 1.3em;\n' +
+                                                        'height: 6.6em;">' +
+                                quest.description +
+                            '</p>' +
+                            '<p class="card-text"> ID: ' +
+                            quest.keyword +
+                            '</p>' +
+                            '<a href="#" class="btn btn-primary">Подробнее</a>' +
+                        '</div>\n' +
+                    '</div>');
+            }
+            addPagination(limit, offset, result.total);
+        });
     });
 };

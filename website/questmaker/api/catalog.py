@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 from questmaker.db import get_quest_from_catalog, get_tags as db_get_tags, \
-    get_quest_tags, get_quest_rating, get_quest_files, get_quests_from_catalog
+    get_quest_tags, get_quest_rating, get_quest_files, get_quests_from_catalog, get_quests_num
 
 catalog_api = Blueprint("catalog_api", __name__)
 
@@ -43,3 +43,8 @@ def get_quests():
 @catalog_api.route('/tags', methods=['GET'])
 def get_tags():
     return jsonify({"tags": [tag[0] for tag in db_get_tags()]})
+
+
+@catalog_api.route('/quests/amount', methods=['GET'])
+def get_quests_amount():
+    return jsonify({'quests_amount': get_quests_num()})

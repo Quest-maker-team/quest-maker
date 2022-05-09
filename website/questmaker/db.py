@@ -760,3 +760,9 @@ def remove_quest(quest_id):
             return False
         cursor.execute('DELETE from quests WHERE quest_id = %s', (quest_id,))
         return True
+
+
+def get_quests_num():
+    with get_db().cursor() as cursor:
+        cursor.execute('SELECT COUNT(quest_id) FROM quests_catalog')
+        return cursor.fetchone()[0]

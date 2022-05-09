@@ -36,8 +36,8 @@ def get_quests():
             sort_key not in ['id', 'rating', 'title'] or order not in ['asc', 'desc']:
         return 'Bad request', 400
 
-    quests = get_quests_from_catalog(limit, offset, sort_key, order, author, tags)
-    return {"quests": [get_quest_dict(quest) for quest in quests]}
+    total, quests = get_quests_from_catalog(limit, offset, sort_key, order, author, tags)
+    return {"quests": [get_quest_dict(quest) for quest in quests], "total": total}
 
 
 @catalog_api.route('/tags', methods=['GET'])

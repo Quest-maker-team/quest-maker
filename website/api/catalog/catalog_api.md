@@ -32,7 +32,8 @@ All requests return `200 OK` if success else `400 Bad Request` with info about e
 
 * `GET api/catalog/quests`
     
-    Return JSON with list `quests` where each quest is object the same as returned from `GET api/catalog/quests/{id}`. Example:
+    Return JSON with total of quests (excluding `limit` and `offset`) 
+and list `quests` where each quest is object the same as returned from `GET api/catalog/quests/{id}`. Example:
     ```json
     {
       "quests": [
@@ -47,6 +48,7 @@ All requests return `200 OK` if success else `400 Bad Request` with info about e
           ...
         }
       ]
+      "total": 4
     }
     ```
    
@@ -69,4 +71,4 @@ All requests return `200 OK` if success else `400 Bad Request` with info about e
     {
       "quests_amount": 100
     }
-    ```
+  ```

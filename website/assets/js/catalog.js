@@ -24,7 +24,7 @@ function makeRequest(method, url, data) {
 }
 
 function load(offset, limit) {
-    console.log(offset, limit);
+    //console.log(offset, limit);
     return makeRequest('GET', 'api/catalog/quests' +
                                         '?offset=' + offset.toString() +
                                         '&limit=' + limit.toString()).then((result) => {
@@ -85,6 +85,21 @@ function addPagination(limit, offset) {
             '</li>');
 }
 
+function addTags() {
+    const filters = document.getElementById('filters');
+    makeRequest('GET', 'api/catalog/tags').then((result) => {
+        tags = JSON.parse(result).tags;
+        console.log(tags);
+        for (const tagInd in tags){
+            filters.insertAdjacentHTML('beforeend',
+                '<div class="form-check">' +
+                    '<input class="form-check-input" type="checkbox" value="" id=' + tagInd + '>' +
+                    '<label class="form-check-label" for=' + tagInd + '>' + tags[tagInd] + '</label>' +
+                '</div>');
+        }
+    });
+}
+
 window.onload = () => {
     const query = window.location.href.split('?')[1];
     const queryParams = query.split('&');
@@ -93,7 +108,7 @@ window.onload = () => {
     load(offset, limit).then((result) => {
         console.log(result);
         const container = document.getElementById('container');
-        for (quest of result.quests) {
+        for (const quest of result.quests) {
             container.insertAdjacentHTML('beforeend',
                 '<div class="card">' +
                     '<div class="card-body">' +
@@ -115,5 +130,6 @@ window.onload = () => {
                 '</div>');
         }
         addPagination(limit, offset);
+        addTags();
     });
 };

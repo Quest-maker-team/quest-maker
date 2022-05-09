@@ -18,8 +18,10 @@ def create_app(test_config=None):
     :return: configured app
     """
     app = Flask(__name__, instance_relative_config=True)
-
-    app.config.from_pyfile('config.py', silent=True)
+    if test_config:
+        app.config.from_pyfile('config.py', silent=True)
+    else:
+        app.config.from_prefixed_env()
 
     from . import db
     db.init_app(app)

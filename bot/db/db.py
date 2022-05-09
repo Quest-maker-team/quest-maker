@@ -1,8 +1,8 @@
-from configparser import ConfigParser
 from nis import match
 import psycopg2
 from psycopg2.extras import DictCursor
 import datetime
+import os
 
 
 class MetaSingleton(type):
@@ -29,14 +29,12 @@ class Database(metaclass=MetaSingleton):
         :param self: instance
         :return: connection object
         """
-        if self.connection is None:
-            config = ConfigParser()
-            config.read('db_config.ini')
-            name = config['DB']['NAME']
-            user = config['DB']['USER']
-            password = config['DB']['PASSWORD']
-            host = config['DB']['HOST']
-            port = config['DB']['PORT']
+        if self.connection is None:      
+            name = os.environ['DB_NAME']
+            user = os.environ['DB_USER']
+            password = os.environ['DB_PASSWORD']
+            host = os.environ['DB_HOST']
+            port = os.environ['DB_PORT']
             self.connection = psycopg2.connect(dbname=name, user=user, password=password, host=host, port=port)
         return self.connection
 

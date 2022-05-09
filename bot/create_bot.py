@@ -15,7 +15,7 @@ from aiogram.contrib.middlewares.logging import LoggingMiddleware
 storage=MemoryStorage()
 
 WEBHOOK_HOST = os.environ['WEBHOOK_HOST']  # Domain name or IP addres which your bot is located.
-WEBHOOK_PORT = int(os.environ['PORT'])  # Telegram Bot API allows only for usage next ports: 443, 80, 88 or 8443
+WEBHOOK_PORT = int(os.environ['WEBHOOK_PORT'])  # Telegram Bot API allows only for usage next ports: 443, 80, 88 or 8443
 WEBHOOK_URL_PATH = os.environ['WEBHOOK_URL_PATH']  # Part of URL
 
 WEBHOOK_URL = f"https://{WEBHOOK_HOST}:{WEBHOOK_PORT}{WEBHOOK_URL_PATH}"

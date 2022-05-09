@@ -723,11 +723,11 @@ def get_quests_from_catalog(limit, offset, sort_key, order, author, tags):
     params = []
     if tags:
         tags_str = ', '.join("'" + tag + "'" for tag in tags)
-        query += 'JOIN (SELECT COUNT(tag_id) AS tags_matched FROM quests ' \
+        query += 'JOIN (SELECT quest_id, COUNT(tag_id) AS tags_matched FROM quests ' \
                  'JOIN quest_tags USING (quest_id) JOIN tags USING (tag_id) ' \
                  f'WHERE tag_name IN ({tags_str}) ' \
-                 'GROUP BY quest_id) USING (quest_id)' \
-                 'WHERE tags_matched = %s '
+                 'GROUP BY quest_id) AS matched USING (quest_id)' \
+                 'WHERE tags_matched >= %s '
         params.append(len(tags))
         if author:
             query += ' AND author = %s '
@@ -745,6 +745,8 @@ def get_quests_from_catalog(limit, offset, sort_key, order, author, tags):
         query += f' ORDER BY title '
     else:
         return
+
+    query += f'{order}'
 
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute(query, tuple(params))

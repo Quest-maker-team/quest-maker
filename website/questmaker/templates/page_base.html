@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% set navigation_bar = [('/', 'index', 'Главная'),
                          ('/constructor.html?name=new&id=0', 'constructor', 'Новый квест'),
-                         ('#', 'list', 'Каталог')] %}
+                         ('/catalog.html?offset=0&limit=50', 'catalog', 'Каталог')] %}
 {% block header %}
-    <header class="border-bottom fixed-top">
+    <header class="border-bottom {% if active_page == 'constructor' %}position-fixed{% else %}position-sticky{% endif %} top-0 w-100" style="z-index: 1000">
             <nav class="navbar navbar-expand-lg navbar-light bg-light flex-column">
-                <div class="container-fluid vw-100">
+                <div class="container-fluid w-100">
                     <div>
                         <a href="/" class="navbar-brand d-flex align-items-center mb-2 mb-lg-0 text-dark text-decoration-none">
                             <img src="{{ webpack_url_for('img/favicon.ico') }} ">

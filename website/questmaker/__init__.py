@@ -58,4 +58,12 @@ def create_app(test_config=None):
         """
         return render_template('constructor.html', user=current_user)
 
+    @app.route('/catalog.html')
+    def catalog():
+        """
+        Catalog page
+        :return: catalog page
+        """
+        return render_template('catalog.html', user=current_user)
+
     return app

@@ -24,7 +24,6 @@ function makeRequest(method, url, data) {
 }
 
 function load(offset, limit) {
-    //console.log(offset, limit);
     return makeRequest('GET', 'api/catalog/quests' +
                                         '?offset=' + offset.toString() +
                                         '&limit=' + limit.toString()).then((result) => {
@@ -32,51 +31,58 @@ function load(offset, limit) {
     });
 }
 
-function addPagination(limit, offset) {
+function addPagination(limit, offset, total) {
         const pagination = document.getElementById('pagination');
         pagination.insertAdjacentHTML('beforeend',
-        '<li class="page-item ' + ((offset - limit < 0)?'disabled':'') + '">' +
+        '<li class="page-item ' + ((offset - limit < 0)?'disabled"':'"') + '>' +
                 '<a class="page-link" ' +
                     'href="/catalog.html?offset=' + (offset - limit).toString() + '&limit=' + limit.toString() + '"' +
                     ' aria-label="Предыдущая">' +
                     '<span aria-hidden="true">&laquo;</span>' +
                 '</a>' +
             '</li>');
-            if (offset > limit * 2) {
-                pagination.insertAdjacentHTML('beforeend',
-                    '<li class="page-item disabled"><a class="page-link">...</a></li>');
-            }
-            if (offset > limit) {
-                pagination.insertAdjacentHTML('beforeend',
+        if (offset > limit * 2) {
+            pagination.insertAdjacentHTML('beforeend',
+                '<li class="page-item disabled"><a class="page-link">...</a></li>');
+        }
+        if (offset > limit) {
+            pagination.insertAdjacentHTML('beforeend',
                 '<li class="page-item">' +
                     '<a class="page-link" ' +
                         'href="/catalog.html?offset=' + (offset - limit * 2).toString() + '&limit=' + limit.toString() + '">' +
                         (offset / limit - 1) + '</a>' +
                 '</li>');
-            }
-            if (offset >= limit) {
-                pagination.insertAdjacentHTML('beforeend',
+        }
+        if (offset >= limit) {
+            pagination.insertAdjacentHTML('beforeend',
                 '<li class="page-item">' +
                     '<a class="page-link" ' +
                         'href="/catalog.html?offset=' + (offset - limit).toString() + '&limit=' + limit.toString() + '">' +
                         (offset)/limit + '</a>' +
                 '</li>');
-            }
-            pagination.insertAdjacentHTML('beforeend',
+        }
+
+        pagination.insertAdjacentHTML('beforeend',
             '<li class="page-item active">' +
                 '<a class="page-link" href="/catalog.html?offset=' + offset + '&limit=' + limit.toString() + '">' +
                 (offset / limit + 1) + '</a>' +
-            '</li>' +
+            '</li>');
 
-            '<li class="page-item">' +
-                '<a class="page-link" ' +
-                    'href="/catalog.html?offset=' + (offset + limit).toString() + '&limit=' + limit.toString() + '">' +
-                    (offset / limit + 2) + '</a>' +
-            '</li>' +
+        if (offset + limit < total) {
+            pagination.insertAdjacentHTML('beforeend',
+                '<li class="page-item">' +
+                    '<a class="page-link" ' +
+                        'href="/catalog.html?offset=' + (offset + limit).toString() + '&limit=' + limit.toString() + '">' +
+                        (offset / limit + 2) + '</a>' +
+                '</li>');
+        }
+        if (offset + limit * 2 < total) {
+            pagination.insertAdjacentHTML('beforeend',
+                '<li class="page-item disabled"><a class="page-link">...</a></li>');
+        }
 
-            '<li class="page-item disabled"><a class="page-link">...</a></li>' +
-
-            '<li class="page-item">' +
+        pagination.insertAdjacentHTML('beforeend',
+            '<li class="page-item ' + ((offset + limit > total)?'disabled"':'"') + '>' +
                 '<a class="page-link"' +
                     'href="/catalog.html?offset=' + (offset + limit).toString() + '&limit=' + limit.toString() + '"' +
                     ' aria-label="Следующая">' +
@@ -129,7 +135,7 @@ window.onload = () => {
                     '</div>\n' +
                 '</div>');
         }
-        addPagination(limit, offset);
+        addPagination(limit, offset, result.total);
         addTags();
     });
 };

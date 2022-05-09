@@ -778,6 +778,7 @@ def register_client_handlers(dp: Dispatcher):
     dp.register_message_handler(skip_handler, state='*', commands="skip")
     dp.register_message_handler(cmd_help, state='*', commands="help")
     dp.register_message_handler(name_quest, state=QuestStates.naming)
+    dp.register_message_handler(password_quest, state=QuestStates.password)
     dp.register_message_handler(load_quest, state=QuestStates.loading)
     dp.register_message_handler(quest_proc, state=QuestStates.session)
     dp.register_message_handler(rate_quest, state=QuestStates.rating)

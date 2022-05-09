@@ -123,6 +123,36 @@ def get_quest_title(quest_keyword):
         return None
 
 
+def get_private_quest_title(quest_keyword):
+    """
+    Find published private quest title in table quest by id
+    :param quest_keyword: quest keyword
+    :return: tuple (id, name, password) of the quest with the specified keyword
+    :return: None if quest with the same id don't exist
+    """
+    try:
+        info = select_one("SELECT quest_id, title, time_open, time_close, password"
+                          " FROM quests WHERE keyword= %s AND published= %s AND password IS NOT NULL",
+                          (quest_keyword, 'true',))
+        if info:
+            now = datetime.datetime.now()
+            open = True
+            not_close = True
+            if info[2] != None:
+                open = now > info[2]
+            if info[3] != None:
+                not_close = now < info[3]
+            if open and not_close:
+                return info[0], info[1], info[4]
+            else:
+                return None
+        else:
+            return None
+    except:
+        #In case a non-integer is entered
+        return None
+
+
 def get_quest_time_info(quest_id):
     """
     Find quest time limits in table quest by id

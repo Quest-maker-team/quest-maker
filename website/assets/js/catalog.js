@@ -1,7 +1,7 @@
-function loadQuests(params){
+function makeRequest(method, url, data) {
     return new Promise(function(resolve, reject) {
         const xmlhttp = new XMLHttpRequest();
-        xmlhttp.open('GET', 'api/catalog/quests');
+        xmlhttp.open(method, url);
         xmlhttp.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
 
         xmlhttp.onreadystatechange = () => {
@@ -9,20 +9,27 @@ function loadQuests(params){
                 if (xmlhttp.status === 200) {
                     resolve(xmlhttp.response);
                 } else {
+                    // console.log(xmlhttp.responseText);
                     reject(xmlhttp.status);
                 }
             }
         };
 
-        xmlhttp.send(params);
+        if (data !== undefined) {
+            xmlhttp.send(data);
+        } else {
+            xmlhttp.send();
+           }
     });
 }
 
 function load(offset, limit) {
-    return loadQuests(JSON.stringify({
-        offset: offset,
-        limit: limit
-    })).then((result) => JSON.parse(result));
+    console.log(offset, limit);
+    return makeRequest('GET', 'api/catalog/quests' +
+                                        '?offset=' + offset.toString() +
+                                        '&limit=' + limit.toString()).then((result) => {
+        return JSON.parse(result);
+    });
 }
 
 function addPagination(limit, offset) {

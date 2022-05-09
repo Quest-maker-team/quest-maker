@@ -506,13 +506,12 @@ async def password_quest(message: types.Message, state: FSMContext):
     :param state: state machine context
     """
     quest_info = get_private_quest_title(message.text)
-    if quest_info[2] != message.text:
-        await message.reply('Неправильный пароль к квесту "' + message.text + '".',
-            reply_markup=create_opening_menu_keyboard())
-        await state.finish()
-        return
-    quest_info = get_private_quest_title(message.text)
     if quest_info:
+        if quest_info[2] != message.text:
+            await message.reply('Неправильный пароль к квесту "' + message.text + '".',
+                reply_markup=create_opening_menu_keyboard())
+            await state.finish()
+            return
         async with state.proxy() as data:
             data['quest'] = Quest(message.text)
             if data['quest'].cur_point is None:

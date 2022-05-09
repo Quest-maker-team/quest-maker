@@ -100,6 +100,9 @@ window.onload = () => {
                                                     'height: 6.6em;">' +
                             quest.description +
                         '</p>' +
+                        '<p class="card-text"> ID: ' +
+                        quest.keyword +
+                        '</p>' +
                         '<a href="#" class="btn btn-primary">Подробнее</a>' +
                     '</div>\n' +
                 '</div>');

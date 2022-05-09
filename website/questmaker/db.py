@@ -746,11 +746,15 @@ def get_quests_from_catalog(limit, offset, sort_key, order, author, tags):
     else:
         return
 
+    with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+        cursor.execute(f'SELECT COUNT(*) FROM ({query}) AS n', tuple(params))
+        total = cursor.fetchone()[0]
+
     query += f' {order} LIMIT {limit} OFFSET {offset}'
 
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute(query, tuple(params))
-        return cursor.fetchall()
+        return total, cursor.fetchall()
 
 
 def remove_quest(quest_id):
@@ -760,3 +764,9 @@ def remove_quest(quest_id):
             return False
         cursor.execute('DELETE from quests WHERE quest_id = %s', (quest_id,))
         return True
+
+
+def get_quests_num():
+    with get_db().cursor() as cursor:
+        cursor.execute('SELECT COUNT(quest_id) FROM quests_catalog')
+        return cursor.fetchone()[0]

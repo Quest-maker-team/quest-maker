@@ -32,7 +32,8 @@ All requests return `200 OK` if success else `400 Bad Request` with info about e
 
 * `GET api/catalog/quests`
     
-    Return JSON with list `quests` where each quest is object the same as returned from `GET api/catalog/quests/{id}`. Example:
+    Return JSON with total of quests (excluding `limit` and `offset`) 
+and list `quests` where each quest is object the same as returned from `GET api/catalog/quests/{id}`. Example:
     ```json
     {
       "quests": [
@@ -47,6 +48,7 @@ All requests return `200 OK` if success else `400 Bad Request` with info about e
           ...
         }
       ]
+      "total": 4
     }
     ```
    
@@ -58,3 +60,15 @@ All requests return `200 OK` if success else `400 Bad Request` with info about e
   * `tags` - tags for search. To search using multiple tags just repeat this param.
   
 * `GET api/catalog/tags` - return list of tags.
+  ```json
+  {
+    "tags": []
+  }
+  ```
+
+* `GET api/catalog/quests/amount` - return number of quests
+  ```json
+    {
+      "quests_amount": 100
+    }
+  ```

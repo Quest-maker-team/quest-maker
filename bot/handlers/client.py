@@ -339,6 +339,7 @@ class QuestStates(StatesGroup):
     """Quest states for aiogram state machine.
     """
     naming = State()
+    password = State()
     loading = State()
     session = State()
     rating = State()
@@ -447,6 +448,12 @@ async def name_quest(message: types.Message, state: FSMContext):
     :param message: message from user
     :param state: state machine context
     """
+    quest_info = get_private_quest_title(message.text)
+    if quest_info:
+        await message.answer('Квест ' + quest_info[1] + ' приватный. Введите пароль.')
+        await QuestStates.password.set()
+        return
+
     quest_info = get_quest_title(message.text)
     if quest_info:
         async with state.proxy() as data:
@@ -461,7 +468,64 @@ async def name_quest(message: types.Message, state: FSMContext):
             elif info[0] or (info[1] is None):
                 pass
             else:
-                await QuestStates.next()
+                await QuestStates.loading.set()
+                options = ['Да', 'Нет']
+                keyboard = create_keyboard(options)
+                await message.answer('Данный квест уже был начат Вами ранее. Желаете продолжить?',
+                                     reply_markup=keyboard)
+                return
+
+            await QuestStates.session.set()
+            await message.answer('Квест "' + data['quest'].name + '" начат. '
+                'Чтобы закончить напишите /end, '
+                'чтобы получить количество баллов - /score, '
+                'чтобы получить подсказку - /tip, '
+                'чтобы попытаться пропустить точку - /skip.')
+            await message.answer(data['quest'].start_msg)
+
+            if data['quest'].cur_point.type == "choice":
+                keyboard = create_keyboard(edit_options(data['quest'].cur_point.next_points))
+            else:
+                keyboard = ReplyKeyboardRemove()
+            await send_files(message, data['quest'].cur_point.msg, data['quest'].cur_point.files, keyboard)
+            if data['quest'].cur_point.type == "end": # who knows if this will happen
+                data['quest'].save(message.from_user.id, True)
+                await message.answer('Квест "' + data['quest'].name + '" закончен. '
+                                     'Количество баллов: ' + str(data['quest'].score) + ".",
+                                     reply_markup=create_rating_keyboard())
+                await QuestStates.rating.set()
+    else:
+        await message.reply('Квест с идентификатором "' + message.text + '" не найден',
+            reply_markup=create_opening_menu_keyboard())
+        await state.finish()
+
+
+async def password_quest(message: types.Message, state: FSMContext):
+    """Insert password of private quest state handler.
+    :param message: message from user
+    :param state: state machine context
+    """
+    quest_info = get_private_quest_title(message.text)
+    if quest_info[2] != message.text:
+        await message.reply('Неправильный пароль к квесту "' + message.text + '".',
+            reply_markup=create_opening_menu_keyboard())
+        await state.finish()
+        return
+    quest_info = get_private_quest_title(message.text)
+    if quest_info:
+        async with state.proxy() as data:
+            data['quest'] = Quest(message.text)
+            if data['quest'].cur_point is None:
+                await message.answer('Не удалось запустить квест.')
+                await state.finish()
+                return
+            info = get_history(quest_info[0], message.from_user.id)
+            if info is None:
+                pass
+            elif info[0] or (info[1] is None):
+                pass
+            else:
+                await QuestStates.loading.set()
                 options = ['Да', 'Нет']
                 keyboard = create_keyboard(options)
                 await message.answer('Данный квест уже был начат Вами ранее. Желаете продолжить?',

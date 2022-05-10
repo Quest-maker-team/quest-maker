@@ -700,20 +700,20 @@ export class QuestRedactor {
                         ' value="' + quest.data.title + '" placeholder="Название квеста">' +
 
                     '<label for="formControlTextarea" class="form-label mt-2">' + 'Описание' + '</label>' +
-                    '<textarea class="form-control" id="questDescription" rows="3">' +
-                        quest.data.description +
+                    '<textarea class="form-control" id="questDescription" rows="3" placeholder="Описание квеста">' +
+                        (quest.data.description !== null ? quest.data.description : '') +
                     '</textarea>' +
 
                     '<div  class="form-check mt-2">' +
                         '<input class="form-check-input" type="checkbox" id="private" ' +
-                        (quest.data.password.toString() !== '' ? 'checked' : '') + '>' +
+                        (quest.data.password !== null ? 'checked' : '') + '>' +
                         '<label class="form-check-label" for="private">' +
                             'Приватный квест' +
                         '</label>' +
                     '</div>' +
 
                     '<div id="passwordBox" ' +
-                        (quest.data.password.toString() === '' ? 'hidden' : '') + '>' +
+                        (quest.data.password === null ? 'hidden' : '') + '>' +
                         '<label class="form-check-label" for="private">' +
                             'Ключевое слово' +
                         '</label>' +
@@ -729,7 +729,17 @@ export class QuestRedactor {
         const form = document.getElementById('redactorForm');
         console.log(form, modal);
         form.innerHTML = '';
+        const buttons = document.getElementById('modalButtons');
+        if (buttons !== null) {
+            buttons.remove();
+        }
 
+        document.getElementById('content').insertAdjacentHTML('beforeend',
+            '<div class="modal-footer" id="modalButtons">' +
+                '<button type="button" class="btn btn-secondary" style="margin-right: 0.25em" ' +
+                    'data-bs-dismiss="modal" id="close">Закрыть</button>' +
+                '<button type="button" class="btn btn-primary" id="update">Сохранить</button>' +
+            '</div>');
         QuestRedactor.createQuestRedactor(form, quest);
 
         document.getElementById('private').onchange = () => {

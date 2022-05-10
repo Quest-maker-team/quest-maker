@@ -519,6 +519,9 @@ class Quest(QuestEntity):
         Recursively load quest and related objects to database
         :return: loaded quest id with
         """
+        # КОСТЫЛЬ, ПОТОМ РАЗБЕРЁМСЯ
+        self.hidden = False
+        # КОНЕЦ КОСТЫЛЯ
         try:
             set_quest(self)
             quest_id = self.id_in_db

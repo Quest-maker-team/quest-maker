@@ -27,9 +27,8 @@ function load(offset, limit, tags) {
     let url = 'api/catalog/quests' +
               '?offset=' + offset.toString() +
               '&limit=' + limit.toString();
-    for (const tagInd in tags) {
-        if (document.getElementById('tag' + tagInd).checked)
-            url += '&tags=' + tags[tagInd];
+    for (const tag of tags) {
+        url += '&tags=' + tag;
     }
     return makeRequest('GET', url).then((result) => {
         return JSON.parse(result);
@@ -144,32 +143,31 @@ window.onload = () => {
         if (param.split('=')[0] === 'tags')
             tags.push(param.split('=')[1]);
     }
-        addTags(offset, limit, tags).then(() => {
-            load(offset, limit, tags).then((result) => {
-            console.log(result);
-            const container = document.getElementById('container');
-            for (const quest of result.quests) {
-                container.insertAdjacentHTML('beforeend',
-                    '<div class="card">' +
-                        '<div class="card-body">' +
-                            '<h5 class="card-title">' + quest.title + '</h5>' +
-                            '<h6 class="card-subtitle mb-2 text-muted">Автор: ' + quest.author + '</h6>' +
-                            '<p class="card-text" style="overflow: hidden;' +
-                                                        'display: -webkit-box;' +
-                                                        '-webkit-line-clamp: 5;\n' +
-                                                        '-webkit-box-orient: vertical;\n' +
-                                                        'line-height: 1.3em;\n' +
-                                                        'height: 6.6em;">' +
-                                quest.description +
-                            '</p>' +
-                            '<p class="card-text"> ID: ' +
+    load(offset, limit, tags).then((result) => {
+        console.log(result);
+        const container = document.getElementById('container');
+        for (const quest of result.quests) {
+            container.insertAdjacentHTML('beforeend',
+                '<div class="card">' +
+                    '<div class="card-body">' +
+                        '<h5 class="card-title">' + quest.title + '</h5>' +
+                        '<h6 class="card-subtitle mb-2 text-muted">Автор: ' + quest.author + '</h6>' +
+                        '<p class="card-text" style="overflow: hidden;' +
+                                                'display: -webkit-box;' +
+                                                '-webkit-line-clamp: 5;\n' +
+                                                '-webkit-box-orient: vertical;\n' +
+                                                'line-height: 1.3em;\n' +
+                                                'height: 6.6em;">' +
+                            quest.description +
+                        '</p>' +
+                        '<p class="card-text"> ID: ' +
                             quest.keyword +
-                            '</p>' +
-                            '<!--<a href="#" class="btn btn-primary">Подробнее</a>-->' +
-                        '</div>\n' +
-                    '</div>');
+                        '</p>' +
+                        '<!--<a href="#" class="btn btn-primary">Подробнее</a>-->' +
+                    '</div>' +
+                '</div>');
             }
-            addPagination(limit, offset, result.total, tags);
-        });
+        addPagination(limit, offset, result.total, tags);
+        addTags(offset, limit, tags);
     });
 };

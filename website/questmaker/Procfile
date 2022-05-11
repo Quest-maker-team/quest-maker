@@ -1,1 +1,0 @@
-web: gunicorn: "questmaker:create_app(test_config=None)"

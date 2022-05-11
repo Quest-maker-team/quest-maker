@@ -569,8 +569,10 @@ class Quest(QuestEntity):
 
     @staticmethod
     def check_valid_update_attr(attr, val):
-        if attr in ['title', 'description', 'password']:
+        if attr in ['title', 'description']:
             return isinstance(val, str)
+        elif attr == 'password':
+            return isinstance(val, str) or val is None
         elif attr == 'hidden':
             return isinstance(val, bool)
         elif attr in ['time_open', 'time_close', 'lead_time']:

@@ -718,7 +718,8 @@ export class QuestRedactor {
                             'Пароль' +
                         '</label>' +
                         '<input type="text" onkeydown="return (event.keyCode!=13);" class="form-control" ' +
-                            'id="questPassword" value="' + quest.data.password + '" placeholder="Пароль">' +
+                            'id="questPassword" value="' + (quest.data.password !== null ? quest.data.password : '') +
+                                '" placeholder="Пароль">' +
                         '<div class="invalid-feedback">' +
                             'Не используйте пустую строку в качестве пароля.' +
                         '</div>' +

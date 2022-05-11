@@ -188,7 +188,7 @@ window.onload = () => {
 
         document.getElementById('save').onclick = () =>{
             console.log('Saving quest ', quest);
-            Quest.save(quest.data.quest_id);
+            Quest.save(quest.data.quest_id).then(() => document.location = '/profile_catalog');
         };
         document.getElementById('addQCBtn').onclick = () => {
             const question = createNewBlock('choice', 'Новый вопрос с выбором ответа', quest);

@@ -715,10 +715,13 @@ export class QuestRedactor {
                     '<div id="passwordBox" ' +
                         (quest.data.password === null ? 'hidden' : '') + '>' +
                         '<label class="form-check-label" for="private">' +
-                            'Ключевое слово' +
+                            'Пароль' +
                         '</label>' +
                         '<input type="text" onkeydown="return (event.keyCode!=13);" class="form-control" ' +
-                            'id="questPassword" value="' + quest.data.password + '" placeholder="Ключевое слово">' +
+                            'id="questPassword" value="' + quest.data.password + '" placeholder="Пароль">' +
+                        '<div class="invalid-feedback">' +
+                            'Не используйте пустую строку в качестве пароля.' +
+                        '</div>' +
                     '</div>' +
             '</div>'
         );
@@ -747,17 +750,23 @@ export class QuestRedactor {
         };
 
         document.getElementById('update').onclick = () => {
+            let passwordInput = document.getElementById('questPassword');
+            if (document.getElementById('private').checked && passwordInput.value === '') {
+                passwordInput.className = 'form-control is-invalid';
+                return;
+            }
             Quest.updateEntity('quest', quest.data.quest_id, JSON.stringify({
                 title: document.getElementById('questTitle').value,
                 description: document.getElementById('questDescription').value,
                 password: document.getElementById('private').checked ?
-                    document.getElementById('questPassword').value : '',
+                    document.getElementById('questPassword').value : null,
             }));
 
             quest.data.title = document.getElementById('questTitle').value;
             quest.data.description = document.getElementById('questDescription').value;
             quest.data.password = document.getElementById('private').checked ?
-                document.getElementById('questPassword').value : '';
+                document.getElementById('questPassword').value : null;
+            console.log(quest.data.password);
 
             modal.hide();
         };

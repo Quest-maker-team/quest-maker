@@ -3,7 +3,7 @@
   * `tags` - array of strings
   * `hidden` - bool, **required for creating**
   * `description` - string
-  * `password` - string
+  * `password` - string or null
   * `time_open` - string...?
   * `time_close` ?
   * `lead_time` int ?

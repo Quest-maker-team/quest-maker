@@ -2,7 +2,7 @@ import {newInstance} from '@jsplumb/browser-ui';
 import {FlowchartConnector} from '@jsplumb/connector-flowchart';
 import {Quest} from './quest';
 import {Render} from './render';
-import {EVENT_CONNECTION_DETACHED, EVENT_CONNECTION} from '@jsplumb/core';
+import {INTERCEPT_BEFORE_DROP, INTERCEPT_BEFORE_START_DETACH} from '@jsplumb/core';
 import Panzoom from '@panzoom/panzoom';
 import {QuestRedactor} from './blockRedactor';
 import {deleteQuestRequest} from './personalCatalog';
@@ -119,16 +119,15 @@ window.onload = () => {
         });
 
 
-        instance.bind(EVENT_CONNECTION, (connection) => {
-            const sourceIdSplit = connection.source.id.match(/([a-z]*_?[a-z]*)([0-9]*)/);
-            Quest.connect(sourceIdSplit[1], 'question', sourceIdSplit[2], connection.target.parentNode.id).then(() =>
-                console.log('connect success'));
+        instance.bind(INTERCEPT_BEFORE_DROP, (params) => {
+            const sourceIdSplit = params.sourceId.match(/([a-z]*_?[a-z]*)([0-9]*)/);
+            Quest.connect(sourceIdSplit[1], 'question', sourceIdSplit[2], params.connection.target.parentNode.id);
+            return true;
         });
 
-        instance.bind(EVENT_CONNECTION_DETACHED, (connection) => {
-            const sourceIdSplit = connection.source.id.match(/([a-z]*_?[a-z]*)([0-9]*)/);
-            Quest.disconnect(sourceIdSplit[1], 'question', sourceIdSplit[2]).then(() =>
-                console.log('disconnect success'));
+        instance.bind(INTERCEPT_BEFORE_START_DETACH, (params) => {
+            const sourceIdSplit = params.connection.sourceId.match(/([a-z]*_?[a-z]*)([0-9]*)/);
+            Quest.disconnect(sourceIdSplit[1], 'question', sourceIdSplit[2]);
         });
 
 

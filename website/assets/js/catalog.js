@@ -101,8 +101,9 @@ function addPagination(limit, offset, total, tags) {
 
 function addTags(offset, limit, chekedTag) {
     const filters = document.getElementById('filters');
+    const usedFilters = document.getElementById("usedFilters");
     return makeRequest('GET', 'api/catalog/tags').then((result) => {
-        tags = JSON.parse(result).tags;
+        let tags = JSON.parse(result).tags;
         console.log(tags);
         for (const tagInd in tags){
             filters.insertAdjacentHTML('beforeend',
@@ -111,8 +112,10 @@ function addTags(offset, limit, chekedTag) {
                     '<label class="form-check-label" for=tag' + tagInd + '>' + tags[tagInd] + '</label>' +
                 '</div>');
         }
-        for (const tag of chekedTag){
-            document.getElementById('tag' + tags.findIndex((rez) => tag === rez)).checked = true;
+        for (const tagInd in chekedTag){
+            document.getElementById('tag' + tagInd).checked = true;
+
+            usedFilters.insertAdjacentHTML('beforeend', '<div><span class="badge bg-primary">' + tags[tagInd] + '</span></div>');
         }
         document.getElementById('reset').onclick = () => {
             for (const tagInd in tags) {

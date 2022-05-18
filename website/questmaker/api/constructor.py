@@ -81,7 +81,7 @@ def get_quest_from_db(quest_id):
 
     container = QuestContainer()
     container.add_quest(quest)
-    quest.quest_id = write_draft(current_user.author['author_id'], pickle.dumps(container), quest_id)
+    write_draft(current_user.author['author_id'], pickle.dumps(container), quest_id)
     session['draft_id'] = quest.quest_id
     return jsonify(quest.to_dict())
 

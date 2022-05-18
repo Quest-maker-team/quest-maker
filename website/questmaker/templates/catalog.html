@@ -27,12 +27,15 @@
                 style="z-index: 10">
                     <form class="d-flex">
                         <input class="form-control me-2" type="search" placeholder="Найти..." aria-label="Search">
-                        <button class="btn btn-outline-success" type="submit">Поиск</button>
+                        <button class="btn btn-outline-success" type="button">Поиск</button>
                     </form>
-                    <a class="btn" data-bs-toggle="offcanvas"
-                    data-bs-target="#offcanvasScrolling" aria-controls="offcanvasScrolling">Фильтры</a>
+                    <button class="btn btn-outline-primary p-1" type="button">
+                        <a class="btn" data-bs-toggle="offcanvas"
+                               data-bs-target="#offcanvasScrolling" aria-controls="offcanvasScrolling">Фильтры</a>
+                    </button>
                 </asid>
                 <hr>
+                <div id="usedFilters" class="d-flex mb-3"></div>
 
                 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="container">
                 </div>

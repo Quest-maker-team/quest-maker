@@ -1,5 +1,6 @@
 import {Quest} from './quest';
 import * as bootstrap from 'bootstrap';
+import _ from 'underscore';
 import {Render} from './render';
 
 export class BlockRedactor {
@@ -24,8 +25,8 @@ export class BlockRedactor {
                 '<div class="col-8">' +
                     '<input type="text" onkeydown="return (event.keyCode!=13);" class="form-control" ' +
                         'name="answerText_'+ state + '" id="answerText_' + state + '_' + id + '" value="' +
-                        text + '" placeholder="Вариант ответа" onclick="document.getElementById(\'answerText_' +
-                        state + '_' + id + '\').className = \'form-control\'; return false;">' +
+                        _.escape(text) + '" placeholder="Вариант ответа" onclick="document.getElementById(\'' +
+                        'answerText_' + state + '_' + id + '\').className = \'form-control\'; return false;">' +
                     '<div class="invalid-feedback">' +
                         'Не используйте "skip" или пустую строку в качестве ответов. ' +
                         'Добавить возможность пропуска можно, установив соответствующий флаг.' +
@@ -64,7 +65,7 @@ export class BlockRedactor {
         document.getElementById(elementId).insertAdjacentHTML('afterend',
             '<div class="row pb-1" id="' + id + '"' + (hide ? ' hidden' : '') + '>' +
                 '<div class="col-8">' +
-                    '<input type="text" class="form-control" placeholder="' + text + '" readonly>' +
+                    '<input type="text" class="form-control" placeholder="' + _.escape(text) + '" readonly>' +
                 '</div>' +
                 '<div class="col-3">' +
                     '<div class="input-group">' +
@@ -85,7 +86,7 @@ export class BlockRedactor {
                     '<textarea class="form-control" name="hintText_' + state + '" id="hintText_' + state + '_' +
                             id + '" rows="1" placeholder="Текст подсказки" onclick="document.getElementById(' +
                             '\'hintText_' + state + '_' + id + '\').className = \'form-control\'; return false;">' +
-                        text +
+                        _.escape(text) +
                     '</textarea>' +
                     '<div class="invalid-feedback">' +
                         'Не используйте пустую строку в качестве подсказки. ' +
@@ -441,10 +442,10 @@ export class BlockRedactor {
         const questions = quest.data.questions.filter((question) =>
             question.question_id !== newQuestion.question_id && question.type === 'movement');
         for (const question of questions) {
-            if (typeof(question.movements[0].place.coords)=='string') {
+            if (typeof(question.movements[0].place.coords) == 'string') {
                 const s = question.movements[0].place.coords.split(',');
                 const x = s[0].substring(1);
-                const y = s[1].substring(0, s[1].length-1);
+                const y = s[1].substring(0, s[1].length - 1);
                 question.movements[0].place.coords = [parseFloat(x), parseFloat(y)];
             }
             const placeMark = new ymaps.Placemark(question.movements[0].place.coords, {
@@ -459,7 +460,7 @@ export class BlockRedactor {
                 question.movements[0].place.coords,
                 question.movements[0].place.radius,
             ], {
-                hintContent: 'Радиус достижимости '+ question.movements[0].place.radius,
+                hintContent: 'Радиус достижимости ' + question.movements[0].place.radius,
             }, {
                 draggable: false,
                 fillColor: '#DB709377',
@@ -697,7 +698,7 @@ export class QuestRedactor {
                         'Название квеста' +
                     '</label>' +
                     '<input type="text" onkeydown="return (event.keyCode!=13);" class="form-control" id="questTitle"' +
-                        ' value="' + quest.data.title + '" placeholder="Название квеста">' +
+                        ' value="' + _.escape(quest.data.title) + '" placeholder="Название квеста">' +
 
                     '<label for="formControlTextarea" class="form-label mt-2">' + 'Описание' + '</label>' +
                     '<textarea class="form-control" id="questDescription" rows="3" placeholder="Описание квеста">' +
@@ -718,8 +719,8 @@ export class QuestRedactor {
                             'Пароль' +
                         '</label>' +
                         '<input type="text" onkeydown="return (event.keyCode!=13);" class="form-control" ' +
-                            'id="questPassword" value="' + (quest.data.password !== null ? quest.data.password : '') +
-                                '" placeholder="Пароль">' +
+                            'id="questPassword" value="' + _.escape((quest.data.password !== null ?
+                                quest.data.password : '')) + '" placeholder="Пароль">' +
                         '<div class="invalid-feedback">' +
                             'Не используйте пустую строку в качестве пароля.' +
                         '</div>' +

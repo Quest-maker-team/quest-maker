@@ -483,4 +483,6 @@ def save_quest(quest_id):
     container.quest.published = True
     container.quest.to_db()
     remove_draft(quest_id)
+    if 'draft_id' in session:
+        session.pop('draft_id')
     return '', 200

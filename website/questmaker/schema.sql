@@ -45,7 +45,7 @@ DROP TABLE IF EXISTS places CASCADE;
 CREATE TABLE places (
     place_id SERIAL PRIMARY KEY,
     coord_x REAL NOT NULL,
-    coord_y REAL NOT NULL
+    coord_y REAL NOT NULL,
     time_open TIMESTAMP WITHOUT TIME ZONE,
     time_close TIMESTAMP WITHOUT TIME ZONE,
     radius DOUBLE PRECISION NOT NULL

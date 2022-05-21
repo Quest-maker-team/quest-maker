@@ -53,6 +53,8 @@ and list `quests` where each quest is object the same as returned from `GET api/
     ```
    
     Parameters:
+  * `title` - substring of title
+  * `description` - substring of description
   * `limit` and `offset` - limit of number of quests and offset from start. Default values `100` and `0`. Max limit is `500`.
   * `sort_by` - sort key. Possible keys: `title`, `rating`. Default key is `id`.
   * `orber_by` - sort order. Possible values: `asc`, `desc` - ascending and descending.

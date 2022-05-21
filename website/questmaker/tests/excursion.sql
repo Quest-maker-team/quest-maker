@@ -13,19 +13,19 @@ INSERT INTO quests (title, author_id, description, keyword, password, time_open,
 
 --places info
 --branch "Temple architecture"
-INSERT INTO places (coords, radius) VALUES ( '(59.8633917835336, 30.472641018135985)', 50);
-INSERT INTO places (coords, radius) VALUES ('(59.955110380034576, 30.323965457609386)', 50);
-INSERT INTO places (coords, radius) VALUES ('(59.98357858314067, 30.255901911586367)', 50);
+INSERT INTO places (coord_x, coord_y, radius) VALUES (59.8633917835336, 30.472641018135985, 50);
+INSERT INTO places (coord_x, coord_y, radius) VALUES (59.955110380034576, 30.323965457609386, 50);
+INSERT INTO places (coord_x, coord_y, radius) VALUES (59.98357858314067, 30.255901911586367, 50);
 --branch "Yards and layouts"
-INSERT INTO places (coords, radius) VALUES ('(59.838437946932196, 30.356620326272367)', 50);
-INSERT INTO places (coords, radius) VALUES ('(59.947207872410814, 30.33907173113509)', 50);
-INSERT INTO places (coords, time_open, time_close, radius) VALUES ('(59.88800242957348, 30.330013704191895)', 
+INSERT INTO places (coord_x, coord_y, radius) VALUES (59.838437946932196, 30.356620326272367, 50);
+INSERT INTO places (coord_x, coord_y, radius) VALUES (59.947207872410814, 30.33907173113509, 50);
+INSERT INTO places (coord_x, coord_y, time_open, time_close, radius) VALUES (59.88800242957348, 30.330013704191895,
     '2001-08-12 10:00','2001-08-12 19:00', 50);
 --branch "Art"
-INSERT INTO places (coords, radius) VALUES ('(59.92915928108905, 30.359159620821394)', 50);
-INSERT INTO places (coords, time_open, time_close, radius) VALUES ('(59.94366975770656, 30.34102834662633)', 
+INSERT INTO places (coord_x, coord_y, radius) VALUES (59.92915928108905, 30.359159620821394, 50);
+INSERT INTO places (coord_x, coord_y, time_open, time_close, radius) VALUES (59.94366975770656, 30.34102834662633,
     '2001-08-12 11:00','2001-08-12 17:00', 50);
-INSERT INTO places (coords, radius) VALUES ('(59.95974977958709, 30.28147021404725)', 50);
+INSERT INTO places (coord_x, coord_y, radius) VALUES (59.95974977958709, 30.28147021404725, 50);
 
 --tags
 INSERT INTO tags(tag_name) VALUES ('excursion');

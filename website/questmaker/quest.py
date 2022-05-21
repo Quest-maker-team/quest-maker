@@ -614,7 +614,7 @@ class Quest(QuestEntity):
         startQuestion.pos_y = 320
         endQuestion = Question()
         endQuestion.type = 'end'
-        endQuestion.parent = startQuestion.answers[0]
+        endQuestion.parents.append(startQuestion.answers[0])
         endQuestion.pos_x = 800
         endQuestion.pos_y = 320
         startQuestion.answers[0].next_question = endQuestion

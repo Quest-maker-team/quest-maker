@@ -715,27 +715,31 @@ def get_quest_from_catalog(quest_id):
         return cursor.fetchone()
 
 
-def get_quests_from_catalog(limit, offset, sort_key, order, author, tags):
+def get_quests_from_catalog(title, description, limit, offset, sort_key, order, author, tags):
     """
     Select quests for catalog
     """
     query = 'SELECT * FROM quests_catalog '
     params = []
+    reg_title = f'%{title}%'
+    reg_description = f'%{description}%'
     if tags:
         tags_str = ', '.join("'" + tag + "'" for tag in tags)
         query += 'JOIN (SELECT quest_id, COUNT(tag_id) AS tags_matched FROM quests ' \
                  'JOIN quest_tags USING (quest_id) JOIN tags USING (tag_id) ' \
                  f'WHERE tag_name IN ({tags_str}) ' \
                  'GROUP BY quest_id) AS matched USING (quest_id)' \
-                 'WHERE tags_matched >= %s '
+                 'WHERE tags_matched >= %s AND title LIKE %s  AND description LIKE %s '
         params.append(len(tags))
-        if author:
-            query += ' AND author = %s '
-            params.append(author)
     else:
-        if author:
-            query += ' WHERE author = %s '
-            params.append(author)
+        query += 'WHERE title LIKE %s  AND description LIKE %s '
+
+    params.append(reg_title)
+    params.append(reg_description)
+
+    if author:
+        query += ' AND author = %s '
+        params.append(author)
 
     if sort_key == 'id':
         query += f' ORDER BY quest_id '

@@ -112,7 +112,7 @@ def print_quest(file, quest):
         if q.type == 'movement':
             print('Movements:')
             for move in q.movements:
-                print('\t', move.place.coords, move.place.radius)
+                print('\t', move.place.coord_x, move.place.coord_y, move.place.radius)
                 if move.next_question:
                     qu.put(move.next_question)
         else:
@@ -122,7 +122,7 @@ def print_quest(file, quest):
                 print('\t', a.points)
                 if q.type == 'start':
                     for move in q.movements:
-                        print('\t', move.place.coords, move.place.radius)
+                        print('\t', move.place.coord_x, move.place.coord_y, move.place.radius)
                 if a.next_question:
                     qu.put(a.next_question)
 
@@ -417,7 +417,7 @@ def get_place(place_id):
     :return: dictionary with keys as same as in table places
     """
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-        cursor.execute('SELECT coords, time_open, time_close, radius '
+        cursor.execute('SELECT coord_x, coord_y, time_open, time_close, radius '
                        'FROM places WHERE place_id = %s', (place_id,))
         return cursor.fetchone()
 
@@ -565,9 +565,9 @@ def set_place(place):
     :return: is transaction ok
     """
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-        cursor.execute('INSERT INTO places (coords, time_open, time_close, radius) '
-                       'VALUES ( %s, %s, %s, %s) RETURNING place_id',
-                       (place.coords, place.time_open, place.time_close, place.radius))
+        cursor.execute('INSERT INTO places (coord_x, coord_y, time_open, time_close, radius) '
+                       'VALUES (%s, %s, %s, %s, %s) RETURNING place_id',
+                       (place.coord_x, place.coord_y, place.time_open, place.time_close, place.radius))
         place.place_id = cursor.fetchone()['place_id']
         return True
 

@@ -21,7 +21,7 @@ def update_from_dict(entity, entity_dict):
     """
     for attr, value in entity_dict.items():
         if type(entity).check_valid_update_attr(attr, value):
-            entity.__setattr__(attr, value)
+            entity.set_attr(attr, value)
         else:
             return False
     return True
@@ -61,6 +61,9 @@ class QuestEntity(ABC):
         Check that list attrs contains necessary attributes to create new entity
         """
         pass
+
+    def set_attr(self, attr, value):
+        self.__setattr__(attr, value)
 
 
 class File(QuestEntity):
@@ -252,25 +255,26 @@ class Place(QuestEntity):
         :return: place object with info from database
         """
         place = db.get_place(place_id)
-        return Place(place['coords'], place['radius'], place['time_open'], place['time_close'])
+        return Place(place['coord_x'], place['coord_y'], place['radius'], place['time_open'], place['time_close'])
 
-    def __init__(self, coords=None, radius=None, time_open=None, time_close=None, parent=None):
+    def __init__(self, coord_x=None, coord_y=None, radius=None, time_open=None, time_close=None, parent=None):
         """
         Create place object
-        :param coords: place coordinates
+        :param coord_x, coord_y: place coordinates
         :param radius: radius where user is detected
         :param time_open: the earliest time user can visit place
         :param time_close: the latest time  user can visit place
         """
         self.place_id = None
-        self.coords = coords
+        self.coord_x = coord_x
+        self.coord_y = coord_y
         self.radius = radius
         self.time_open = time_open
         self.time_close = time_close
         self.parent = parent
 
     def to_dict(self):
-        return {'place_id': self.place_id, 'coords': self.coords, 'radius': self.radius,
+        return {'place_id': self.place_id, 'coords': [self.coord_x, self.coord_y], 'radius': self.radius,
                 'time_open': self.time_open, 'time_close': self.time_close}
 
     def remove_from_graph(self):
@@ -296,6 +300,13 @@ class Place(QuestEntity):
 
     def to_db(self):
         db.set_place(self)
+
+    def set_attr(self, attr, value):
+        if attr == 'coords':
+            self.coord_x = value[0]
+            self.coord_y = value[1]
+        elif attr == 'radius':
+            self.radius = value
 
 
 class Movement(QuestEntity):

@@ -112,10 +112,10 @@ function addTags(offset, limit, chekedTag) {
                     '<label class="form-check-label" for=tag' + tagInd + '>' + tags[tagInd] + '</label>' +
                 '</div>');
         }
-        for (const tagInd in chekedTag){
-            document.getElementById('tag' + tagInd).checked = true;
+        for (const tag of chekedTag){
+            document.getElementById('tag' + tags.findIndex((find) => find === tag)).checked = true;
 
-            usedFilters.insertAdjacentHTML('beforeend', '<div><span class="badge bg-primary">' + tags[tagInd] + '</span></div>');
+            usedFilters.insertAdjacentHTML('beforeend', '<div><span class="badge bg-primary">' + tag + '</span></div>');
         }
         document.getElementById('reset').onclick = () => {
             for (const tagInd in tags) {

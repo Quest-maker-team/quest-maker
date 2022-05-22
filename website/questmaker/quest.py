@@ -578,6 +578,8 @@ class Quest(QuestEntity):
         elif attr in ['time_open', 'time_close', 'lead_time']:
             # TODO: add time support
             return False
+        elif attr == 'tags':
+            return isinstance(val, list) and (not val or all([isinstance(tag, str) for tag in val]))
         return False
 
     @staticmethod

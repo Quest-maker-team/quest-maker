@@ -697,8 +697,9 @@ export class QuestRedactor {
                     '<label class="form-check-label" for="questTitle">' +
                         'Название квеста' +
                     '</label>' +
-                    '<input type="text" onkeydown="return (event.keyCode!=13);" class="form-control" id="questTitle"' +
-                        ' value="' + _.escape(quest.data.title) + '" placeholder="Название квеста">' +
+                    '<input type="text" autocomplete="off" onkeydown="return (event.keyCode!=13);" ' +
+                        'class="form-control" id="questTitle"' + ' value="' +
+                        _.escape(quest.data.title) + '" placeholder="Название квеста">' +
 
                     '<label for="formControlTextarea" class="form-label mt-2">' + 'Описание' + '</label>' +
                     '<textarea class="form-control" id="questDescription" rows="3" placeholder="Описание квеста">' +
@@ -718,9 +719,10 @@ export class QuestRedactor {
                         '<label class="form-check-label" for="private">' +
                             'Пароль' +
                         '</label>' +
-                        '<input type="text" onkeydown="return (event.keyCode!=13);" class="form-control" ' +
-                            'id="questPassword" value="' + _.escape((quest.data.password !== null ?
-                                quest.data.password : '')) + '" placeholder="Пароль">' +
+                        '<input type="text" autocomplete="off" onkeydown="return (event.keyCode!=13);" ' +
+                            'class="form-control" ' + 'id="questPassword" value="' +
+                                _.escape((quest.data.password !== null ? quest.data.password : '')) +
+                                '" placeholder="Пароль">' +
                         '<div class="invalid-feedback">' +
                             'Не используйте пустую строку в качестве пароля.' +
                         '</div>' +
@@ -753,6 +755,11 @@ export class QuestRedactor {
 
         document.getElementById('update').onclick = () => {
             let passwordInput = document.getElementById('questPassword');
+            let matches = document.getElementById('questDescription').value.match(/#[^\s#]+/g);
+            let tags = [];
+            for (const m of matches) {
+                tags.push(m.slice(1));
+            }
             if (document.getElementById('private').checked && passwordInput.value === '') {
                 passwordInput.className = 'form-control is-invalid';
                 return;
@@ -760,11 +767,13 @@ export class QuestRedactor {
             Quest.updateEntity('quest', quest.data.quest_id, JSON.stringify({
                 title: document.getElementById('questTitle').value,
                 description: document.getElementById('questDescription').value,
+                tags: tags,
                 password: document.getElementById('private').checked ?
                     document.getElementById('questPassword').value : null,
             }));
 
             quest.data.title = document.getElementById('questTitle').value;
+            quest.data.tags = tags;
             quest.data.description = document.getElementById('questDescription').value;
             quest.data.password = document.getElementById('private').checked ?
                 document.getElementById('questPassword').value : null;

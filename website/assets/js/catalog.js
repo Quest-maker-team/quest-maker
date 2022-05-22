@@ -151,7 +151,7 @@ window.onload = () => {
         const container = document.getElementById('container');
         for (const quest of result.quests) {
             container.insertAdjacentHTML('beforeend',
-                '<div class="card">' +
+                '<div class="card mx-2">' +
                     '<div class="card-body">' +
                         '<h5 class="card-title">' + quest.title + '</h5>' +
                         '<h6 class="card-subtitle mb-2 text-muted">Автор: ' + quest.author + '</h6>' +

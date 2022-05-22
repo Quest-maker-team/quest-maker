@@ -115,7 +115,7 @@ function addTags(offset, limit, chekedTag) {
         for (const tag of chekedTag){
             document.getElementById('tag' + tags.findIndex((find) => find === tag)).checked = true;
 
-            usedFilters.insertAdjacentHTML('beforeend', '<div><span class="badge bg-primary">' + tag + '</span></div>');
+            usedFilters.insertAdjacentHTML('beforeend', '<div class="mx-1"><span class="badge bg-primary">' + tag + '</span></div>');
         }
         document.getElementById('reset').onclick = () => {
             for (const tagInd in tags) {

@@ -777,7 +777,7 @@ export class QuestRedactor {
             quest.data.description = document.getElementById('questDescription').value;
             quest.data.password = document.getElementById('private').checked ?
                 document.getElementById('questPassword').value : null;
-            console.log(quest.data.password);
+            console.log(quest.data.title, quest.data.tags, quest.data.description, quest.data.password);
 
             modal.hide();
         };

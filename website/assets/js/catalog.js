@@ -155,14 +155,15 @@ window.onload = () => {
                     '<div class="card-body">' +
                         '<h5 class="card-title">' + quest.title + '</h5>' +
                         '<h6 class="card-subtitle mb-2 text-muted">Автор: ' + quest.author + '</h6>' +
-                        '<p class="card-text" style="overflow: hidden;' +
+                        '<div class="card-text" style="white-space: pre-wrap;' +
+                                                'overflow: hidden;' +
                                                 'display: -webkit-box;' +
                                                 '-webkit-line-clamp: 5;\n' +
                                                 '-webkit-box-orient: vertical;\n' +
                                                 'line-height: 1.3em;\n' +
                                                 'height: 6.6em;">' +
                             quest.description +
-                        '</p>' +
+                        '</div>' +
                         '<p class="card-text"> ID: ' +
                             quest.keyword +
                         '</p>' +

@@ -6,21 +6,13 @@ from datetime import datetime
 from flask import Blueprint, render_template
 from flask_login import login_required, current_user
 
-from .db import get_quests_by_author_id
+from .db import get_quests_by_author_id, get_draft
 import operator
+
+import pickle
 
 
 prof = Blueprint('profile', __name__)
-
-
-@prof.route('/profile')
-@login_required
-def profile():
-    """
-    Main profile page
-    :return: main profile page
-    """
-    return render_template('profile.html', user=current_user)
 
 
 def choose_state(quest):
@@ -40,9 +32,9 @@ def choose_state(quest):
         return 'Неактивен', 'light'
 
 
-@prof.route('/profile_catalog')
+@prof.route('/profile')
 @login_required
-def catalog():
+def profile():
     """
     Personal catalog page
     :return: personal catalog page
@@ -52,9 +44,13 @@ def catalog():
 
     for q in quests:
         c = {}
+        draft = get_draft(q['quest_id'])
         c['id'] = q['quest_id']
         c['keyword'] = q['keyword']
-        c['title'] = q['title']
+        if draft:
+            c['title'] = '(Черновик) ' + pickle.loads(bytes(draft['container'])).quest.title
+        else:
+            c['title'] = q['title']
         if q['password'] != None:
             c['type'] = 'Приватный'
         else:
@@ -64,4 +60,4 @@ def catalog():
     
     catalog.sort(key=operator.itemgetter('title'))
 
-    return render_template('profile_catalog.html', user=current_user, quests=catalog)
+    return render_template('profile.html', user=current_user, quests=catalog)

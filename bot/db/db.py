@@ -220,7 +220,7 @@ def get_movement(question_id):
     :return: None in case of failure
     """
     try:
-        return select_one('SELECT next_question_id, coords, radius, time_open, time_close FROM movements '
+        return select_one('SELECT next_question_id, coord_x, coord_y, radius, time_open, time_close FROM movements '
                           'INNER JOIN places ON movements.place_id= places.place_id WHERE question_id= %s',
                           (question_id, ))
     except:

@@ -1,3 +1,5 @@
+import _ from 'underscore';
+
 function makeRequest(method, url, data) {
     return new Promise(function(resolve, reject) {
         const xmlhttp = new XMLHttpRequest();
@@ -23,10 +25,12 @@ function makeRequest(method, url, data) {
     });
 }
 
-function load(offset, limit, tags) {
+function load(offset, limit, tags, title) {
     let url = 'api/catalog/quests' +
               '?offset=' + offset.toString() +
               '&limit=' + limit.toString();
+    if (title !== null)
+        url += '&title=' + title;
     for (const tag of tags) {
         url += '&tags=' + tag;
     }
@@ -124,8 +128,8 @@ function addTags(offset, limit, chekedTag) {
         };
         document.getElementById('apply').onclick = () => {
             let url = '/catalog.html' +
-                                '?offset=' + offset +
-                                '&limit=' + limit.toString();
+                    '?offset=' + offset.toString() +
+                    '&limit=' + limit.toString();
             for (const tagInd in tags) {
                 if (document.getElementById('tag' + tagInd).checked)
                     url += '&tags=' + tags[tagInd];
@@ -140,18 +144,22 @@ window.onload = () => {
     const queryParams = query.split('&');
     const offset = parseInt(queryParams[0].split('=')[1]);
     const limit = parseInt(queryParams[1].split('=')[1]);
+    let title = null;
     const tags = [];
 
     for (const param of queryParams){
         if (param.split('=')[0] === 'tags')
             tags.push(param.split('=')[1]);
+        else if (param.split('=')[0] === 'title')
+            title = param.split('=')[1];
     }
-    load(offset, limit, tags).then((result) => {
+    load(offset, limit, tags, title).then((result) => {
         console.log(result);
         const container = document.getElementById('container');
         for (const quest of result.quests) {
             container.insertAdjacentHTML('beforeend',
-                '<div class="card mx-2">' +
+                '<div class="col">' +
+                '<div class="card h-100">' +
                     '<div class="card-body">' +
                         '<h5 class="card-title">' + quest.title + '</h5>' +
                         '<h6 class="card-subtitle mb-2 text-muted">Автор: ' + quest.author + '</h6>' +
@@ -169,9 +177,17 @@ window.onload = () => {
                         '</p>' +
                         '<!--<a href="#" class="btn btn-primary">Подробнее</a>-->' +
                     '</div>' +
-                '</div>');
+                '</div>' +
+            '</div>');
             }
         addPagination(limit, offset, result.total, tags);
         addTags(offset, limit, tags);
+
+        document.getElementById('searchButton').onclick = () => {
+            document.location = '/catalog.html' +
+                    '?offset=' + offset.toString() +
+                    '&limit=' + limit.toString() +
+                    '&title=' + _.escape(document.getElementById('search').value);
+        }
     });
 };

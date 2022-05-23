@@ -757,8 +757,9 @@ export class QuestRedactor {
             let passwordInput = document.getElementById('questPassword');
             let matches = document.getElementById('questDescription').value.match(/#[^\s#]+/g);
             let tags = [];
-            for (const m of matches) {
-                tags.push(m.slice(1));
+            if (matches !== null)
+                for (const m of matches) {
+                    tags.push(m.slice(1));
             }
             if (document.getElementById('private').checked && passwordInput.value === '') {
                 passwordInput.className = 'form-control is-invalid';

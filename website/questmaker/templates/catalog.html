@@ -26,8 +26,9 @@
                 <asid class="px-3 text-white top-0 w-100 d-flex justify-content-between"
                 style="z-index: 10">
                     <form class="d-flex">
-                        <input class="form-control me-2" type="search" placeholder="Найти..." aria-label="Search">
-                        <button class="btn btn-outline-success" type="button">Поиск</button>
+                        <input class="form-control me-2" type="search" placeholder="Найти..." aria-label="Search" id="search"
+                                onkeydown="return (event.keyCode!=13);">
+                        <button class="btn btn-outline-success" type="button" id="searchButton">Поиск</button>
                     </form>
                     <button class="btn btn-outline-primary p-1" type="button">
                         <a class="btn" data-bs-toggle="offcanvas"

@@ -43,6 +43,7 @@ export class Render {
         redactButton.id = 'btn' + block.id;
         redactButton.className = 'btn btn-outline-secondary py-0 px-1 border-0';
         redactButton.style.position = 'absolute';
+        redactButton.style.zIndex = '100';
         redactButton.style.top = '0';
         redactButton.style.left = '0';
         redactButton.onclick = () => {

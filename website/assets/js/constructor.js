@@ -140,7 +140,6 @@ window.onload = () => {
                 }));
             }
         }, 20000);
-
         Render.render(quest, instance, sourceEndpoint, targetEndpoint, panzoom);
 
         document.getElementById('addMBtn').onclick = () => {
@@ -164,7 +163,6 @@ window.onload = () => {
                 });
             });
         };
-
         document.getElementById('addQBtn').onclick = () => {
             const question = createNewBlock('open', 'Новый открытый вопрос', quest);
             Quest.addQuestion(question).then((data)=>{
@@ -186,7 +184,6 @@ window.onload = () => {
         };
 
         document.getElementById('save').onclick = () =>{
-            console.log('Saving quest ', quest);
             Quest.save(quest.data.quest_id).then(() => document.location = '/profile');
         };
         document.getElementById('addQCBtn').onclick = () => {
@@ -206,6 +203,14 @@ window.onload = () => {
                 });
             });
         };
+        
+        document.getElementById('finishBtn').onclick = () => {
+            console.log("btn click");
+            const question = createNewBlock('end', '', quest);
+            Quest.addQuestion(question).then((data) => {
+             Render.renderFinish(question, instance, targetEndpoint);
+            });
+         };
         document.getElementById('redactorQuest').onclick = () => {
             QuestRedactor.showQuestRedactor(quest);
         };

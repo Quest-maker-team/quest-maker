@@ -187,7 +187,7 @@ window.onload = () => {
 
         document.getElementById('save').onclick = () =>{
             console.log('Saving quest ', quest);
-            Quest.save(quest.data.quest_id).then(() => document.location = '/profile_catalog');
+            Quest.save(quest.data.quest_id).then(() => document.location = '/profile');
         };
         document.getElementById('addQCBtn').onclick = () => {
             const question = createNewBlock('choice', 'Новый вопрос с выбором ответа', quest);
@@ -213,7 +213,7 @@ window.onload = () => {
             if (confirm('Вы уверены, что хотите удалить квест? Отменить это действие будет невозможно.')){
                 console.log(quest);
                 deleteQuestRequest(quest.data.quest_id).then(() =>
-                    document.location.href = '../profile_catalog');
+                    document.location.href = '../profile');
             }
         };
     });

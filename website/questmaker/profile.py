@@ -6,8 +6,10 @@ from datetime import datetime
 from flask import Blueprint, render_template
 from flask_login import login_required, current_user
 
-from .db import get_quests_by_author_id
+from .db import get_quests_by_author_id, get_draft
 import operator
+
+import pickle
 
 
 prof = Blueprint('profile', __name__)
@@ -42,9 +44,13 @@ def profile():
 
     for q in quests:
         c = {}
+        draft = get_draft(q['quest_id'])
         c['id'] = q['quest_id']
         c['keyword'] = q['keyword']
-        c['title'] = q['title']
+        if draft:
+            c['title'] = '(Черновик) ' + pickle.loads(bytes(draft['container'])).quest.title
+        else:
+            c['title'] = q['title']
         if q['password'] != None:
             c['type'] = 'Приватный'
         else:

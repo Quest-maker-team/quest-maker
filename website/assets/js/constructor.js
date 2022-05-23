@@ -207,7 +207,7 @@ window.onload = () => {
         document.getElementById('finishBtn').onclick = () => {
             const question = createNewBlock('end', '', quest);
             Quest.addQuestion(question).then((data) => {
-             Render.renderFinish(question, instance, targetEndpoint);
+             Render.renderFinish(quest, question, instance, targetEndpoint);
             });
          };
         document.getElementById('redactorQuest').onclick = () => {

@@ -204,13 +204,12 @@ class QuestPoint:
         try:
             movement_info = get_movement(self.id)
             if latitude is not None and longitude is not None:
-                coords = re.findall("\d+.\d+", movement_info[1])
-                dist = geopy.distance.geodesic((float(coords[0]), float(coords[1])), (latitude, longitude)).m
+                dist = geopy.distance.geodesic((float(movement_info[1]), float(movement_info[2])), (latitude, longitude)).m
                 if dist > movement_info[2]:
                     return (0, None)
             elif point_name != QuestPoint.no_geo_msg:
                 return (0, None)
-            if not check_time(movement_info[3], movement_info[4]):
+            if not check_time(movement_info[4], movement_info[5]):
                 return (0, None)
             question_info = get_question_by_id(movement_info[0])
             point = QuestPoint(question_info[0], question_info[2], question_info[1])
@@ -706,8 +705,7 @@ async def point_proc(message: types.Message, state: FSMContext, latitude, longit
         elif data['quest'].cur_point.type == "movement":
             await send_files(message, msg, files, create_movement_keyboard(QuestPoint.no_geo_msg))
             movement_info = get_movement(data['quest'].cur_point.id)
-            coords = re.findall("\d+.\d+", movement_info[1])
-            await bot.send_location(message.chat.id, coords[0], coords[1])
+            await bot.send_location(message.chat.id, movement_info[1], movement_info[2])
         else:
             await send_files(message, msg, files, ReplyKeyboardRemove())
         if quest_ends == True:

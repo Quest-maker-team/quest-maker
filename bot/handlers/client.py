@@ -3,6 +3,7 @@
 Client commands handler file.
 """
 
+from ast import keyword
 import datetime
 from aiogram import types, Dispatcher
 from aiogram.dispatcher import FSMContext
@@ -450,6 +451,9 @@ async def name_quest(message: types.Message, state: FSMContext):
     """
     quest_info = get_private_quest_title(message.text)
     if quest_info:
+        async with state.proxy() as data:
+            data['keyword'] = message.text
+            data['quest-name'] = quest_info[1]
         await message.answer('Квест ' + quest_info[1] + ' приватный. Введите пароль.')
         await QuestStates.password.set()
         return
@@ -505,15 +509,18 @@ async def password_quest(message: types.Message, state: FSMContext):
     :param message: message from user
     :param state: state machine context
     """
-    quest_info = get_private_quest_title(message.text)
+    async with state.proxy() as data:
+        quest_name = data['quest-name']
+        keyword = data['keyword']
+    quest_info = get_private_quest_title(keyword)
     if quest_info:
         if quest_info[2] != message.text:
-            await message.reply('Неправильный пароль к квесту "' + message.text + '".',
+            await message.reply('Неправильный пароль к квесту "' + quest_name + '".',
                 reply_markup=create_opening_menu_keyboard())
             await state.finish()
             return
         async with state.proxy() as data:
-            data['quest'] = Quest(message.text)
+            data['quest'] = Quest(keyword)
             if data['quest'].cur_point is None:
                 await message.answer('Не удалось запустить квест.')
                 await state.finish()
@@ -551,7 +558,7 @@ async def password_quest(message: types.Message, state: FSMContext):
                                      reply_markup=create_rating_keyboard())
                 await QuestStates.rating.set()
     else:
-        await message.reply('Квест с идентификатором "' + message.text + '" не найден',
+        await message.reply('Квест с идентификатором "' + quest_name + '" не найден',
             reply_markup=create_opening_menu_keyboard())
         await state.finish()
 
@@ -604,7 +611,7 @@ async def cancel_handler(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         if 'quest' in data:
             data['quest'].save(message.from_user.id, False)
-            await message.answer('Квест "' + data['quest'].name + '" закончен. '
+            await message.answer('Квест "' + data['quest'].name + '" остановлен. '
                                  'Количество баллов: ' + str(data['quest'].score) + ".",
                                  reply_markup=create_opening_menu_keyboard())
         else:

@@ -41,8 +41,9 @@ export class Render {
                         '1-.468-.325z"/>' +
             '</svg>');
         redactButton.id = 'btn' + block.id;
-        redactButton.className = 'btn btn-outline-secondary py-0 px-1 border-0';
+        redactButton.className = 'btn btn-outline-info py-0 px-1 border-0';
         redactButton.style.position = 'absolute';
+        redactButton.style.zIndex = '100';
         redactButton.style.top = '0';
         redactButton.style.left = '0';
         redactButton.onclick = () => {
@@ -66,10 +67,21 @@ export class Render {
     static addDeleteButton(quest, block, instance, answerElements) {
         const deleteButton = document.createElement('button');
         deleteButton.id = 'btn' + block.id;
-        deleteButton.className = 'btn-close btn-danger';
+        deleteButton.className = 'btn btn-outline-danger py-0 px-1 border-0';
         deleteButton.style.position = 'absolute';
         deleteButton.style.top = '0';
         deleteButton.style.right = '0';
+        deleteButton.insertAdjacentHTML('beforeend',
+                '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"' +
+                        'class="bi bi-trash" viewBox="0 0 16 16">' +
+                    '<path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 ' +
+                            '.5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 ' +
+                            '0V6z"/>' +
+                    '<path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 ' +
+                            '1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 ' +
+                            '0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 ' +
+                            '4H4.118zM2.5 3V2h11v1h-11z"/>' +
+                '</svg>')
         deleteButton.onclick = () => {
             if (answerElements !== undefined) {
                 for (const answerElement of answerElements) {
@@ -102,12 +114,13 @@ export class Render {
         return block;
     }
 
-    static renderFinish(question, instance, targetEndpoint) {
+    static renderFinish(quest, question, instance, targetEndpoint) {
         const block = this.renderBlockBase(question, '10rem', 'Конец');
         block.className += ' text-white bg-dark';
         instance.manage(block);
         Render.createEndpoint(instance, document.getElementById('body' + question.question_id),
             {anchor: ['Top', 'Right', 'Left', 'Bottom']}, targetEndpoint);
+        Render.addDeleteButton(quest, block, instance);
         return block;
     }
 
@@ -208,7 +221,7 @@ export class Render {
                 block = Render.renderStart(question, instance, sourceEndpoint);
                 break;
             case 'end':
-                block = Render.renderFinish(question, instance, targetEndpoint);
+                block = Render.renderFinish(quest, question, instance, targetEndpoint);
                 break;
             case 'open':
                 block = Render.renderQuestion(quest, question, 'Открытый вопрос', instance, sourceEndpoint,

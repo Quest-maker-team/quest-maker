@@ -205,7 +205,6 @@ window.onload = () => {
         };
         
         document.getElementById('finishBtn').onclick = () => {
-            console.log("btn click");
             const question = createNewBlock('end', '', quest);
             Quest.addQuestion(question).then((data) => {
              Render.renderFinish(question, instance, targetEndpoint);

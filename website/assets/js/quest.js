@@ -92,7 +92,7 @@ export class Quest {
     static addQuestion(question) {
         return Quest.makeRequest('POST', 'api/constructor/question', JSON.stringify({
             type: question.type,
-            text: 'Вопрос',
+            text: '',
             pos_x: 0,
             pos_y: 0,
         })).then((result) => {

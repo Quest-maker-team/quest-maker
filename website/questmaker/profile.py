@@ -13,16 +13,6 @@ import operator
 prof = Blueprint('profile', __name__)
 
 
-@prof.route('/profile')
-@login_required
-def profile():
-    """
-    Main profile page
-    :return: main profile page
-    """
-    return render_template('profile.html', user=current_user)
-
-
 def choose_state(quest):
     """
     Evaluate the status of the quest
@@ -40,9 +30,9 @@ def choose_state(quest):
         return 'Неактивен', 'light'
 
 
-@prof.route('/profile_catalog')
+@prof.route('/profile')
 @login_required
-def catalog():
+def profile():
     """
     Personal catalog page
     :return: personal catalog page
@@ -64,4 +54,4 @@ def catalog():
     
     catalog.sort(key=operator.itemgetter('title'))
 
-    return render_template('profile_catalog.html', user=current_user, quests=catalog)
+    return render_template('profile.html', user=current_user, quests=catalog)

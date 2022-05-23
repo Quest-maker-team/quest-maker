@@ -3,67 +3,81 @@
 
 {% block content %}
 <script src="https://api-maps.yandex.ru/2.1/?apikey=57bad925-98eb-4a1e-8bf9-78a2f0a99e22&lang=ru_RU" type="text/javascript"></script>
-<main class="min-vh-100 min-vw-100 position-relative d-flex">
-    <div class="position-absolute d-flex min-vw-100 min-vh-100">
-        <!--  MENU begin -->
-        <aside class="col-2 mt-4 gy-4 bg-light text-center border-end border-secondary" style="z-index: 1;">
-            <div class="mt-5">
-                <button class="accordion-button rounded" data-bs-toggle="collapse" data-bs-target="#getting-started-collapse1" style="box-shadow: none !important; background-color: white !important; color: black !important;" id = "firstAcc">
-                    Редактировать квест
+<!--  MENU begin -->
+<div class="offcanvas offcanvas-start text-center border-end border-secondary accordion" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title" id="offcanvasExampleLabel">Меню</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#offcanvasResponsive" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div class="mt-0">
+            <button class="accordion-button rounded" data-bs-toggle="collapse" data-bs-target="#getting-started-collapse1" style="box-shadow: none !important; background-color: white !important; color: black !important;" id = "firstAcc">
+                Редактировать квест
+            </button>
+            <div class="collapse show" id="getting-started-collapse1">
+                <button type="button" class="btn col-11 btn-outline-secondary mt-1" id="redactorQuest">
+                    Изменить описание квеста
                 </button>
-                <div class="collapse show" id="getting-started-collapse1">
-                    <button type="button" class="btn col-11 btn-outline-secondary mt-1" id="redactorQuest">
-                        Изменить описание квеста
-                    </button>
-                    <button type="button" class="btn col-11 btn-outline-warning mt-1" id="addMBtn">
-                        Добавить блок перемещения
-                    </button>
-                    <button type="button" class="btn col-11 btn-outline-primary mt-1" id="addQBtn">
-                        Добавить открытый вопрос
-                    </button>
-                    <button type="button" class="btn col-11 btn-outline-info mt-1" id="addQCBtn">
-                        Добавить вопрос с выбором
-                    </button>
-                    <button type="button" class="btn col-11 btn-outline-dark mt-1" id="finishBtn">
-                        Добавить новый конец квеста
-                    </button>
-                </div>
-            </div>
-            <div class="mt-0">
-                <button class="accordion-button rounded" data-bs-toggle="collapse" data-bs-target="#getting-started-collapse2" style="box-shadow: none !important; background-color: white !important; color: black !important;">
-                    Удалить квест
+                <button type="button" class="btn col-11 btn-outline-warning mt-1" id="addMBtn">
+                    Добавить блок перемещения
                 </button>
-                <div class="collapse show" id="getting-started-collapse2">
-                    <button type="button" class="btn col-11 btn-outline-danger mt-1" id="deleteQuest">
-                        Удалить текущий квест
-                    </button>
-                </div>
-            </div>
-            <div class="mt-0">
-                <button class="accordion-button rounded" data-bs-toggle="collapse" data-bs-target="#getting-started-collapse4" style="box-shadow: none !important; background-color: white !important; color: black !important;">
-                    Опубликовать квест
+                <button type="button" class="btn col-11 btn-outline-primary mt-1" id="addQBtn">
+                    Добавить открытый вопрос
                 </button>
-                <div class="collapse show" id="getting-started-collapse4">
-                    <button type="button" class="btn col-11 btn-outline-success mt-1" id="save">
-                        Опубликовать
-                    </button>
-                </div>
-            </div>
-            <div class="mt-0">
-                <button class="accordion-button rounded" data-bs-toggle="collapse" data-bs-target="#getting-started-collapse3" style="box-shadow: none !important; background-color: white !important; color: black !important;">
-                    Новый квест
+                <button type="button" class="btn col-11 btn-outline-info mt-1" id="addQCBtn">
+                    Добавить вопрос с выбором
                 </button>
-                <div class="collapse show" id="getting-started-collapse3">
-                    <button type="button" class="btn col-11 btn-outline-success mt-1" onclick="window.location.href='/constructor.html?name=new&id=0'" id="createNewQuest">
-                        Создать новый квест
-                    </button>
-                </div>
+                <button type="button" class="btn col-11 btn-outline-dark mt-1" id="finishBtn">
+                    Добавить новый конец квеста
+                </button>
             </div>
-        </aside>
-        <!--  MENU end -->
+        </div>
+        <div class="mt-0">
+            <button class="accordion-button rounded" data-bs-toggle="collapse" data-bs-target="#getting-started-collapse2" style="box-shadow: none !important; background-color: white !important; color: black !important;">
+                Удалить квест
+            </button>
+            <div class="collapse show" id="getting-started-collapse2">
+                <button type="button" class="btn col-11 btn-outline-danger mt-1" id="deleteQuest">
+                    Удалить текущий квест
+                </button>
+            </div>
+        </div>
+        <div class="mt-0">
+            <button class="accordion-button rounded" data-bs-toggle="collapse" data-bs-target="#getting-started-collapse4" style="box-shadow: none !important; background-color: white !important; color: black !important;">
+                Опубликовать квест
+            </button>
+            <div class="collapse show" id="getting-started-collapse4">
+                <button type="button" class="btn col-11 btn-outline-success mt-1" id="save">
+                    Опубликовать
+                </button>
+            </div>
+        </div>
+        <div class="mt-0">
+            <button class="accordion-button rounded" data-bs-toggle="collapse" data-bs-target="#getting-started-collapse3" style="box-shadow: none !important; background-color: white !important; color: black !important;">
+                Новый квест
+            </button>
+            <div class="collapse show" id="getting-started-collapse3">
+                <button type="button" class="btn col-11 btn-outline-success mt-1" onclick="window.location.href='/constructor.html?name=new&id=0'" id="createNewQuest">
+                    Создать новый квест
+                </button>
+            </div>
+        </div>
+    </div>
+  </div>
+<!--  MENU end -->
+<main class="min-vh-100 min-vw-100 position-relative d-flex" >
+    <div class="mt-5" style = "z-index: 99;">
+    <button class="btn navbar-toggler mt-5 "  type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+</div>
+    <div class="position-absolute d-flex min-vw-100 min-vh-100 " id ="main">
+        
         <div class="position-relative" id="container" style="z-index: 0;">
             <!-- Container for block rendered -->
         </div>
+        
+          
     </div>
     <div class="modal fade" id="redactor" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">

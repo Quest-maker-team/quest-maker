@@ -82,16 +82,6 @@ function createNewBlock(type, text, quest) {
     return lastQuestion;
 }
 window.onload = () => {
-    console.log(window.innerHeight);   
-    if (window.innerHeight >= 850){
-        window.bootstrap = require('bootstrap/dist/js/bootstrap.bundle.js');    
-        let collapseElementList = [].slice.call(document.querySelectorAll('.collapse')).slice(1);
-        collapseElementList.map(function (collapseEl) {
-            return new bootstrap.Collapse(collapseEl, {
-                toggle: false
-            });
-         });  
-    } 
     const query = window.location.href.split('?')[1];
     const queryParams = query.split('&');
     load(queryParams[0].split('=')[1], queryParams[1].split('=')[1]).then((quest) => {

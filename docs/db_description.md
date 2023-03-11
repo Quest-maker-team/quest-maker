@@ -1,7 +1,7 @@
 # Database description
 Description of the moments not displayed on the database schema.
 
-You can get acquainted with the scheme of the database in the form of an [image](https://github.com/Quest-maker-team/quest-maker/blob/main/docs/image/db.png).
+You can get acquainted with the scheme of the database in the form of an [image](https://github.com/Quest-maker-team/quest-maker/blob/main/docs/image/db.svg).
 
 ## Contents of auxiliary tables with types
 The following tables are necessary for fixing the names of the types of objects used in the project.

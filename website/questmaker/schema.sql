@@ -215,3 +215,14 @@ CREATE OR REPLACE TRIGGER update_ref_count
 	FOR EACH ROW
 	WHEN (OLD.ref_count IS DISTINCT FROM NEW.ref_count AND NEW.ref_count = 0)
 	EXECUTE FUNCTION remove_useless_tag();
+
+
+DROP VIEW IF EXISTS quests_catalog;
+CREATE VIEW quests_catalog AS
+    SELECT quest_id, title, name AS author, description, keyword,
+    one_star_amount, two_star_amount, three_star_amount, four_star_amount, five_star_amount,
+    time_open, time_close, cover_path
+    FROM quest
+    JOIN author USING (author_id)
+    JOIN rating USING (quest_id)
+    WHERE NOT hidden AND published;

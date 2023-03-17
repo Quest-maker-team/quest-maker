@@ -1,6 +1,6 @@
 from flask import Blueprint
 from flask_login import login_required, current_user
-from questmaker.db import get_quest, remove_quest
+from website.questmaker.db import get_quest, remove_quest
 
 personal_catalog_api = Blueprint("personal_catalog", __name__)
 

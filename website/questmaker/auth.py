@@ -6,8 +6,8 @@ from flask import Blueprint, render_template, request, flash, redirect, url_for
 from .forms import LoginForm, SignupFrom
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-from .UserLogin import AuthorLogin
-from . import db
+from .UserLogin import Author
+from website.questmaker.db import get_author_by_id, add_user, get_author_by_email
 
 auth = Blueprint('auth', __name__)
 
@@ -24,8 +24,8 @@ def load_user(author_id):
     :param author_id: user id
     :return: object of UserLogin class inited with data from db
     """
-    author = db.get_author_by_id(author_id)
-    return AuthorLogin(author) if author else None
+    author = get_author_by_id(author_id)
+    return Author.load_from_dict(author) if author else None
 
 
 @auth.route('/signup', methods=['POST', 'GET'])
@@ -40,7 +40,7 @@ def signup():
         email = form.email.data
         psw = form.psw.data
         hash_psw = generate_password_hash(psw)
-        success = db.add_user(name, hash_psw, email)
+        success = add_user(name, hash_psw, email)
         if success:
             flash('Вы зарегестрированы', 'success_reg')
             return redirect(url_for('auth.login'))
@@ -61,10 +61,10 @@ def login():
     if form.validate_on_submit():  # check if all field are correct
         email = form.email.data
         psw = form.psw.data
-        author = db.get_author_by_email(email)
+        author = get_author_by_email(email)
         if author:
             if check_password_hash(author['password'], psw):
-                login_user(AuthorLogin(author), form.remember.data)
+                login_user(Author.load_from_dict(author), form.remember.data)
 
                 return redirect(request.args.get('next') or url_for('profile.profile'))
             else:

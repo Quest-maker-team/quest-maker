@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
-from questmaker.db import get_quest_from_catalog, get_tags as db_get_tags, \
-    get_quest_tags, get_quest_rating, get_quest_files, get_quests_from_catalog, get_quests_num
+from website.questmaker.db import get_quest_from_catalog, get_tags as db_get_tags, \
+    get_quest_tags, get_quest_rating, get_quests_from_catalog, get_quests_num
 
 catalog_api = Blueprint("catalog_api", __name__)
 
@@ -9,8 +9,7 @@ def get_quest_dict(quest):
     quest = dict(quest)
     quest['rating'] = dict(get_quest_rating(quest['quest_id']))
     quest['tags'] = [tag['tag_name'] for tag in get_quest_tags(quest['quest_id'])]
-    quest['files'] = [{"f_type": file['f_type_name'], 'url_for_file': file['url_for_file']}
-                      for file in get_quest_files(quest['quest_id'])]
+
     return quest
 
 

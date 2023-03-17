@@ -39,7 +39,7 @@ def profile():
     Personal catalog page
     :return: personal catalog page
     """
-    quests = get_quests_by_author_id(current_user.author['author_id'])
+    quests = get_quests_by_author_id(current_user.id)
     catalog = []
 
     for q in quests:

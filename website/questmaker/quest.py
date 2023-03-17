@@ -1,7 +1,7 @@
 from typing import Dict
 from datetime import time
 
-from website.questmaker.db import get_quest, get_quest_tags, get_quest_rating, get_blocks, \
+from .db import get_quest, get_quest_tags, get_quest_rating, get_blocks, \
     check_uuid, add_media, set_quest, get_db, set_tags, set_rating, \
     set_block, add_hint, add_answer, add_place, set_blocks_link, set_answer_and_block_link
 
@@ -392,7 +392,7 @@ class Movement(BlockWithHint):
 
 class Quest:
     def __init__(self) -> None:
-        self.blocks = Dict(int, Block)
+        self.blocks = {}
         self.id = None
         self.title = None
         self.author_id = None
@@ -476,9 +476,10 @@ class Quest:
         return quest_dict
 
     def init_from_dict(self, quest_info: dict) -> bool:
+        print(">>>>>>>>>>>>>>>>>>>>>>>>>")
         if 'title' not in quest_info.keys():
             return False
-        rc = self.update_from_dict(self, quest_info)
+        rc = self.update_from_dict(quest_info)
         if not rc:
             return False
         start = Information()
@@ -512,6 +513,8 @@ class Quest:
     def save_to_db(self) -> bool:
         try:
             set_quest(self) 
+            print("/////////////////")
+
             if self.id is None:
                 return False
             set_tags(self.tags, self.id)

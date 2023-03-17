@@ -1,5 +1,5 @@
-from website.questmaker.db import get_draft, update_draft, write_draft, remove_draft, get_draft_for_update
-from website.questmaker.quest import Quest, Information, Question, Movement, Block, Answer, Media, Hint, Place
+from questmaker.db import get_draft, update_draft, write_draft, remove_draft, get_draft_for_update
+from questmaker.quest import Quest, Information, Question, Movement, Block, Answer, Media, Hint, Place
 
 from flask_login import current_user, login_required
 from flask import Blueprint, jsonify, request, g, session
@@ -407,7 +407,7 @@ def update_block_place(block_id, place_id):
     rc = place.update_from_dict(place_dict)
     return ('', 200) if rc else ('Wrong JSON attributes', 400)
 
-@constructor_api.route('/quest>', methods=['PUT'])
+@constructor_api.route('/quest', methods=['PUT'])
 def update_quest():
     """
     Set quest attributes from JSON

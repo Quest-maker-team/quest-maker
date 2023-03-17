@@ -7,7 +7,7 @@ from .forms import LoginForm, SignupFrom
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from .UserLogin import Author
-from website.questmaker.db import get_author_by_id, add_user, get_author_by_email
+from .db import get_author_by_id, add_user, get_author_by_email
 
 auth = Blueprint('auth', __name__)
 

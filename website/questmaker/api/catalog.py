@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from website.questmaker.db import get_quest_from_catalog, get_tags as db_get_tags, \
+from questmaker.db import get_quest_from_catalog, get_tags as db_get_tags, \
     get_quest_tags, get_quest_rating, get_quests_from_catalog, get_quests_num
 
 catalog_api = Blueprint("catalog_api", __name__)

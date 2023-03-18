@@ -250,7 +250,7 @@ def get_draft_for_update(draft_id):
     Get draft quest by id and block row
     """
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-        cursor.execute('SELECT author_id, container FROM draft WHERE draft_id = %s FOR UPDATE', (draft_id,))
+        cursor.execute('SELECT author_id, container_path FROM draft WHERE draft_id = %s FOR UPDATE', (draft_id,))
         return cursor.fetchone()
 
 
@@ -260,7 +260,7 @@ def write_draft(author_id, container, quest_id):
     :return: id of the new draft
     """
     with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-        cursor.execute('INSERT INTO draft(author_id, container, quest_id) '
+        cursor.execute('INSERT INTO draft(author_id, container_path, quest_id) '
                        'VALUES (%s, %s, %s) RETURNING draft_id', (author_id, container, quest_id))
         return cursor.fetchone()['draft_id']
 
@@ -270,7 +270,7 @@ def update_draft(draft_id, container):
     Update draft container
     """
     with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-        cursor.execute('UPDATE draft SET container = %s WHERE draft_id = %s', (container, draft_id))
+        cursor.execute('UPDATE draft SET container_path = %s WHERE draft_id = %s', (container, draft_id))
 
 
 def remove_draft(quest_id):
@@ -473,16 +473,17 @@ def set_quest(quest):
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         if quest.id is not None:
             cursor.execute('DELETE FROM quest WHERE quest_id = %s', (quest.id,))
-        print(quest.keyword)
+        print(quest.title, quest.author_id, quest.keyword)
         cursor.execute('INSERT INTO quest (title, author_id, description, keyword, password, '
-                       'cover_path, hidden, published) '
-                       'VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING quest_id',
-                       (quest.title, quest.author_id, quest.description, quest.keyword,
+                    'cover_path, hidden, published) '
+                    'VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING quest_id',
+                    (quest.title, quest.author_id, quest.description, quest.keyword,
                         quest.password, quest.cover, quest.hidden, quest.published))
         
         
         quest.id = cursor.fetchone()['quest_id']
         return True
+
     
 def set_tags(tags, quest_id: int):
     """

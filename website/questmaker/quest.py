@@ -123,7 +123,7 @@ class Block:
         self.id = Block.unic_id
         self.position = Position(0., 0.)
         self.media_sources = {}
-        self.text = None
+        self.text = ""
         self.next_block_id = None
         self.block_type_id = None
 
@@ -175,7 +175,7 @@ class Block:
     def save_to_db(self, quest_id: int):
         set_block(self, quest_id)
 
-        for media in self.media_sources.items():
+        for media in self.media_sources.values():
             media.add_to_db("block_media", "block", self.db_id)
 
     def save_links_in_db(self, blocks: dict):
@@ -262,7 +262,7 @@ class Hint:
     def add_to_db(self, block_id: int):
         self.db_id = add_hint(self.text, self.fine, block_id)
 
-        for media in self.media_sources.items():
+        for media in self.media_sources.values():
             media.add_to_db("hint_media", "hint", self.db_id)
 
 class Place:
@@ -326,13 +326,13 @@ class BlockWithHint(Block):
     def convert_to_dict(self) -> dict:
         block_dict = super().convert_to_dict()
 
-        block_dict["hints"] = [hint.convert_to_dict() for hint in self.hints.items()]
+        block_dict["hints"] = [hint.convert_to_dict() for hint in self.hints.values()]
 
         return block_dict
     
     def save_to_db(self, quest_id: int):
         super().save_to_db(quest_id)
-        for hint in self.hints.items():
+        for hint in self.hints.values():
             hint.add_to_db(self.db_id)
         
 class Question(BlockWithHint):
@@ -357,7 +357,7 @@ class Question(BlockWithHint):
     def convert_to_dict(self) -> dict:
         block_dict = super().convert_to_dict()
 
-        block_dict["answers"] = [answer.convert_to_dict() for answer in self.answers.items()]
+        block_dict["answers"] = [answer.convert_to_dict() for answer in self.answers.values()]
 
         return block_dict
     
@@ -402,8 +402,8 @@ class Quest:
             self.keyword = str(uuid4())[:8]
         self.password = None
         self.cover = None
-        self.hidden = None
-        self.published = None
+        self.hidden = False
+        self.published = False
         self.tags = []
         self.rating = {'one': 0, 'two': 0, 'three': 0, 'four': 0, 'five': 0}
 
@@ -470,13 +470,12 @@ class Quest:
         quest_dict['description'] = self.description
         quest_dict['password'] = self.password
         quest_dict['blocks'] = []
-        for block in self.blocks.items():
+        for block in self.blocks.values():
             quest_dict['blocks'].append(block.convert_to_dict())
 
         return quest_dict
 
     def init_from_dict(self, quest_info: dict) -> bool:
-        print(">>>>>>>>>>>>>>>>>>>>>>>>>")
         if 'title' not in quest_info.keys():
             return False
         rc = self.update_from_dict(quest_info)
@@ -513,15 +512,14 @@ class Quest:
     def save_to_db(self) -> bool:
         try:
             set_quest(self) 
-            print("/////////////////")
 
             if self.id is None:
                 return False
             set_tags(self.tags, self.id)
             set_rating(self.id, self.rating)
-            for block in self.blocks.items():
+            for block in self.blocks.values():
                 block.save_to_db(self.id)
-            for block in self.blocks.items():
+            for block in self.blocks.values():
                 block.save_links_in_db(self.blocks)
 
         except Exception:

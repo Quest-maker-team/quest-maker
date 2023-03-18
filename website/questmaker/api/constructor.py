@@ -27,7 +27,7 @@ def before_request():
             return 'No draft with this id', 400
         if draft['author_id'] != author_id:
             return 'This is not your quest', 403
-        g.container = pickle.loads(bytes(draft['container']))
+        g.container = pickle.loads(bytes(draft['container_path']))
     else:
         return 'You don\'t have loaded draft', 400
 
@@ -59,7 +59,7 @@ def get_quest(quest_id):
     if draft:
         if draft['author_id'] != current_user.id:
             return 'This is not your quest', 403
-        quest = pickle.loads(bytes(draft['container']))
+        quest = pickle.loads(bytes(draft['container_path']))
         session['draft_id'] = draft['draft_id']
         return jsonify(quest.convert_to_dict()) if type(quest).__name__ == Quest.__name__ else ('Wrong quest id', 400)
     else:
@@ -98,7 +98,7 @@ def create_quest():
     if not quest.save_to_db():
         return 'Internal Server Error', 500
 
-    draft_id = write_draft(current_user.id, pickle.dumps(quest), quest.quest_id)
+    draft_id = write_draft(current_user.id, pickle.dumps(quest), quest.id)
     session['draft_id'] = draft_id
     return jsonify(quest.convert_to_dict())
 
@@ -537,7 +537,7 @@ def save_quest(quest_id):
         return 'No quest with this id', 400
     if draft['author_id'] != author_id:
         return 'This is not your quest', 403
-    quest = pickle.loads(bytes(draft['container']))
+    quest = pickle.loads(bytes(draft['container_path']))
     quest.published = True
     quest.save_to_db()
     remove_draft(quest_id)

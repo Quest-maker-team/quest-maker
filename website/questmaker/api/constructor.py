@@ -372,7 +372,7 @@ def update_block_answer(block_id, answer_id):
 @constructor_api.route('/block/<int:block_id>/hint/<int:hint_id>', methods=['PUT'])
 def update_block_hint(block_id, hint_id):
     """
-    Set block media attributes from JSON
+    Set hint media attributes from JSON
     :param block_id: block id in quest
     :param hint_id: hint id in block
     :return: status code
@@ -391,7 +391,7 @@ def update_block_hint(block_id, hint_id):
 @constructor_api.route('/block/<int:block_id>/place/<int:place_id>', methods=['PUT'])
 def update_block_place(block_id, place_id):
     """
-    Set block media attributes from JSON
+    Set block place attributes from JSON
     :param block_id: block id in quest
     :param place_id: place id in block
     :return: status code
@@ -401,9 +401,9 @@ def update_block_place(block_id, place_id):
     if not block or type(block) != Movement:
         return 'Wrong block id', 400
     
-    place = block.get_hint_by_id(place_id)
-    if not place:
-        return 'Wrong media id', 400
+    place = block.place
+    if not place or place.id != place_id:
+        return 'Wrong place id', 400
     rc = place.update_from_dict(place_dict)
     return ('', 200) if rc else ('Wrong JSON attributes', 400)
 
@@ -444,7 +444,7 @@ def remove_block_media(block_id, media_id):
 @constructor_api.route('/block/<int:block_id>/hint/<int:hint_id>/media/<int:media_id>', methods=['DELETE'])
 def remove_hint_media(block_id, hint_id, media_id):
     """
-    Remove media from block
+    Remove media from hint
     :param block_id: block id in quest
     :param hint_id: hint id in block
     :param media_id: media id in quest

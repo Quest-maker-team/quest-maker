@@ -48,7 +48,7 @@ def profile():
         c['id'] = q['quest_id']
         c['keyword'] = q['keyword']
         if draft:
-            c['title'] = '(Черновик) ' + pickle.loads(bytes(draft['container_path'])).quest.title
+            c['title'] = '(Черновик) ' + pickle.loads(bytes(draft['container_path'])).title
         else:
             c['title'] = q['title']
         if q['password'] != None:

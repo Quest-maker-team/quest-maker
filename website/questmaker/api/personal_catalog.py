@@ -8,6 +8,6 @@ personal_catalog_api = Blueprint("personal_catalog", __name__)
 @personal_catalog_api.route('/quest/<int:quest_id>', methods=['DELETE'])
 @login_required
 def remove_quest_from_catalog(quest_id):
-    if get_quest(quest_id)['author_id'] != current_user.author['author_id']:
+    if get_quest(quest_id)['author_id'] != current_user.id:
         return 'This is not your quest', 403
     return ('', 200) if remove_quest(quest_id) else ('Wrong id', 400)

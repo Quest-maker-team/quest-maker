@@ -110,7 +110,7 @@ def init_block(request, block: Block):
         return 'Wrong JSON attributes', 400
 
     g.container.add_block(block)
-    return jsonify({'question_id': block_id})
+    return jsonify({'block_id': block_id})
 
 @constructor_api.route('/question_block', methods=['POST'])
 def create_question_block():
@@ -289,7 +289,7 @@ def create_place(block_id):
     
     block.add_place(place)
 
-    return jsonify({'hint_id': place_id})
+    return jsonify({'place_id': place_id})
 
 @constructor_api.route('/block/<int:block_id>', methods=['PUT'])
 def update_block(block_id):
@@ -365,14 +365,14 @@ def update_block_answer(block_id, answer_id):
     
     answer = block.get_answer_by_id(answer_id)
     if not answer:
-        return 'Wrong media id', 400
+        return 'Wrong answer id', 400
     rc = answer.update_from_dict(answer_dict)
     return ('', 200) if rc else ('Wrong JSON attributes', 400)
 
 @constructor_api.route('/block/<int:block_id>/hint/<int:hint_id>', methods=['PUT'])
 def update_block_hint(block_id, hint_id):
     """
-    Set hint media attributes from JSON
+    Set hint attributes from JSON
     :param block_id: block id in quest
     :param hint_id: hint id in block
     :return: status code

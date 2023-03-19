@@ -478,7 +478,7 @@ def set_quest(quest):
                     'cover_path, hidden, published) '
                     'VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING quest_id',
                     (quest.title, quest.author_id, quest.description, quest.keyword,
-                        quest.password, quest.cover, quest.hidden, quest.published))
+                        quest.password, quest.cover_path, quest.hidden, quest.published))
         
         
         quest.id = cursor.fetchone()['quest_id']

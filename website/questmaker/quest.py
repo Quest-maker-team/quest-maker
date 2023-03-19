@@ -169,6 +169,7 @@ class Block:
             "block_type_name": Block.Type.get_name_by_type(self.block_type_id),
             "pos_x": self.position.x,
             "pos_y": self.position.y,
+            "media_sources": [media.convert_to_dict() for media in self.media_sources],
             "next_block_id": self.next_block_id
         }
     
@@ -208,7 +209,7 @@ class Answer:
             'answer_option_id': self.id,
             'text': self.option_text,
             'points': self.points,
-            'next_question_id': self.next_block_id if self.next_block_id is not None else None
+            'next_block_id': self.next_block_id if self.next_block_id is not None else None
         }
     
     def add_to_db(self, block_id: int):
@@ -401,7 +402,7 @@ class Quest:
         while not check_uuid(self.keyword):
             self.keyword = str(uuid4())[:8]
         self.password = None
-        self.cover = None
+        self.cover_path = None
         self.hidden = False
         self.published = False
         self.tags = []
@@ -418,7 +419,7 @@ class Quest:
         self.description = quest_info['description']
         self.keyword = quest_info['keyword']
         self.password = quest_info['password']
-        self.cover = quest_info['cover_path']
+        self.cover_path = quest_info['cover_path']
         self.hidden = quest_info['hidden']
         self.published = quest_info['published']
         self.tags = [tag['tag_name'] for tag in get_quest_tags(id)]
@@ -515,6 +516,7 @@ class Quest:
 
             if self.id is None:
                 return False
+            
             set_tags(self.tags, self.id)
             set_rating(self.id, self.rating)
             for block in self.blocks.values():
@@ -522,7 +524,8 @@ class Quest:
             for block in self.blocks.values():
                 block.save_links_in_db(self.blocks)
 
-        except Exception:
+        except Exception as err:
+            print(err)
             return False
         else:
             get_db().commit()

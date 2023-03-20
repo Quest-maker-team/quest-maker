@@ -46,27 +46,29 @@ function load(name, id) {
         return Quest.loadQuest(id);
     }
 }
+
+
 function createNewBlock(type, text, quest) {
-    const lastQuestion = {
-        'answer_options': [],
-        'files': [],
-        'hints': [],
-        'movements': [],
-        'question_id': undefined,
-        'text': text,
-        'type': type,
+    const lastBlock = {
+        //'answer_options': [],
+        //'files': [],
+        //'hints': [],
+        //'movements': [],
+        'block_id': undefined,
+        'block_text': text,
+        'block_type_name': type,
         'pos_x': 0,
         'pos_y': 0,
     };
-    if (type!=='movement') {
-        lastQuestion.answer_options.push({
+    /*if (type!=='movement') {
+        lastBlock.answer_options.push({
             'answer_option_id': undefined,
             'next_question_id': undefined,
             'points': 0.0,
             'text': 'Ответ',
         });
     } else {
-        lastQuestion.movements.push( {
+        lastBlock.movements.push( {
             'movement_id': undefined,
             'next_question_id': undefined,
             'place': {
@@ -77,10 +79,12 @@ function createNewBlock(type, text, quest) {
                 'time_open': 'Sun, 12 Aug 2001 09:00:00 GMT',
             },
         });
-    }
-    quest.data.questions.push(lastQuestion);
-    return lastQuestion;
+    }*/
+    quest.data.blocks.push(lastBlock);
+    return lastBlock;
 }
+
+
 window.onload = () => {
     const query = window.location.href.split('?')[1];
     const queryParams = query.split('&');
@@ -121,13 +125,19 @@ window.onload = () => {
 
         instance.bind(INTERCEPT_BEFORE_DROP, (params) => {
             const sourceIdSplit = params.sourceId.match(/([a-z]*_?[a-z]*)([0-9]*)/);
-            Quest.connect(sourceIdSplit[1], 'question', sourceIdSplit[2], params.connection.target.parentNode.id);
+            if (sourceIdSplit != 'answer')
+                Quest.connectBlockAndBlock(sourceIdSplit[2], params.connection.target.parentNode.id);
+            else
+                Quest.connectAnswerAndBlock();
             return true;
         });
 
         instance.bind(INTERCEPT_BEFORE_START_DETACH, (params) => {
-            const sourceIdSplit = params.connection.sourceId.match(/([a-z]*_?[a-z]*)([0-9]*)/);
-            Quest.disconnect(sourceIdSplit[1], 'question', sourceIdSplit[2]);
+            const sourceIdSplit = params.sourceId.match(/([a-z]*_?[a-z]*)([0-9]*)/);
+            if (sourceIdSplit != 'answer')
+                Quest.disconnectBlockAndBlock(sourceIdSplit[2]);
+            else
+                Quest.disconnectAnswerAndBlock();
         });
 
 
@@ -144,7 +154,7 @@ window.onload = () => {
 
         document.getElementById('addMBtn').onclick = () => {
             const question = createNewBlock('movement', 'Новое перемещение', quest);
-            Quest.addQuestion(question).then((result) =>{
+            Quest.addBlock(question).then((result) =>{
                 Quest.addMovement(question).then((data)=>{
                     const place = {
                         coords: [0.0, 0.0],
@@ -165,7 +175,7 @@ window.onload = () => {
         };
         document.getElementById('addQBtn').onclick = () => {
             const question = createNewBlock('open', 'Новый открытый вопрос', quest);
-            Quest.addQuestion(question).then((data)=>{
+            Quest.addBlock(question).then((data)=>{
                 Quest.addEntity('answer_option', JSON.stringify({
                     points: 0.0,
                     text: 'Ответ',
@@ -188,7 +198,7 @@ window.onload = () => {
         };
         document.getElementById('addQCBtn').onclick = () => {
             const question = createNewBlock('choice', 'Новый вопрос с выбором ответа', quest);
-            Quest.addQuestion(question).then((data)=>{
+            Quest.addBlock(question).then((data)=>{
                 Quest.addEntity('answer_option', JSON.stringify({
                     points: 0.0,
                     text: 'Ответ',
@@ -205,14 +215,16 @@ window.onload = () => {
         };
         
         document.getElementById('finishBtn').onclick = () => {
-            const question = createNewBlock('end', '', quest);
-            Quest.addQuestion(question).then((data) => {
-             Render.renderFinish(quest, question, instance, targetEndpoint);
+            const block = createNewBlock('end_block', '', quest);
+            Quest.addBlock(block).then((data) => {
+                Render.renderFinish(quest, block, instance, targetEndpoint);
             });
          };
+
         document.getElementById('redactorQuest').onclick = () => {
             QuestRedactor.showQuestRedactor(quest);
         };
+
         document.getElementById('deleteQuest').onclick = () => {
             if (confirm('Вы уверены, что хотите удалить квест? Отменить это действие будет невозможно.')){
                 console.log(quest);

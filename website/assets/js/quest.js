@@ -53,18 +53,29 @@ export class Quest {
     }
 
     static updateEntity(type, id, data) {
+        console.log(data);
         const url = 'api/constructor/' + type + '/' + id;
         return Quest.makeRequest('PUT', url, data);
     }
 
-    static connect(type1, type2, id1, id2) {
-        const url = 'api/constructor/' + type1 + '/' + id1 + '/' + type2 + '/' + id2;
+    static connectBlockAndBlock(sourceId, targetId) {
+        const url = 'api/constructor/source_block/' + sourceId + '/target_block/' + targetId;
         return Quest.makeRequest('PUT', url);
     }
 
-    static disconnect(type1, type2, id1) {
-        const url = 'api/constructor/' + type1 + '/' + id1 + '/' + type2;
-        return Quest.makeRequest('DELETE', url);
+    static connectAnswerAndBlock() {
+        /*const url = 'api/constructor/' + type1 + '/' + id1 + '/' + type2 + '/' + id2;
+        return Quest.makeRequest('PUT', url);*/
+    }
+
+    static disconnectBlockAndBlock(sourceId) {
+        const url = 'api/constructor/source_block/' + sourceId;
+        return Quest.makeRequest('PUT', url);
+    }
+
+    static disconnectAnswerAndBlock() {
+        /*const url = 'api/constructor/' + type1 + '/' + id1 + '/' + type2 + '/' + id2;
+        return Quest.makeRequest('PUT', url);*/
     }
 
     static deleteEntity(type, id) {
@@ -89,20 +100,20 @@ export class Quest {
         });
     }
 
-    static addQuestion(question) {
-        return Quest.makeRequest('POST', 'api/constructor/question', JSON.stringify({
-            type: question.type,
+    static addBlock(questBlock) {
+        return Quest.makeRequest('POST', 'api/constructor/block', JSON.stringify({
+            block_type_name: questBlock.block_type_name,
             text: '',
-            pos_x: 0,
-            pos_y: 0,
+            pos_x: questBlock.pos_x,
+            pos_y: questBlock.pos_y,
         })).then((result) => {
-            console.log('success add new question '+ result);
-            const id = JSON.parse(result).question_id;
-            question.question_id = id;
+            console.log('success add new block '+ result);
+            const id = JSON.parse(result).block_id;
+            questBlock.block_id = id;
             console.log('id = '+ id);
             return id;
         }, (error) => {
-            console.log('failed add new question');
+            console.log('failed add new block');
         });
     }
 

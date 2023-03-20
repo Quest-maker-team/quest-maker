@@ -150,12 +150,12 @@ export class BlockRedactor {
         }
     }
 
-    static updateQuestionText(question) {
-        question.text = document.getElementById('formControlTextarea').value;
-        document.getElementById(question.question_id).getElementsByClassName('card-text')[0].textContent =
-            question.text;
-        Quest.updateEntity('question', question.question_id, JSON.stringify({
-            text: question.text,
+    static updateBlockText(questBlock) {
+        questBlock.block_text = document.getElementById('formControlTextarea').value;
+        document.getElementById(questBlock.block_id).getElementsByClassName('card-text')[0].textContent =
+            questBlock.block_text;
+        Quest.updateEntity('block', questBlock.block_id, JSON.stringify({
+            text: questBlock.block_text,
         }));
     }
 
@@ -349,7 +349,7 @@ export class BlockRedactor {
         BlockRedactor.updateSpecial('wrong', 'wrongbx', question, instance, '', sourceEndpoint);
         BlockRedactor.updateAnswers(question, instance, sourceEndpoint);
         BlockRedactor.updateHints(question);
-        BlockRedactor.updateQuestionText(question);
+        BlockRedactor.updateBlockText(question);
     }
 
     static createQuestionRedactor(form, question, instance, sourceEndpoint, modal) {
@@ -594,30 +594,30 @@ export class BlockRedactor {
                 return false;
             } else {
                 BlockRedactor.updateHints(question);
-                BlockRedactor.updateQuestionText(question);
+                BlockRedactor.updateBlockText(question);
                 BlockRedactor.updatePlace(question, coordinates.value, radius.value);
                 modal.hide();
             }
         };
     }
 
-    static createStartRedactor(form, question, modal) {
-        this.addTextRedactor(form, 'Приветственное сообщение:', question.text);
+    static createStartRedactor(form, questBlock, modal) {
+        this.addTextRedactor(form, 'Приветственное сообщение:', questBlock.block_text);
         document.getElementById('update').onclick = () => {
-            BlockRedactor.updateQuestionText(question);
+            BlockRedactor.updateBlockText(questBlock);
             modal.hide();
         };
     }
 
-    static createFinishRedactor(form, question, modal) {
-        this.addTextRedactor(form, 'Прощальное сообщение:', question.text);
+    static createFinishRedactor(form, questBlock, modal) {
+        this.addTextRedactor(form, 'Прощальное сообщение:', questBlock.block_text);
         document.getElementById('update').onclick = () => {
-            BlockRedactor.updateQuestionText(question);
+            BlockRedactor.updateBlockText(questBlock);
             modal.hide();
         };
     }
 
-    static showRedactor(question, instance, sourceEndpoint, quest) {
+    static showRedactor(questBlock, instance, sourceEndpoint, quest) {
         const modal = new bootstrap.Modal(document.getElementById('redactor'));
         const form = document.getElementById('redactorForm');
         form.innerHTML = '';
@@ -625,8 +625,8 @@ export class BlockRedactor {
         if (buttons !== null) {
             buttons.remove();
         }
-        switch (question.type) {
-        case 'start':
+        switch (questBlock.block_type_name) {
+        case 'start_block':
             document.getElementById('content').insertAdjacentHTML('beforeend',
                 '<div class="modal-footer" id="modalButtons">' +
                     '<button type="button" class="btn btn-secondary" style="margin-right: 0.25em" ' +
@@ -634,9 +634,9 @@ export class BlockRedactor {
                     '<button type="button" class="btn btn-primary" id="update">Сохранить</button>' +
                 '</div>'
             );
-            BlockRedactor.createStartRedactor(form, question, modal);
+            BlockRedactor.createStartRedactor(form, questBlock, modal);
             break;
-        case 'end':
+        case 'end_block':
             document.getElementById('content').insertAdjacentHTML('beforeend',
                 '<div class="modal-footer" id="modalButtons">' +
                     '<button type="button" class="btn btn-secondary" style="margin-right: 0.25em" ' +
@@ -644,10 +644,10 @@ export class BlockRedactor {
                     '<button type="button" class="btn btn-primary" id="update">Сохранить</button>' +
                 '</div>'
             );
-            BlockRedactor.createFinishRedactor(form, question, modal);
+            BlockRedactor.createFinishRedactor(form, questBlock, modal);
             break;
-        case 'open':
-        case 'choice':
+        case 'open_question':
+        case 'choice_question':
             document.getElementById('content').insertAdjacentHTML('beforeend',
                 '<div class="modal-footer justify-content-between" id="modalButtons">' +
                     '<div>' +
@@ -665,7 +665,7 @@ export class BlockRedactor {
                     '<div>' +
                 '</div>'
             );
-            BlockRedactor.createQuestionRedactor(form, question, instance, sourceEndpoint, modal);
+            BlockRedactor.createQuestionRedactor(form, questBlock, instance, sourceEndpoint, modal);
             break;
         case 'movement':
             document.getElementById('content').insertAdjacentHTML('beforeend',
@@ -680,7 +680,7 @@ export class BlockRedactor {
                     '<div>' +
                 '</div>'
             );
-            BlockRedactor.createMovementRedactor(form, question, modal, quest);
+            BlockRedactor.createMovementRedactor(form, questBlock, modal, quest);
             break;
         default:
             break;

@@ -191,7 +191,7 @@ def create_block_media(block_id):
 
     media = Media()
     media_id = media.update_from_dict(media_dict)
-    if not media_id:
+    if media_id is None:
         return 'Wrong JSON attributes', 400
     
     block = g.container.get_block_by_id(block_id)
@@ -212,7 +212,7 @@ def create_hint_media(block_id, hint_id):
 
     media = Media()
     media_id = media.update_from_dict(media_dict)
-    if not media_id:
+    if media_id is None:
         return 'Wrong JSON attributes', 400
     
     block = g.container.get_block_by_id(block_id)
@@ -236,7 +236,7 @@ def create_question_answer(block_id):
     ans_dict = request.get_json(force=True)
     answer = Answer()
     answer_id = answer.update_from_dict(ans_dict)
-    if not answer_id:
+    if answer_id is None:
         return 'Wrong JSON attributes', 400
     
     question = g.container.get_block_by_id(block_id)
@@ -258,7 +258,7 @@ def create_hint(block_id):
     hint = Hint()
 
     hint_id = hint.update_from_dict(hint_dict)
-    if not hint_id:
+    if hint_id is None:
         return 'Wrong JSON attributes', 400
     
     block = g.container.get_block_by_id(block_id)
@@ -280,7 +280,7 @@ def create_place(block_id):
     place = Place()
 
     place_id = place.update_from_dict(place_dict)
-    if not place:
+    if place_id is None:
         return 'Wrong JSON attributes', 400
     
     block = g.container.get_block_by_id(block_id)
@@ -300,11 +300,12 @@ def update_block(block_id):
     """
     block_dict = request.get_json(force=True)
     block = g.container.get_block_by_id(block_id)
+    print(block)
     if not block:
         return 'Wrong block id', 400
     
     rc = block.update_from_dict(block_dict)
-    return ('', 200) if rc else ('Wrong JSON attributes', 400)
+    return ('', 200) if rc is not None else ('Wrong JSON attributes', 400)
 
 @constructor_api.route('/block/<int:block_id>/media/<int:media_id>', methods=['PUT'])
 def update_block_media(block_id, media_id):
@@ -323,7 +324,7 @@ def update_block_media(block_id, media_id):
     if not media:
         return 'Wrong media id', 400
     rc = media.update_from_dict(media_dict)
-    return ('', 200) if rc else ('Wrong JSON attributes', 400)
+    return ('', 200) if rc is not None else ('Wrong JSON attributes', 400)
 
 @constructor_api.route('/block/<int:block_id>/hint/<int:hint_id>/media/<int:media_id>', methods=['PUT'])
 def update_hint_media(block_id, hint_id, media_id):
@@ -348,7 +349,7 @@ def update_hint_media(block_id, hint_id, media_id):
         return 'Wrong media id', 400
     
     rc = media.update_from_dict(media_dict)
-    return ('', 200) if rc else ('Wrong JSON attributes', 400)
+    return ('', 200) if rc is not None else ('Wrong JSON attributes', 400)
 
 @constructor_api.route('/block/<int:block_id>/answer/<int:answer_id>', methods=['PUT'])
 def update_block_answer(block_id, answer_id):
@@ -367,7 +368,7 @@ def update_block_answer(block_id, answer_id):
     if not answer:
         return 'Wrong answer id', 400
     rc = answer.update_from_dict(answer_dict)
-    return ('', 200) if rc else ('Wrong JSON attributes', 400)
+    return ('', 200) if rc is not None else ('Wrong JSON attributes', 400)
 
 @constructor_api.route('/block/<int:block_id>/hint/<int:hint_id>', methods=['PUT'])
 def update_block_hint(block_id, hint_id):
@@ -386,7 +387,7 @@ def update_block_hint(block_id, hint_id):
     if not hint:
         return 'Wrong media id', 400
     rc = hint.update_from_dict(hint_dict)
-    return ('', 200) if rc else ('Wrong JSON attributes', 400)
+    return ('', 200) if rc is not None else ('Wrong JSON attributes', 400)
 
 @constructor_api.route('/block/<int:block_id>/place/<int:place_id>', methods=['PUT'])
 def update_block_place(block_id, place_id):
@@ -405,7 +406,7 @@ def update_block_place(block_id, place_id):
     if not place or place.id != place_id:
         return 'Wrong place id', 400
     rc = place.update_from_dict(place_dict)
-    return ('', 200) if rc else ('Wrong JSON attributes', 400)
+    return ('', 200) if rc is not None else ('Wrong JSON attributes', 400)
 
 @constructor_api.route('/quest', methods=['PUT'])
 def update_quest():
@@ -415,7 +416,7 @@ def update_quest():
     """
     quest_dict = request.get_json(force=True)
     rc = g.container.update_from_dict(quest_dict)
-    return ('', 200) if rc else ('Wrong JSON attributes', 400)
+    return ('', 200) if rc is not None else ('Wrong JSON attributes', 400)
 
 @constructor_api.route('/block/<int:block_id>', methods=['DELETE'])
 def remove_block(block_id):

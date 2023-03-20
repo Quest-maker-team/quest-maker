@@ -137,11 +137,11 @@ class Block:
                 elif attr == "pos_y":
                     self.position.y = block_info["pos_y"]
                 elif attr == "block_type_name":
-                    self.block_type_id = Information.Type.get_type_by_name(value)
+                    self.block_type_id = Block.Type.get_type_by_name(value)
                 else:
                     self.__setattr__(attr, value)
 
-            if not self.block_type_id:
+            if self.block_type_id == None:
                 return None
         except:
             return None

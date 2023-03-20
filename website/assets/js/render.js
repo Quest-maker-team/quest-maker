@@ -184,13 +184,13 @@ export class Render {
         answerTable.className = 'list-group list-group-flush';
         answerTable.id = 'anstab' + question.question_id;
         block.append(answerTable);
-        for (const answer of question.answer_options) {
+        for (const answer of question.answers) {
             Render.renderAnswer(answer, question, instance, sourceEndpoint, true);
         }
 
         instance.manage(block);
         Render.addDeleteButton(quest, block, instance, answerTable.childNodes);
-        Render.createEndpoint(instance, document.getElementById('body' + question.question_id),
+        Render.createEndpoint(instance, document.getElementById('body' + question.block_id),
             {anchor: ['Top', 'Right', 'Left']}, targetEndpoint);
 
         return block;

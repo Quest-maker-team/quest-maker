@@ -154,7 +154,7 @@ export class BlockRedactor {
         questBlock.block_text = document.getElementById('formControlTextarea').value;
         document.getElementById(questBlock.block_id).getElementsByClassName('card-text')[0].textContent =
             questBlock.block_text;
-        Quest.updateEntity('block', questBlock.block_id, JSON.stringify({
+        Quest.updateBlock(questBlock.block_id, JSON.stringify({
             text: questBlock.block_text,
         }));
     }
@@ -170,7 +170,7 @@ export class BlockRedactor {
                     answer.text = document.getElementById('answerText_old_' + answer.answer_option_id).value;
                     answer.points = document.getElementById('answerPoints_old_' + answer.answer_option_id).value;
                     document.getElementById('answer_option' + answer.answer_option_id).innerText = answer.text;
-                    Quest.updateEntity('answer_option', answer.answer_option_id, JSON.stringify({
+                    Quest.updateEntity('answer_option', answer.answer_option_id, question.block_id, JSON.stringify({
                         points: parseFloat(answer.points),
                         text: answer.text,
                     }));
@@ -210,7 +210,7 @@ export class BlockRedactor {
         if (specialId !== -1 && document.getElementById(checkboxId).checked) {
             const answer = question.answer_options[specialId];
             answer.points = document.getElementById('answerPoints' + id).value;
-            Quest.updateEntity('answer_option', answer.answer_option_id, JSON.stringify({
+            Quest.updateEntity('answer_option', answer.answer_option_id, question.block_id, JSON.stringify({
                 points: parseFloat(answer.points),
                 text: answer.text,
             })).then((response) => console.log(response));
@@ -246,7 +246,7 @@ export class BlockRedactor {
             } else {
                 hint.hint_text = document.getElementById('hintText_old_' + hint.hint_id).value;
                 hint.fine = document.getElementById('hintFine_old_' + hint.hint_id).value;
-                Quest.updateEntity('hint', hint.hint_id, JSON.stringify({
+                Quest.updateEntity('hint', hint.hint_id, question.block_id, JSON.stringify({
                     fine: parseFloat(hint.fine),
                     text: hint.hint_text,
                 }));
@@ -279,7 +279,7 @@ export class BlockRedactor {
     static updatePlace(question, coords, radius) {
         question.movements[0].place.coords = coords;
         question.movements[0].place.radius = radius;
-        Quest.updateEntity('place', question.movements[0].place.place_id, JSON.stringify({
+        Quest.updateEntity('place', question.movements[0].place.place_id, question.block_id, JSON.stringify({
             coords: coords,
             radius: radius,
         })).catch((result) => console.log(result));
@@ -766,7 +766,7 @@ export class QuestRedactor {
                 passwordInput.className = 'form-control is-invalid';
                 return;
             }
-            Quest.updateEntity('quest', quest.data.quest_id, JSON.stringify({
+            Quest.updateQuest(quest.data.quest_id, JSON.stringify({
                 title: document.getElementById('questTitle').value,
                 description: document.getElementById('questDescription').value,
                 tags: tags,

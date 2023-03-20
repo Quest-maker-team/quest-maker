@@ -52,8 +52,28 @@ export class Quest {
         return Quest.makeRequest('POST', url, data);
     }
 
-    static updateEntity(type, id, data) {
-        const url = 'api/constructor/' + type + '/' + id;
+    static addAnswer(block_id, data){
+        const url = 'api/constructor/answer_option/question/' + block_id;
+        return Quest.makeRequest('POST', url, data);
+    }
+
+    static addBlockEntity(type, block_id, data) {
+        const url = 'api/constructor/' + type + '/block/' + block_id;
+        return Quest.makeRequest('POST', url, data);
+    }
+
+    static updateBlock(id, data){
+        const url = 'api/constructor/block/' + id;
+        return Quest.makeRequest('PUT', url, data);
+    }
+
+    static updateQuest(id, data){
+        const url = 'api/constructor/quest/' + id;
+        return Quest.makeRequest('PUT', url, data);
+    }
+
+    static updateEntity(type, id, block_id, data) {
+        const url = 'api/constructor/block/' + block_id + '/' + type + '/' + id;
         return Quest.makeRequest('PUT', url, data);
     }
 

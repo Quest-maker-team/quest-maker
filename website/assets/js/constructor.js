@@ -60,6 +60,9 @@ function createNewBlock(type, text, quest) {
         'pos_x': 0,
         'pos_y': 0,
     };
+    if (type == 'open_question' || type == 'choice_question'){
+        lastBlock['answers'] = [];
+    }
     /*if (type!=='movement') {
         lastBlock.answer_options.push({
             'answer_option_id': undefined,
@@ -144,7 +147,7 @@ window.onload = () => {
         setInterval(() => {
             for (const questBlock of quest.data.blocks) {
                 const blok = document.getElementById(questBlock.block_id);
-                Quest.updateEntity('block', blok.id, JSON.stringify({
+                Quest.updateBlock(blok.id, JSON.stringify({
                     pos_x: parseInt(blok.style.left),
                     pos_y: parseInt(blok.style.top),
                 }));
@@ -160,7 +163,7 @@ window.onload = () => {
                         coords: [0.0, 0.0],
                         radius: 0.0,
                     };
-                    Quest.addNewPlace(JSON.stringify(place), question).then((rez)=>{
+                    /*Quest.addNewPlace(JSON.stringify(place), question).then((rez)=>{
                         Quest.connect('question', 'movement',
                             question.question_id,
                             question.movements[0].movement_id);
@@ -169,24 +172,24 @@ window.onload = () => {
                             question.movements[0].place.place_id);
                         Render.renderMovement(quest, question, instance, sourceEndpoint,
                             targetEndpoint);
-                    });
+                    });*/
                 });
             });
         };
         document.getElementById('addQBtn').onclick = () => {
-            const question = createNewBlock('open', 'Новый открытый вопрос', quest);
+            const question = createNewBlock('open_question', 'Новый открытый вопрос', quest);
             Quest.addBlock(question).then((data)=>{
-                Quest.addEntity('answer_option', JSON.stringify({
+                Quest.addBlockEntity( question.block_id, JSON.stringify({
                     points: 0.0,
                     text: 'Ответ',
-                })).then((rez) => {
+                }, question.block_id)).then((rez) => {
                     console.log('Add new answer'+rez);
-                    question.answer_options[0].answer_option_id =
+                    question.answers[0].answer_option_id =
                         JSON.parse(rez).answer_option_id;
                     console.log('Render question:');
-                    Quest.connect('question', 'answer_option',
+                    /*Quest.connect('question', 'answer_option',
                         question.question_id,
-                        question.answer_options[0].answer_option_id);
+                        question.answer_options[0].answer_option_id);*/
                     Render.renderQuestion(quest, question, 'Открытый вопрос', instance,
                         sourceEndpoint, targetEndpoint);
                 });
@@ -197,17 +200,17 @@ window.onload = () => {
             Quest.save(quest.data.quest_id).then(() => document.location = '/profile');
         };
         document.getElementById('addQCBtn').onclick = () => {
-            const question = createNewBlock('choice', 'Новый вопрос с выбором ответа', quest);
+            const question = createNewBlock('choice_question', 'Новый вопрос с выбором ответа', quest);
             Quest.addBlock(question).then((data)=>{
-                Quest.addEntity('answer_option', JSON.stringify({
+                Quest.addBlockEntity('answer_option', JSON.stringify({
                     points: 0.0,
                     text: 'Ответ',
                 })).then((rez) => {
                     question.answer_options[0].answer_option_id =
                         JSON.parse(rez).answer_option_id;
-                    Quest.connect('question', 'answer_option',
+                    /*Quest.connect('question', 'answer_option',
                         question.question_id,
-                        question.answer_options[0].answer_option_id);
+                        question.answer_options[0].answer_option_id);*/
                     Render.renderQuestion(quest, question, 'Вопрос с выбором ответа',
                         instance, sourceEndpoint, targetEndpoint);
                 });

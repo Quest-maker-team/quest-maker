@@ -89,6 +89,12 @@ def create_quest():
     Create new draft quest and add to container
     :return: json or error message
     """
+    Media.unic_id = 0
+    Block.unic_id = 0
+    Answer.unic_id = 0
+    Hint.unic_id = 0
+    Place.unic_id = 0
+
     quest_dict = request.get_json(force=True)
     quest = Quest()
     if not quest.init_from_dict(quest_dict):

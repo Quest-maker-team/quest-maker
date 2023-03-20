@@ -1,6 +1,8 @@
 from typing import Dict
 from datetime import time
 
+from copy import copy
+
 from .db import get_quest, get_quest_tags, get_quest_rating, get_blocks, \
     check_uuid, add_media, set_quest, get_db, set_tags, set_rating, \
     set_block, add_hint, add_answer, add_place, set_blocks_link, set_answer_and_block_link
@@ -39,11 +41,11 @@ class Media:
                 return None
 
     def __init__(self) -> None:
-        self.id = self.unic_id
+        self.id = copy(Media.unic_id)
         self.media_path = None
         self.media_type_id = None
 
-        self.unic_id += 1
+        Media.unic_id += 1
         
     def convert_to_dict(self):
         return {"media_id": self.id,
@@ -66,7 +68,7 @@ class Media:
         except:
             return None
         
-        return self.unic_id
+        return self.id
     
 class Position:
     def __init__(self, x: float, y: float):
@@ -120,7 +122,7 @@ class Block:
 
     def __init__(self):
         self.db_id = None
-        self.id = Block.unic_id
+        self.id = copy(Block.unic_id)
         self.position = Position(0., 0.)
         self.media_sources = {}
         self.text = ""
@@ -187,7 +189,7 @@ class Answer:
     unic_id = 0
 
     def __init__(self) -> None:
-        self.id = Answer.unic_id
+        self.id = copy(Answer.unic_id)
         self.db_id = None
         self.option_text = None
         self.points = None
@@ -224,7 +226,7 @@ class Hint:
 
     def __init__(self) -> None:
         self.db_id = None
-        self.id = Hint.unic_id
+        self.id = copy(Hint.unic_id)
         self.media_sources = {}
         self.text = ""
         self.fine = 0
@@ -270,14 +272,14 @@ class Place:
     unic_id = 0
 
     def __init__(self) -> None:
-        self.id = self.unic_id
+        self.id = copy(Place.unic_id)
         self.latitude = None
         self.longitude = None
         self.radius = None
         self.time_open = None
         self.time_close = None
 
-        self.unic_id += 1
+        Place.unic_id += 1
 
     def update_from_dict(self, place_info: dict) -> int:
         try:

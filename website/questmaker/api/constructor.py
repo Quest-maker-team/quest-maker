@@ -103,9 +103,9 @@ def create_quest():
     return jsonify(quest.convert_to_dict())
 
 @constructor_api.route('/block', methods=['POST'])
-def create_question_block():
+def create_block():
     """
-    Create new question block and add to quest
+    Create new block and add to quest
     :return: json with block id or error message
     """
     block_dict = request.get_json(force=True)

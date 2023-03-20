@@ -53,7 +53,6 @@ export class Quest {
     }
 
     static updateEntity(type, id, data) {
-        console.log(data);
         const url = 'api/constructor/' + type + '/' + id;
         return Quest.makeRequest('PUT', url, data);
     }

@@ -142,9 +142,9 @@ window.onload = () => {
 
 
         setInterval(() => {
-            for (const question of quest.data.questions) {
-                const blok = document.getElementById(question.question_id);
-                Quest.updateEntity('question', blok.id, JSON.stringify({
+            for (const questBlock of quest.data.blocks) {
+                const blok = document.getElementById(questBlock.block_id);
+                Quest.updateEntity('block', blok.id, JSON.stringify({
                     pos_x: parseInt(blok.style.left),
                     pos_y: parseInt(blok.style.top),
                 }));

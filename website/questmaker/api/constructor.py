@@ -102,8 +102,29 @@ def create_quest():
     session['draft_id'] = draft_id
     return jsonify(quest.convert_to_dict())
 
-def init_block(request, block: Block):
+@constructor_api.route('/block', methods=['POST'])
+def create_question_block():
+    """
+    Create new question block and add to quest
+    :return: json with block id or error message
+    """
     block_dict = request.get_json(force=True)
+
+    block = None
+    try:
+        block_type_name = block_dict["block_type_name"]
+        block_type_id = Block.Type.get_type_by_name(block_type_name)
+
+        if block_type_id == Block.Type.CHOICE or block_type_id == Block.Type.OPEN:
+            block = Question()
+        elif block_type_id == Block.Type.MOVEMENT:
+            block = Movement()
+        elif block_type_id == Block.Type.MESSAGE or block_type_id == Block.Type.START or block_type_id == Block.Type.END:
+            block = Information()
+        else:
+            return 'Wrong JSON attributes', 400
+    except:
+        return 'Wrong JSON attributes', 400
 
     block_id = block.update_from_dict(block_dict)
     if block_id is None:
@@ -111,33 +132,6 @@ def init_block(request, block: Block):
 
     g.container.add_block(block)
     return jsonify({'block_id': block_id})
-
-@constructor_api.route('/question_block', methods=['POST'])
-def create_question_block():
-    """
-    Create new question block and add to quest
-    :return: json with block id or error message
-    """
-    block = Question()
-    return init_block(request, block)
-
-@constructor_api.route('/movement_block', methods=['POST'])
-def create_movement_block():
-    """
-    Create new movement block and add to quest
-    :return: json with block id or error message
-    """
-    block = Movement()
-    return init_block(request, block)
-
-@constructor_api.route('/information_block', methods=['POST'])
-def create_information_block():
-    """
-    Create new information block and add to quest
-    :return: json with block id or error message
-    """
-    block = Information()
-    return init_block(request, block)
     
 @constructor_api.route('/answer_host/<int:host_id>/answer_id/<int:answer_id>/block/<int:block_id>', methods=['PUT'])
 def connect_answer_and_block(host_id, answer_id, block_id):

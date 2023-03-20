@@ -28,7 +28,7 @@
     &emsp; &emsp; ("This is not your quest"), 403 - failed   
 
 ### [Blocks creation](#blocks-creation)
-  - `api/constructor/question_block POST` - create new question block using json description and get its id in current quest  
+  - `api/constructor/block POST` - create new block using json description and get its id in current quest  
     &emsp; **:request_arg block_dict:** block description in json format:  
     ```json
     {  
@@ -42,37 +42,8 @@
     ```json
     {"block_id": 1}
     ```
-
-  - `api/constructor/movement_block POST` - create new movement block using json description and get its id in current quest  
-    &emsp; **:request_arg block_dict:** block description in json format:  
-    ```json
-    {  
-      "block_text": "text", //required parameter
-      "block_type_name": "movement", //required parameter
-      "pos_x": 100, //optional paramter
-      "pos_y": 100, //optional paramter
-    }  
-    ```
-    &emsp; **:return:** created block id in json format:
-    ```json
-    {"block_id": 1}
-    ```
-
-  - `api/constructor/information_block POST` - create new information block (start, end, message) using json description and get its id in current quest  
-    &emsp; **:request_arg block_dict:** block description in json format:  
-    ```json
-    {  
-      "block_text": "text", //required parameter
-      "block_type_name": "message", //required parameter
-      "pos_x": 100, //optional paramter
-      "pos_y": 100, //optional paramter
-    }  
-    ```
-    &emsp; **:return:** created block id in json format:
-    ```json
-    {"block_id": 1}
-    ```
-
+    &emsp; **posible block type name:** "open_question", "choice_question", "movement", "message", "start_block", "end_block"
+    
 ### [Media, answer, hint, place creation](#media-answer-hint-place-creation)
   - `api/constructor/media/block/\<int:block_id\> POST` - create new media using json description and add it to the block    
     &emsp; **:param block_id:** - block to which is added media  

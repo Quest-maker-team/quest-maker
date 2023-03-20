@@ -39,7 +39,7 @@ def profile():
     Personal catalog page
     :return: personal catalog page
     """
-    quests = get_quests_by_author_id(current_user.author['author_id'])
+    quests = get_quests_by_author_id(current_user.id)
     catalog = []
 
     for q in quests:
@@ -48,7 +48,7 @@ def profile():
         c['id'] = q['quest_id']
         c['keyword'] = q['keyword']
         if draft:
-            c['title'] = '(Черновик) ' + pickle.loads(bytes(draft['container'])).quest.title
+            c['title'] = '(Черновик) ' + pickle.loads(bytes(draft['container_path'])).title
         else:
             c['title'] = q['title']
         if q['password'] != None:

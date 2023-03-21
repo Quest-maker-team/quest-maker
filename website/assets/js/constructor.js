@@ -210,7 +210,7 @@ window.onload = () => {
         document.getElementById('addQCBtn').onclick = () => {
             const question = createNewBlock('choice_question', 'Новый вопрос с выбором ответа', quest);
             Quest.addBlock(question).then((data)=>{
-                Quest.addBlockEntity('answer_option', JSON.stringify({
+                Quest.addBlockEntity('answer_option', question.block_id, JSON.stringify({
                     points: 0.0,
                     text: 'Ответ',
                 })).then((rez) => {

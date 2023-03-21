@@ -189,7 +189,7 @@ class Answer:
     def __init__(self) -> None:
         self.id = Answer.unic_id
         self.db_id = None
-        self.option_text = None
+        self.text = None
         self.points = None
         self.next_block_id = None
 
@@ -207,13 +207,13 @@ class Answer:
     def convert_to_dict(self) -> dict:
         return {
             'answer_option_id': self.id,
-            'text': self.option_text,
+            'text': self.text,
             'points': self.points,
             'next_block_id': self.next_block_id if self.next_block_id is not None else None
         }
     
     def add_to_db(self, block_id: int):
-        self.db_id = add_answer(self.option_text, self.points, block_id)
+        self.db_id = add_answer(self.text, self.points, block_id)
 
     def save_links_in_db(self, blocks: dict):
         if self.next_block_id != None:

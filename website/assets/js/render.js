@@ -104,13 +104,6 @@ export class Render {
         console.log("render start");
         const block = this.renderBlockBase(questBlock, '10rem', 'Начало');
         block.className += ' text-white bg-success';
-        /*const answer = document.createElement('div');
-        answer.id = 'answer_option' + questBlock.answer_options[0].answer_option_id;
-        answer.style.height = '100%';
-        answer.style.width = '100%';
-        answer.className = 'position-absolute';
-        block.append(answer);*/
-
         instance.manage(block);
         Render.createEndpoint(instance, block, {anchor: ['Top', 'Right', 'Left', 'Bottom']}, sourceEndpoint);
         return block;
@@ -135,7 +128,7 @@ export class Render {
     }
 
     static renderAnswer(answer, question, instance, sourceEndpoint, special) {
-        const ansTable = document.getElementById('anstab' + question.question_id);
+        const ansTable = document.getElementById('anstab' + question.block_id);
         const tableElement = document.createElement('li');
         tableElement.className = 'list-group-item text-truncate';
         tableElement.id = 'answer_option' + answer.answer_option_id;
@@ -182,7 +175,7 @@ export class Render {
         }
         const answerTable = document.createElement('ul');
         answerTable.className = 'list-group list-group-flush';
-        answerTable.id = 'anstab' + question.question_id;
+        answerTable.id = 'anstab' + question.block_id;
         block.append(answerTable);
         for (const answer of question.answers) {
             Render.renderAnswer(answer, question, instance, sourceEndpoint, true);
@@ -243,29 +236,23 @@ export class Render {
         }
         // Connect
         for (const questBlock of quest.data.blocks) {
-            /*if (questBlock.type === 'movement') {
-                instance.connect({
-                    source: instance.selectEndpoints({
-                        element: document.getElementById('movement' + questBlock.movements[0].movement_id),
-                    }).get(0),
-                    target: instance.selectEndpoints({
-                        element: document.getElementById('body' + questBlock.movements[0].next_question_id)}).get(0),
-                });
-            } else if (questBlock.type !== 'end') {
-                for (const answer of questBlock.answer_options) {
-                    if (answer.next_question_id != null) {
+            if(questBlock.block_type_name == 'open_question' || questBlock.block_type_name == 'choice_question') {
+                for (const answer of questBlock.answers) {
+                    console.log(answer)
+                    if (answer.next_block_id != null) {
                         instance.connect({
                             source: instance.selectEndpoints({
                                 element: document.getElementById('answer_option' + answer.answer_option_id),
                             }).get(0),
                             target: instance.selectEndpoints({
-                                element: document.getElementById('body' + answer.next_question_id),
+                                element: document.getElementById('body' + answer.next_block_id),
                             }).get(0),
                         });
+                        console.log("connect");
                     }
                 }
-            }*/
-            if (questBlock.block_type_name == 'start_block') {
+            }
+            else{
                 console.log(instance.selectEndpoints({element: document.getElementById(questBlock.block_id),}).get(0),);
                 console.log(instance.selectEndpoints({element: document.getElementById('body' + questBlock.next_question_id),}).get(0),);
                 instance.connect({

@@ -62,7 +62,14 @@ function createNewBlock(type, text, quest) {
     };
     if (type == 'open_question' || type == 'choice_question'){
         lastBlock['answers'] = [];
+        lastBlock.answers.push({
+            'answer_option_id': undefined,
+            'next_question_id': undefined,
+            'points': 0.0,
+            'text': 'Ответ',
+        });
     }
+    console.log(lastBlock);
     /*if (type!=='movement') {
         lastBlock.answer_options.push({
             'answer_option_id': undefined,
@@ -128,23 +135,27 @@ window.onload = () => {
 
         instance.bind(INTERCEPT_BEFORE_DROP, (params) => {
             const sourceIdSplit = params.sourceId.match(/([a-z]*_?[a-z]*)([0-9]*)/);
-            if (sourceIdSplit != 'answer')
+            if (sourceIdSplit[1] != 'answer_option')
                 Quest.connectBlockAndBlock(sourceIdSplit[2], params.connection.target.parentNode.id);
-            else
-                Quest.connectAnswerAndBlock();
+            else {
+                const block_id = document.getElementById(params.sourceId).parentElement.parentElement.id;
+                Quest.connectAnswerAndBlock(block_id, sourceIdSplit[2], params.connection.target.parentNode.id);
+            }
             return true;
         });
 
         instance.bind(INTERCEPT_BEFORE_START_DETACH, (params) => {
             const sourceIdSplit = params.sourceId.match(/([a-z]*_?[a-z]*)([0-9]*)/);
-            if (sourceIdSplit != 'answer')
+            if (sourceIdSplit[1] != 'answer_option')
                 Quest.disconnectBlockAndBlock(sourceIdSplit[2]);
-            else
-                Quest.disconnectAnswerAndBlock();
+            else{
+                const block_id = document.getElementById(params.sourceId).parentElement.parentElement.id;
+                Quest.disconnectAnswerAndBlock(block_id, sourceIdSplit[2], params.connection.target.parentNode.id);
+            } 
         });
 
 
-        setInterval(() => {
+        /*setInterval(() => {
             for (const questBlock of quest.data.blocks) {
                 const blok = document.getElementById(questBlock.block_id);
                 Quest.updateBlock(blok.id, JSON.stringify({
@@ -152,7 +163,7 @@ window.onload = () => {
                     pos_y: parseInt(blok.style.top),
                 }));
             }
-        }, 20000);
+        }, 20000);*/
         Render.render(quest, instance, sourceEndpoint, targetEndpoint, panzoom);
 
         document.getElementById('addMBtn').onclick = () => {
@@ -179,17 +190,14 @@ window.onload = () => {
         document.getElementById('addQBtn').onclick = () => {
             const question = createNewBlock('open_question', 'Новый открытый вопрос', quest);
             Quest.addBlock(question).then((data)=>{
-                Quest.addBlockEntity( question.block_id, JSON.stringify({
+                Quest.addBlockEntity('answer_option', question.block_id, JSON.stringify({
                     points: 0.0,
                     text: 'Ответ',
-                }, question.block_id)).then((rez) => {
+                })).then((rez) => {
                     console.log('Add new answer'+rez);
                     question.answers[0].answer_option_id =
                         JSON.parse(rez).answer_option_id;
                     console.log('Render question:');
-                    /*Quest.connect('question', 'answer_option',
-                        question.question_id,
-                        question.answer_options[0].answer_option_id);*/
                     Render.renderQuestion(quest, question, 'Открытый вопрос', instance,
                         sourceEndpoint, targetEndpoint);
                 });
@@ -206,7 +214,7 @@ window.onload = () => {
                     points: 0.0,
                     text: 'Ответ',
                 })).then((rez) => {
-                    question.answer_options[0].answer_option_id =
+                    question.answers[0].answer_option_id =
                         JSON.parse(rez).answer_option_id;
                     /*Quest.connect('question', 'answer_option',
                         question.question_id,

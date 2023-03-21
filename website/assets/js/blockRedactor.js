@@ -766,7 +766,7 @@ export class QuestRedactor {
                 passwordInput.className = 'form-control is-invalid';
                 return;
             }
-            Quest.updateQuest(quest.data.quest_id, JSON.stringify({
+            Quest.updateQuest(JSON.stringify({
                 title: document.getElementById('questTitle').value,
                 description: document.getElementById('questDescription').value,
                 tags: tags,

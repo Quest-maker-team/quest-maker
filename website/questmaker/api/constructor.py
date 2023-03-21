@@ -136,6 +136,7 @@ def create_block():
     if block_id is None:
         return 'Wrong JSON attributes', 400
 
+    #print(block.convert_to_dict())
     g.container.add_block(block)
     return jsonify({'block_id': block_id})
     
@@ -160,6 +161,7 @@ def connect_answer_and_block(host_id, answer_id, block_id):
         return 'Wrong block id', 400
     
     answer.next_block_id = block_id
+    
     return '', 200
     
 @constructor_api.route('/source_block/<int:source_id>/target_block/<int:target_id>', methods=['PUT'])
@@ -227,7 +229,7 @@ def create_hint_media(block_id, hint_id):
 
     return jsonify({'media_id': media_id})
 
-@constructor_api.route('/answer_option/question/<int:question_id>', methods=['POST'])
+@constructor_api.route('/answer_option/block/<int:block_id>', methods=['POST'])
 def create_question_answer(block_id):
     """
     Create new question answer and add to question
@@ -305,6 +307,7 @@ def update_block(block_id):
         return 'Wrong block id', 400
     
     rc = block.update_from_dict(block_dict)
+    #print(block.convert_to_dict())
     return ('', 200) if rc is not None else ('Wrong JSON attributes', 400)
 
 @constructor_api.route('/block/<int:block_id>/media/<int:media_id>', methods=['PUT'])

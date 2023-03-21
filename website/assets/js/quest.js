@@ -52,11 +52,6 @@ export class Quest {
         return Quest.makeRequest('POST', url, data);
     }
 
-    static addAnswer(block_id, data){
-        const url = 'api/constructor/answer_option/question/' + block_id;
-        return Quest.makeRequest('POST', url, data);
-    }
-
     static addBlockEntity(type, block_id, data) {
         const url = 'api/constructor/' + type + '/block/' + block_id;
         return Quest.makeRequest('POST', url, data);
@@ -67,8 +62,8 @@ export class Quest {
         return Quest.makeRequest('PUT', url, data);
     }
 
-    static updateQuest(id, data){
-        const url = 'api/constructor/quest/' + id;
+    static updateQuest(data){
+        const url = 'api/constructor/quest';
         return Quest.makeRequest('PUT', url, data);
     }
 
@@ -82,9 +77,9 @@ export class Quest {
         return Quest.makeRequest('PUT', url);
     }
 
-    static connectAnswerAndBlock() {
-        /*const url = 'api/constructor/' + type1 + '/' + id1 + '/' + type2 + '/' + id2;
-        return Quest.makeRequest('PUT', url);*/
+    static connectAnswerAndBlock(hostId, answerId, blockId) {
+        const url = 'api/constructor/answer_host/' + hostId + '/answer_id/' + answerId + '/block/' + blockId
+        return Quest.makeRequest('PUT', url);
     }
 
     static disconnectBlockAndBlock(sourceId) {
@@ -92,9 +87,9 @@ export class Quest {
         return Quest.makeRequest('PUT', url);
     }
 
-    static disconnectAnswerAndBlock() {
-        /*const url = 'api/constructor/' + type1 + '/' + id1 + '/' + type2 + '/' + id2;
-        return Quest.makeRequest('PUT', url);*/
+    static disconnectAnswerAndBlock(hostId, answerId) {
+        const url = 'api/constructor/answer_host/' + hostId + '/answer_id/' + answerId
+        return Quest.makeRequest('PUT', url);
     }
 
     static deleteEntity(type, id) {

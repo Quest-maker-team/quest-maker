@@ -155,7 +155,7 @@ export class BlockRedactor {
         document.getElementById(questBlock.block_id).getElementsByClassName('card-text')[0].textContent =
             questBlock.block_text;
         Quest.updateBlock(questBlock.block_id, JSON.stringify({
-            text: questBlock.block_text,
+            block_text: questBlock.block_text,
         }));
     }
 

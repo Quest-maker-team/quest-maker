@@ -253,7 +253,7 @@ export class Render {
                 }
             }
             else{
-                if (questBlock.next_question_id != null){
+                if (questBlock.next_block_id != null){
                     //console.log(instance.selectEndpoints({element: document.getElementById(questBlock.block_id),}).get(0),);
                     //console.log(instance.selectEndpoints({element: document.getElementById('body' + questBlock.next_question_id),}).get(0),);
                     instance.connect({

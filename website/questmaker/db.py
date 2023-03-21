@@ -526,7 +526,7 @@ def set_block(block, quest_id):
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('INSERT INTO block ( quest_id, block_text, block_type_id, pos_x, pos_y) '
                        'VALUES ( %s, %s, %s, %s, %s) RETURNING block_id',
-                       (quest_id, block.text, block.block_type_id, block.position.x, block.position.y))
+                       (quest_id, block.block_text, block.block_type_id, block.position.x, block.position.y))
         block.db_id = cursor.fetchone()['block_id']
     return True
 

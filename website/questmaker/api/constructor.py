@@ -60,6 +60,7 @@ def get_quest(quest_id):
         if draft['author_id'] != current_user.id:
             return 'This is not your quest', 403
         quest = pickle.loads(bytes(draft['container_path']))
+        print(quest.convert_to_dict())
         session['draft_id'] = draft['draft_id']
         return jsonify(quest.convert_to_dict()) if type(quest).__name__ == Quest.__name__ else ('Wrong quest id', 400)
     else:
@@ -161,6 +162,7 @@ def connect_answer_and_block(host_id, answer_id, block_id):
         return 'Wrong block id', 400
     
     answer.next_block_id = block_id
+    block.delete_callbacks.append(answer.on_next_block_delete)
     
     return '', 200
     
@@ -181,6 +183,8 @@ def connect_blocks(source_id, target_id):
         return 'Wrong target id', 400
     
     source_block.next_block_id = target_id
+
+    target_block.delete_callbacks.append(source_block.on_next_block_delete)
     return '', 200
 
 @constructor_api.route('/media/block/<int:block_id>', methods=['POST'])
@@ -300,7 +304,11 @@ def update_block(block_id):
     :param block_id: block id in quest
     :return: status code
     """
+
     block_dict = request.get_json(force=True)
+    print("*******************")
+    print(block_dict)
+    print("*******************")
     block = g.container.get_block_by_id(block_id)
     print(block)
     if not block:

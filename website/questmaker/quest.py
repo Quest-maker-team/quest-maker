@@ -123,11 +123,16 @@ class Block:
         self.id = Block.unic_id
         self.position = Position(0., 0.)
         self.media_sources = {}
-        self.text = ""
+        self.block_text = ""
         self.next_block_id = None
         self.block_type_id = None
 
         Block.unic_id += 1
+
+        self.delete_callbacks = []
+
+    def on_next_block_delete(self):
+        self.next_block_id = None
 
     def update_from_dict(self, block_info: dict) -> int:
         try:
@@ -165,7 +170,7 @@ class Block:
     def convert_to_dict(self) -> dict:
         return {
             "block_id": self.id,
-            "block_text": self.text,
+            "block_text": self.block_text,
             "block_type_name": Block.Type.get_name_by_type(self.block_type_id),
             "pos_x": self.position.x,
             "pos_y": self.position.y,
@@ -194,6 +199,9 @@ class Answer:
         self.next_block_id = None
 
         Answer.unic_id += 1
+
+    def on_next_block_delete(self):
+        self.next_block_id = None
 
     def update_from_dict(self, answer_info: dict) -> int:
         try:
@@ -226,14 +234,14 @@ class Hint:
         self.db_id = None
         self.id = Hint.unic_id
         self.media_sources = {}
-        self.text = ""
+        self.hint_text = ""
         self.fine = 0
 
         Hint.unic_id += 1
 
     def convert_to_dict(self):
         return {"hint_id": self.id,
-                "hint_text": self.text,
+                "hint_text": self.hint_text,
                 "fine": self.fine,
                 "media_sources": [media.convert_to_dict() for media in self.media_sources.values()]}
     
@@ -261,7 +269,7 @@ class Hint:
         return True
     
     def add_to_db(self, block_id: int):
-        self.db_id = add_hint(self.text, self.fine, block_id)
+        self.db_id = add_hint(self.hint_text, self.fine, block_id)
 
         for media in self.media_sources.values():
             media.add_to_db("hint_media", "hint", self.db_id)
@@ -447,6 +455,10 @@ class Quest:
 
     def remove_block_by_id(self, block_id: int) -> bool:
         try:
+            print("sasdasdadads")
+            for callback in self.blocks[block_id].delete_callbacks:
+                print("sads")
+                callback()
             del self.blocks[block_id]
         except:
             return False
@@ -494,6 +506,8 @@ class Quest:
             "pos_y": 320,
             "block_type_name": "end_block"
         })
+        end.delete_callbacks.append(start.on_next_block_delete)
+
         start.next_block_id = end.id
 
         self.blocks[start.id] = start

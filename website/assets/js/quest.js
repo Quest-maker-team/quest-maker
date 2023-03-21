@@ -8,6 +8,11 @@ export class Quest {
     }
 
     static makeRequest(method, url, data) {
+        console.log("/////////////////")
+        console.log(method)
+        console.log(url)
+        console.log(data)
+        console.log("/////////////////")
         return new Promise(function(resolve, reject) {
             const xmlhttp = new XMLHttpRequest();
             xmlhttp.open(method, url);
@@ -117,7 +122,7 @@ export class Quest {
     static addBlock(questBlock) {
         return Quest.makeRequest('POST', 'api/constructor/block', JSON.stringify({
             block_type_name: questBlock.block_type_name,
-            text: '',
+            block_text: questBlock.block_text,
             pos_x: questBlock.pos_x,
             pos_y: questBlock.pos_y,
         })).then((result) => {

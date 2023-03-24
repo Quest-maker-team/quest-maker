@@ -100,16 +100,19 @@ def get_quest_title(quest_keyword):
     :return: None if quest with the same id don't exist
     """
     try:
-        info = select_one("SELECT quest_id, title, time_open, time_close FROM quests WHERE keyword= %s AND hidden= %s",
-                          (quest_keyword, 'false',))
+        info = select_one('SELECT quest_id, title, time_open, time_close, periodicity FROM quest WHERE keyword= %s'
+                          ' AND hidden= %s AND published= %s', (quest_keyword, 'false', 'true',))
         if info:
-            now = datetime.datetime.now()
+            now = datetime.datetime.now().astimezone()
             open = True
             not_close = True
+            if info[3] != None:
+                if now > info[3] and info[2] != None and info[4] != None:
+                    k = int((now - info[2]) / info[4])
+                    now = now - k * info[4]
+                not_close = now < info[3]
             if info[2] != None:
                 open = now > info[2]
-            if info[3] != None:
-                not_close = now < info[3]
             if open and not_close:
                 return info[0], info[1]
             else:
@@ -129,19 +132,22 @@ def get_private_quest_title(quest_keyword):
     :return: None if quest with the same id don't exist
     """
     try:
-        info = select_one("SELECT quest_id, title, time_open, time_close, password"
-                          " FROM quests WHERE keyword= %s AND published= %s AND password IS NOT NULL",
-                          (quest_keyword, 'true',))
+        info = select_one('SELECT quest_id, title, time_open, time_close, periodicity, password'
+                          ' FROM quest WHERE keyword= %s AND hidden= %s AND published= %s AND password IS NOT NULL',
+                          (quest_keyword, 'false', 'true',))
         if info:
-            now = datetime.datetime.now()
+            now = datetime.datetime.now().astimezone()
             open = True
             not_close = True
+            if info[3] != None:
+                if now > info[3] and info[2] != None and info[4] != None:
+                    k = int((now - info[2]) / info[4])
+                    now = now - k * info[4]
+                not_close = now < info[3]
             if info[2] != None:
                 open = now > info[2]
-            if info[3] != None:
-                not_close = now < info[3]
             if open and not_close:
-                return info[0], info[1], info[4]
+                return info[0], info[1], info[5]
             else:
                 return None
         else:
@@ -159,83 +165,79 @@ def get_quest_time_info(quest_id):
     :return: None if quest with the same id don't exist
     """
     try:
-        return select_one("SELECT time_close, lead_time FROM quests WHERE quest_id= %s", (quest_id, ))
+        return select_one('SELECT time_close, lead_time FROM quest WHERE quest_id= %s', (quest_id, ))
     except:
         #In case a non-integer is entered
         return None
 
 
-def get_question_by_id(question_id):
+def get_block_by_id(block_id):
     """
-    Find question in table questions by id
-    :param question_id: question id
-    :return: question id, question text and question type name tuple
-    :return: None if question with the same id don't exist
+    Find block in table block by id
+    :param block_id: block id
+    :return: block id, block text, block type name and next block id tuple
+    :return: None if block with the same id don't exist
     """
     try:
-        return select_one('SELECT question_id, question_text, q_type_name FROM questions INNER JOIN question_types '
-                          'ON questions.q_type_id= question_types.q_type_id WHERE question_id= %s', (question_id, ))
+        return select_one('SELECT block_id, block_text, block_type_name, next_block_id FROM block INNER JOIN block_type'
+                          ' ON block.block_type_id= block_type.block_type_id WHERE block_id= %s', (block_id, ))
     except:
         #In case a non-integer is entered
         return None
 
 
-def get_first_question(quest_id):
+def get_start_block(quest_id):
     """
-    Find first question related to the quest
+    Find first block related to the quest
     :param quest_id: quest id
-    :return: greeting message and first question id, question text and question type name tuple
-    :return: ('', None) in case of failure
+    :return: first block id, block text and next block id tuple
+    :return: None in case of failure
     """
     try:
-        bogus_question = select_one('SELECT question_id, question_text FROM questions INNER JOIN question_types '
-                                    'ON questions.q_type_id= question_types.q_type_id WHERE quest_id= %s '
-                                    'AND q_type_name= %s', (quest_id, 'start', ))
-        real_question_id = select_one('SELECT next_question_id FROM answer_options WHERE question_id= %s',
-                                      (bogus_question[0], ))[0]
-        return (bogus_question[1], get_question_by_id(real_question_id))
+        return select_one('SELECT block_id, block_text, next_block_id FROM block INNER JOIN block_type '
+                            'ON block.block_type_id= block_type.block_type_id WHERE quest_id= %s '
+                            'AND block_type_name= %s', (quest_id, 'start_block', ))
     except:
-        return ('', None)
+        return None
 
 
 def get_answer_options(question_id):
     """
     Find answer options related to the question
     :param question_id: question id
-    :return: a list of tuples with values option_text, points, next_question_id
+    :return: a list of tuples with values option_text, points, next_block_id
     :return: None in case of failure
     """
     try:
-        return select_all('SELECT option_text, points, next_question_id FROM answer_options WHERE question_id= %s',
+        return select_all('SELECT option_text, points, next_block_id FROM answer_option WHERE block_id= %s',
                           (question_id, ))
     except:
         return None
 
 
-def get_movement(question_id):
+def get_place(movement_id):
     """
-    Find movement related to the question
-    :param question_id: question id
-    :return: tuple with values next_question_id, coords, radius, time_open, time_close
+    Find place related to the movement
+    :param movement_id: movement id
+    :return: tuple with values next_block_id, latitude, longitude, radius, time_open, time_close
     :return: None in case of failure
     """
     try:
-        return select_one('SELECT next_question_id, coord_x, coord_y, radius, time_open, time_close FROM movements '
-                          'INNER JOIN places ON movements.place_id= places.place_id WHERE question_id= %s',
-                          (question_id, ))
+        return select_one('SELECT next_block_id, latitude, longitude, radius, time_open, time_close FROM place'
+                          ' WHERE block_id= %s', (movement_id, ))
     except:
         return None
 
 
-def get_hints(question_id):
+def get_hints(block_id):
     """
-    Find all hints related to the question
-    :param question_id: question id
+    Find all hints related to the block
+    :param block_id: block id
     :return: a list of tuples with values hint_id, fine, hint_text
     :return: None in case of failure
     """
     try:
-        return select_all('SELECT hint_id, fine, hint_text FROM hints WHERE question_id= %s', (question_id, ))
+        return select_all('SELECT hint_id, fine, hint_text FROM hint WHERE block_id= %s', (block_id, ))
     except:
         return None
 
@@ -244,51 +246,52 @@ def get_hint_files(hint_id):
     """
     Find all files related to the hint
     :param hint_id: hint id
-    :return: list of tuples with values url_for_file, f_type_name
+    :return: list of tuples with values media_path, media_type_name
     :return: None in case of failure
     """
     try:
-        return select_all('SELECT url_for_file, f_type_name FROM hint_files INNER JOIN files '
-                          'ON hint_files.f_id= files.f_id INNER JOIN file_types '
-                          'ON files.f_type_id= file_types.f_type_id WHERE hint_id= %s', (hint_id, ))
+        return select_all('SELECT media_path, media_type_name FROM hint_media INNER JOIN media_type '
+                          'ON hint_media.media_type_id= media_type.media_type_id WHERE hint_id= %s', (hint_id, ))
     except:
         return None
 
 
-def get_question_files(question_id):
+def get_block_files(block_id):
     """
-    Find all files related to the question
-    :param question_id: question id
-    :return: list of tuples with values url_for_file, f_type_name
+    Find all files related to the block
+    :param block_id: block id
+    :return: list of tuples with values media_path, media_type_name
     :return: None in case of failure
     """
     try:
-        return select_all('SELECT url_for_file, f_type_name FROM question_files INNER JOIN files '
-                          'ON question_files.f_id= files.f_id INNER JOIN file_types '
-                          'ON files.f_type_id= file_types.f_type_id WHERE question_id= %s', (question_id, ))
+        return select_all('SELECT media_path, media_type_name FROM block_media INNER JOIN media_type '
+                          'ON block_media.media_type_id= media_type.media_type_id WHERE block_id= %s', (block_id, ))
     except:
         return None
 
 
-def save_history(quest_id, telegram_id, is_finished, last_question_id, final_score):
+def save_history(quest_id, telegram_id, is_finished, last_block_id, final_score, start_time, complition_time):
     """
     Add an entry with the passed values to the histories table
     :param quest_id: quest id
     :param telegram_id: user id
     :param is_finished: quest status, is true if it is completed to the end
-    :param last_question_id: id of the question where user left off, can be None if the resumption is not expected
+    :param last_block_id: id of the block where user left off, can be None if the resumption is not expected
     :param final_score: final score 
+    :param start_time: start time of the quest by the player
+    :param complition_time: time spent completing the quest
     """
     try:
-        history_id = select_one('SELECT history_id FROM histories WHERE quest_id= %s AND telegram_id= %s',
+        history_id = select_one('SELECT history_id FROM history WHERE quest_id= %s AND telegram_id= %s',
                                 (quest_id, telegram_id, ))
         if history_id is None:
-            insert_or_update('INSERT INTO histories (quest_id, telegram_id, is_finished, last_question_id, '
-                             'final_score) VALUES (%s, %s, %s, %s, %s)', 
-                             (quest_id, telegram_id, is_finished, last_question_id, final_score, ))
+            insert_or_update('INSERT INTO history (quest_id, telegram_id, is_finished, last_block_id, final_score, '
+                             'start_time, complition_time) VALUES (%s, %s, %s, %s, %s, %s, %s)', 
+                             (quest_id, telegram_id, is_finished, last_block_id, final_score, start_time, complition_time, ))
         else:
-            insert_or_update('UPDATE histories SET is_finished= %s, last_question_id= %s, final_score= %s '
-                             'WHERE history_id= %s', (is_finished, last_question_id, final_score, history_id[0], ))
+            insert_or_update('UPDATE history SET is_finished= %s, last_block_id= %s, final_score= %s, start_time= %s, '
+                             'complition_time= %s WHERE history_id= %s',
+                             (is_finished, last_block_id, final_score, start_time, complition_time, history_id[0], ))
     except:
         pass
 
@@ -298,11 +301,11 @@ def get_history(quest_id, telegram_id):
     Find data in the histories table for the specified quest and user
     :param quest_id: quest id
     :param telegram_id: user id
-    :return: tuple with values is_finished, last_question_id, final_score
+    :return: tuple with values is_finished, last_block_id, final_score, complition_time
     :return: None in case of failure
     """
     try:
-        return select_one('SELECT is_finished, last_question_id, final_score FROM histories '
+        return select_one('SELECT is_finished, last_block_id, final_score, complition_time FROM histories '
                           'WHERE quest_id= %s AND telegram_id= %s', (quest_id, telegram_id, ))
     except:
         return None
@@ -313,23 +316,24 @@ def update_rating(quest_id, rating):
     Update rating
     :param quest_id: quest id
     :param rating: rating - 1, 2, 3, 4 or 5
-    :return: true if success, false - otherwise
     """
-    query = "UPDATE ratings SET {0} = {0} + 1 WHERE quest_id = {1}"
     table_column_names = {
-        1: "one_star_amount",
-        2: "two_star_amount",
-        3: "three_star_amount",
-        4: "four_star_amount",
-        5: "five_star_amount",
+        1: 'one_star_amount',
+        2: 'two_star_amount',
+        3: 'three_star_amount',
+        4: 'four_star_amount',
+        5: 'five_star_amount',
     }
     if rating not in table_column_names:
-        return False
+        return
     try:
-        with Database().connect() as conn:
-            with conn.cursor(cursor_factory=DictCursor) as cursor:
-                cursor.execute(query.format(table_column_names[rating], quest_id))
-                conn.commit()
-        return True
+        rating_id = select_one('SELECT rating_id FROM rating WHERE quest_id= %s',
+                                (quest_id, ))
+        if rating_id == None:
+            insert_or_update('INSERT INTO rating (quest_id, %s) VALUES (%s, %s)', 
+                             (table_column_names[rating], quest_id, 1, ))
+        else:
+            insert_or_update('UPDATE rating SET %s = %s + 1 WHERE rating_id = %s',
+                         (table_column_names[rating], table_column_names[rating], rating_id[0], ))
     except:
-        return False
+        pass

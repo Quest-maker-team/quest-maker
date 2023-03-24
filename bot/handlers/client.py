@@ -753,7 +753,7 @@ async def cmd_help(message: types.Message, state: FSMContext):
                                  'чтобы получить подсказку - /tip, '
                                  'чтобы попытаться пропустить точку - /skip.')
         else:
-            await message.answer('Выберите квест.')
+            await message.answer('Выберите квест командой /quest.')
 
 
 async def rate_quest(message: types.Message, state: FSMContext):

@@ -219,11 +219,11 @@ def get_place(movement_id):
     """
     Find place related to the movement
     :param movement_id: movement id
-    :return: tuple with values next_block_id, latitude, longitude, radius, time_open, time_close
+    :return: tuple with values latitude, longitude, radius, time_open, time_close
     :return: None in case of failure
     """
     try:
-        return select_one('SELECT next_block_id, latitude, longitude, radius, time_open, time_close FROM place'
+        return select_one('SELECT latitude, longitude, radius, time_open, time_close FROM place'
                           ' WHERE block_id= %s', (movement_id, ))
     except:
         return None
@@ -289,9 +289,9 @@ def save_history(quest_id, telegram_id, is_finished, last_block_id, final_score,
                              'start_time, complition_time) VALUES (%s, %s, %s, %s, %s, %s, %s)', 
                              (quest_id, telegram_id, is_finished, last_block_id, final_score, start_time, complition_time, ))
         else:
-            insert_or_update('UPDATE history SET is_finished= %s, last_block_id= %s, final_score= %s, start_time= %s, '
+            insert_or_update('UPDATE history SET is_finished= %s, last_block_id= %s, final_score= %s, '
                              'complition_time= %s WHERE history_id= %s',
-                             (is_finished, last_block_id, final_score, start_time, complition_time, history_id[0], ))
+                             (is_finished, last_block_id, final_score, complition_time, history_id[0], ))
     except:
         pass
 

@@ -362,7 +362,7 @@ def update_hint_media(block_id, hint_id, media_id):
     rc = media.update_from_dict(media_dict)
     return ('', 200) if rc is not None else ('Wrong JSON attributes', 400)
 
-@constructor_api.route('/block/<int:block_id>/answer/<int:answer_id>', methods=['PUT'])
+@constructor_api.route('/block/<int:block_id>/answer_option/<int:answer_id>', methods=['PUT'])
 def update_block_answer(block_id, answer_id):
     """
     Set block answer attributes from JSON
@@ -473,7 +473,7 @@ def remove_hint_media(block_id, hint_id, media_id):
     rc = hint.remove_media(media_id)
     return ('', 200) if rc else ('Wrong media id', 400)
 
-@constructor_api.route('/block/<int:block_id>/answer/<int:answer_id>', methods=['DELETE'])
+@constructor_api.route('/block/<int:block_id>/answer_option/<int:answer_id>', methods=['DELETE'])
 def remove_block_answer(block_id, answer_id):
     """
     Remove answer from block

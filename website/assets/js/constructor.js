@@ -68,6 +68,7 @@ function createNewBlock(type, text, quest) {
             'points': 0.0,
             'text': 'Ответ',
         });
+        lastBlock['hints'] = [];
     }
     console.log(lastBlock);
     /*if (type!=='movement') {
@@ -146,7 +147,7 @@ window.onload = () => {
         });
 
         instance.bind(INTERCEPT_BEFORE_START_DETACH, (params) => {
-            const sourceIdSplit = params.connection.sourceId.match(/([a-z]*_?[a-z]*)([0-9]*)/);
+            const sourceIdSplit = params.sourceId.match(/([a-z]*_?[a-z]*)([0-9]*)/);
             console.log(params)
             if (sourceIdSplit[1] != 'answer_option')
                 Quest.disconnectBlockAndBlock(sourceIdSplit[2]);

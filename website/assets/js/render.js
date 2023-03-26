@@ -120,8 +120,8 @@ export class Render {
         return block;
     }
 
-    static updateAnswersEndpoints(question, instance) {
-        const answerTable = document.getElementById('anstab' + question.question_id);
+    static updateAnswersEndpoints(block, instance) {
+        const answerTable = document.getElementById('anstab' + block.block_id);
         for (const ans of answerTable.childNodes) {
             instance.revalidate(ans);
         }

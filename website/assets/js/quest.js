@@ -97,11 +97,15 @@ export class Quest {
         return Quest.makeRequest('PUT', url);
     }
 
+    static deleteBlockEntity(type, block_id, id, data) {
+        const url = 'api/constructor/block/' + block_id + '/' + type + '/' + id;
+        return Quest.makeRequest('DELETE', url, data);
+    }
+
     static deleteEntity(type, id) {
         const url = 'api/constructor/' + type + '/' + id;
         return Quest.makeRequest('DELETE', url);
     }
-
 
     static save(id) {
         const url = 'api/constructor/save/' + id;

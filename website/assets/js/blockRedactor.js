@@ -127,7 +127,8 @@ export class BlockRedactor {
         let skipPoints = 0;
         let wrongPoints = 0;
 
-        for (const answer of question.answer_options) {
+        for (const answer of question.answers) {
+            console.log(answer);
             if (answer.text === 'skip') {
                 document.getElementById('skip').checked = true;
                 skipActive = true;
@@ -161,7 +162,7 @@ export class BlockRedactor {
 
     static updateAnswers(question, instance, sourceEndpoint) {
         const idToDel = [];
-        for (const answer of question.answer_options) {
+        for (const answer of question.answers) {
             if (answer.text !== '' && answer.text !== 'skip') {
                 const elem = document.getElementById('answer_old_' + answer.answer_option_id);
                 if (elem === null) {
@@ -181,15 +182,15 @@ export class BlockRedactor {
             const ans = document.getElementById('answer_option' + id);
             Render.deleteElemEndpoint(ans, instance);
             ans.remove();
-            Quest.deleteEntity('answer_option', id);
-            question.answer_options.splice(question.answer_options.findIndex((answer) =>
+            Quest.deleteBlockEntity('answer_option', question.block_id, id);
+            question.answers.splice(question.answers.findIndex((answer) =>
                 answer.answer_option_id == id), 1);
         }
 
         const newAnswers = document.getElementsByName('answerText_new');
         for (const newAnswer of newAnswers) {
             const id = newAnswer.id.split('_')[2];
-            Quest.addEntity('answer_option', JSON.stringify({
+            Quest.addBlockEntity('answer_option', question.block_id, JSON.stringify({
                 points: parseFloat(document.getElementById('answerPoints_new_' + id).value),
                 text: newAnswer.value,
             })).then((response) => {
@@ -198,30 +199,30 @@ export class BlockRedactor {
                     points: parseFloat(document.getElementById('answerPoints_new_' + id).value),
                     text: newAnswer.value,
                 };
-                question.answer_options.push(answer);
+                question.answers.push(answer);
                 Render.renderAnswer(answer, question, instance, sourceEndpoint);
-                Quest.connect('question', 'answer_option', question.question_id, answer.answer_option_id);
             });
         }
     }
 
     static updateSpecial(checkboxId, id, question, instance, text, sourceEndpoint) {
-        const specialId = question.answer_options.findIndex((answer) => answer.text === text);
+        console.log(question);
+        const specialId = question.answers.findIndex((answer) => answer.text === text);
         if (specialId !== -1 && document.getElementById(checkboxId).checked) {
-            const answer = question.answer_options[specialId];
+            const answer = question.answers[specialId];
             answer.points = document.getElementById('answerPoints' + id).value;
             Quest.updateEntity('answer_option', answer.answer_option_id, question.block_id, JSON.stringify({
                 points: parseFloat(answer.points),
                 text: answer.text,
             })).then((response) => console.log(response));
         } else if (specialId !== -1 && !document.getElementById(checkboxId).checked) {
-            const ans = document.getElementById('answer_option' + question.answer_options[specialId].answer_option_id);
+            const ans = document.getElementById('answer_option' + question.answers[specialId].answer_option_id);
             Render.deleteElemEndpoint(ans, instance);
             ans.remove();
-            Quest.deleteEntity('answer_option', question.answer_options[specialId].answer_option_id);
-            question.answer_options.splice(specialId, 1);
+            Quest.deleteBlockEntity('answer_option', question.block_id, question.answers[specialId].answer_option_id);
+            question.answers.splice(specialId, 1);
         } else if (specialId === -1 && document.getElementById(checkboxId).checked) {
-            Quest.addEntity('answer_option', JSON.stringify({
+            Quest.addBlockEntity('answer_option', question.block_id, JSON.stringify({
                 points: parseFloat(document.getElementById('answerPoints' + id).value),
                 text: text,
             })).then((response) => {
@@ -230,9 +231,8 @@ export class BlockRedactor {
                     points: parseFloat(document.getElementById('answerPoints' + id).value),
                     text: text,
                 };
-                question.answer_options.push(answer);
+                question.answers.push(answer);
                 Render.renderAnswer(answer, question, instance, sourceEndpoint, true);
-                Quest.connect('question', 'answer_option', question.question_id, answer.answer_option_id);
             });
         }
     }
@@ -248,12 +248,12 @@ export class BlockRedactor {
                 hint.fine = document.getElementById('hintFine_old_' + hint.hint_id).value;
                 Quest.updateEntity('hint', hint.hint_id, question.block_id, JSON.stringify({
                     fine: parseFloat(hint.fine),
-                    text: hint.hint_text,
+                    hint_text: hint.hint_text,
                 }));
             }
         }
         for (const id of idToDel) {
-            Quest.deleteEntity('hint', id);
+            Quest.deleteBlockEntity('hint', question.block_id, id);
             question.hints.splice(question.hints.findIndex((hint) =>
                 hint.hint_id == id), 1);
         }
@@ -261,9 +261,9 @@ export class BlockRedactor {
         const newHints = document.getElementsByName('hintText_new');
         for (const newHint of newHints) {
             const id = newHint.id.split('_')[2];
-            Quest.addEntity('hint', JSON.stringify({
+            Quest.addBlockEntity('hint', question.block_id, JSON.stringify({
                 fine: parseFloat(document.getElementById('hintFine_new_' + id).value),
-                text: newHint.value,
+                hint_text: newHint.value,
             })).then((response) => {
                 const hint = {
                     hint_id: JSON.parse(response).hint_id,
@@ -271,7 +271,6 @@ export class BlockRedactor {
                     hint_text: newHint.value,
                 };
                 question.hints.push(hint);
-                Quest.connect('question', 'hint', question.question_id, hint.hint_id);
             });
         }
     }
@@ -353,7 +352,7 @@ export class BlockRedactor {
     }
 
     static createQuestionRedactor(form, question, instance, sourceEndpoint, modal) {
-        BlockRedactor.addTextRedactor(form, 'Вопрос:', question.text);
+        BlockRedactor.addTextRedactor(form, 'Вопрос:', question.block_text);
         form.insertAdjacentHTML('beforeend',
             '<hr>' +
             '<div class="col-12 mt-0">' +
@@ -527,7 +526,7 @@ export class BlockRedactor {
 
             question.movements[0].place.coords = [parseFloat(x), parseFloat(y)];
         }
-        BlockRedactor.addTextRedactor(form, 'Перемещение:', question.text);
+        BlockRedactor.addTextRedactor(form, 'Перемещение:', question.block_text);
         form.insertAdjacentHTML('beforeend',
             '<hr>' +
             '<div class="col-12 mt-0">' +

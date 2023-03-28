@@ -28,7 +28,7 @@ export class Quest {
                     }
                 }
             };
-
+            console.log(data);
             if (data !== undefined) {
                 xmlhttp.send(data);
             } else {
@@ -112,12 +112,13 @@ export class Quest {
         return Quest.makeRequest('POST', url);
     }
 
-    static addNewPlace(place, question) {
-        const url = 'api/constructor/place';
-        return Quest.makeRequest('POST', url, place).then((result) => {
+    static addPlace(questBlock) {
+        const url = 'api/constructor/place/movement_block/' + questBlock.block_id;
+        console.log(questBlock.place)
+        return Quest.makeRequest('POST', url, questBlock.place).then((result) => {
             console.log('success add new place '+ result);
             const id = JSON.parse(result).place_id;
-            question.movements[0].place.place_id = id;
+            questBlock.place.place_id = id;
             console.log('id = '+ id);
             return id;
         });
@@ -140,7 +141,7 @@ export class Quest {
         });
     }
 
-    static addMovement(move) {
+    /*static addMovement(move) {
         return Quest.makeRequest('POST', 'api/constructor/movement', JSON.stringify({})).then((result) => {
             console.log('success add new movement ' + result);
             const id = JSON.parse(result).movement_id;
@@ -150,5 +151,5 @@ export class Quest {
         }, (error) => {
             console.log('failed add new movement');
         });
-    }
+    }*/
 }

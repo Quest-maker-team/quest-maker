@@ -281,8 +281,14 @@ def create_place(block_id):
     Create new place and add to movement_block
     :return: json with hint id or error message
     """
+    print("Naxuy")
+    print(request.is_json)
+    try:
+        request.get_json(force=True)
+    except Exception as e:
+        print(e)
     place_dict = request.get_json(force=True)
-
+    print("Naxuy")
     place = Place()
 
     place_id = place.update_from_dict(place_dict)

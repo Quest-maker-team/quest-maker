@@ -70,27 +70,18 @@ function createNewBlock(type, text, quest) {
         });
         lastBlock['hints'] = [];
     }
+    if (type == 'movement'){
+        lastBlock['place'] = {
+            //'next_question_id': undefined,
+                'latitude': 0,
+                'longitude': 0,
+                //'place_id': undefined,
+                'radius': 0,
+                //'time_open': 'Sun, 12 Aug 2001 09:00:00 GMT',
+                //'time_close': 'Sun, 12 Aug 2001 19:00:00 GMT',
+        };
+    }
     console.log(lastBlock);
-    /*if (type!=='movement') {
-        lastBlock.answer_options.push({
-            'answer_option_id': undefined,
-            'next_question_id': undefined,
-            'points': 0.0,
-            'text': 'Ответ',
-        });
-    } else {
-        lastBlock.movements.push( {
-            'movement_id': undefined,
-            'next_question_id': undefined,
-            'place': {
-                'coords': [0.0, 0.0],
-                'place_id': undefined,
-                'radius': 0.0,
-                'time_close': 'Sun, 12 Aug 2001 19:00:00 GMT',
-                'time_open': 'Sun, 12 Aug 2001 09:00:00 GMT',
-            },
-        });
-    }*/
     quest.data.blocks.push(lastBlock);
     return lastBlock;
 }
@@ -158,7 +149,7 @@ window.onload = () => {
         });
 
 
-        /*setInterval(() => {
+        setInterval(() => {
             for (const questBlock of quest.data.blocks) {
                 const blok = document.getElementById(questBlock.block_id);
                 Quest.updateBlock(blok.id, JSON.stringify({
@@ -166,27 +157,15 @@ window.onload = () => {
                     pos_y: parseInt(blok.style.top),
                 }));
             }
-        }, 20000);*/
+        }, 20000);
         Render.render(quest, instance, sourceEndpoint, targetEndpoint, panzoom);
 
         document.getElementById('addMBtn').onclick = () => {
-            const question = createNewBlock('movement', 'Новое перемещение', quest);
-            Quest.addBlock(question).then((result) =>{
-                Quest.addMovement(question).then((data)=>{
-                    const place = {
-                        coords: [0.0, 0.0],
-                        radius: 0.0,
-                    };
-                    /*Quest.addNewPlace(JSON.stringify(place), question).then((rez)=>{
-                        Quest.connect('question', 'movement',
-                            question.question_id,
-                            question.movements[0].movement_id);
-                        Quest.connect('movement', 'place',
-                            question.movements[0].movement_id,
-                            question.movements[0].place.place_id);
-                        Render.renderMovement(quest, question, instance, sourceEndpoint,
-                            targetEndpoint);
-                    });*/
+            const block = createNewBlock('movement', 'Новое перемещение', quest);
+            Quest.addBlock(block).then((result) =>{
+                console.log(block);
+                Quest.addPlace(block).then((data)=>{
+                    console.log(data);
                 });
             });
         };
@@ -219,9 +198,6 @@ window.onload = () => {
                 })).then((rez) => {
                     question.answers[0].answer_option_id =
                         JSON.parse(rez).answer_option_id;
-                    /*Quest.connect('question', 'answer_option',
-                        question.question_id,
-                        question.answer_options[0].answer_option_id);*/
                     Render.renderQuestion(quest, question, 'Вопрос с выбором ответа',
                         instance, sourceEndpoint, targetEndpoint);
                 });

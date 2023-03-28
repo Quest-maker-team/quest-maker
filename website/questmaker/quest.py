@@ -289,6 +289,7 @@ class Place:
 
     def update_from_dict(self, place_info: dict) -> int:
         try:
+            print(place_info)
             for attr, value in place_info.items():
                 self.__setattr__(attr, value)
         except:

@@ -189,22 +189,22 @@ export class Render {
         return block;
     }
 
-    static renderMovement(quest, question, instance, sourceEndpoint, targetEndpoint) {
-        const block = Render.renderBlockBase(question, '15rem', 'Перемещение', instance, sourceEndpoint, quest);
+    static renderMovement(quest, movement, instance, sourceEndpoint, targetEndpoint) {
+        const block = Render.renderBlockBase(movement, '15rem', 'Перемещение', instance, sourceEndpoint, quest);
         block.className+=' border-warning';
-        const answer = document.createElement('div');
-        answer.id = 'movement' + question.movements[0].movement_id;
-        answer.style.height = '100%';
-        answer.style.width = '100%';
-        answer.className = 'position-absolute';
-        block.append(answer);
+        const place = document.createElement('div');
+        place.id = 'place' + movement.place.place_id;
+        place.style.height = '100%';
+        place.style.width = '100%';
+        place.className = 'position-absolute';
+        block.append(place);
 
         instance.manage(block);
         Render.addDeleteButton(quest, block, instance,
-            [document.getElementById('movement' + question.movements[0].movement_id)]);
-        Render.createEndpoint(instance, document.getElementById('body' + question.question_id),
+            [document.getElementById('place' + movement.place.place_id)]);
+        Render.createEndpoint(instance, document.getElementById('body' + movement.block_id),
             {anchor: ['Top', 'Right', 'Left', 'Bottom']}, targetEndpoint);
-        Render.createEndpoint(instance, answer, {anchor: ['Bottom', 'Right', 'Left', 'Top']}, sourceEndpoint);
+        Render.createEndpoint(instance, place, {anchor: ['Bottom', 'Right', 'Left', 'Top']}, sourceEndpoint);
 
         return block;
     }

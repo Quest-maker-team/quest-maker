@@ -166,6 +166,7 @@ window.onload = () => {
                 console.log(block);
                 Quest.addPlace(block).then((data)=>{
                     console.log(data);
+                    Render.renderMovement(quest, block, instance, sourceEndpoint, targetEndpoint);
                 });
             });
         };

@@ -441,13 +441,13 @@ export class BlockRedactor {
         const questions = quest.data.questions.filter((question) =>
             question.question_id !== newQuestion.question_id && question.type === 'movement');
         for (const question of questions) {
-            if (typeof(question.movements[0].place.coords) == 'string') {
-                const s = question.movements[0].place.coords.split(',');
+            if (typeof(question.place.coords) == 'string') {
+                const s = question.place.coords.split(',');
                 const x = s[0].substring(1);
                 const y = s[1].substring(0, s[1].length - 1);
-                question.movements[0].place.coords = [parseFloat(x), parseFloat(y)];
+                question.place.coords = [parseFloat(x), parseFloat(y)];
             }
-            const placeMark = new ymaps.Placemark(question.movements[0].place.coords, {
+            const placeMark = new ymaps.Placemark(question.place.coords, {
                 balloonContentHeader: 'Добавленное место квеста',
                 balloonContentBody:
                     question.text,
@@ -456,10 +456,10 @@ export class BlockRedactor {
                 draggable: false,
             });
             const myCircle = new ymaps.Circle([
-                question.movements[0].place.coords,
-                question.movements[0].place.radius,
+                question.place.coords,
+                question.place.radius,
             ], {
-                hintContent: 'Радиус достижимости ' + question.movements[0].place.radius,
+                hintContent: 'Радиус достижимости ' + question.place.radius,
             }, {
                 draggable: false,
                 fillColor: '#DB709377',
@@ -473,8 +473,8 @@ export class BlockRedactor {
     }
 
     static addMethodsToMap(myMap, question, radius, coordinates) {
-        if (question.movements[0].place.radius>0) {
-            radius.value = question.movements[0].place.radius;
+        if (question.place.radius>0) {
+            radius.value = question.place.radius;
         } else {
             coordinates.value = myMap.getCenter();
             radius.value = 25;
@@ -518,13 +518,15 @@ export class BlockRedactor {
         myMap.geoObjects.get(myMap.geoObjects.indexOf(myCircle)).balloon.open();
     }
 
+
+
     static createMovementRedactor(form, question, modal, quest) {
-        if (typeof(question.movements[0].place.coords)=='string' ) {
-            const s = question.movements[0].place.coords.split(',');
+        if (typeof(question.place.coords)=='string' ) {
+            const s = question.place.coords.split(',');
             const x = s[0].substring(1);
             const y = s[1].substring(0, s[1].length-1);
 
-            question.movements[0].place.coords = [parseFloat(x), parseFloat(y)];
+            question.place.coords = [parseFloat(x), parseFloat(y)];
         }
         BlockRedactor.addTextRedactor(form, 'Перемещение:', question.block_text);
         form.insertAdjacentHTML('beforeend',
@@ -542,8 +544,8 @@ export class BlockRedactor {
         form.insertAdjacentHTML('beforeend',
             '<div class="z-depth-1-half map-container" style="height: 500px" id="map"></div>');
         let myMap;
-        const radius = {'value': question.movements[0].place.radius};
-        const coordinates = {'value': question.movements[0].place.coords};
+        const radius = {'value': question.place.radius};
+        const coordinates = {'value': question.place.coords};
         ymaps.ready(() => {
             const geolocation = ymaps.geolocation;
             let myPosition;
@@ -556,7 +558,7 @@ export class BlockRedactor {
                     provider: 'browser',
                     mapStateAutoApply: true,
                 }).then((position) => {
-                    if (position !== undefined && question.movements[0].place.radius == 0.0) {
+                    if (position !== undefined && question.place.radius == 0.0) {
                         myPosition = position.geoObjects.position;
                         myMap.setCenter(myPosition);
                         myMap.geoObjects.get(0).setCoordinates(myPosition);
@@ -564,8 +566,8 @@ export class BlockRedactor {
                     }
                 });
 
-                if (question.movements[0].place.radius > 0.0) {
-                    myPosition = question.movements[0].place.coords;
+                if (question.place.radius > 0.0) {
+                    myPosition = question.place.coords;
                 }
                 myMap = new ymaps.Map('map', {
                     center: myPosition,

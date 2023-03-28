@@ -115,7 +115,7 @@ export class Quest {
     static addPlace(questBlock) {
         const url = 'api/constructor/place/movement_block/' + questBlock.block_id;
         console.log(questBlock.place)
-        return Quest.makeRequest('POST', url, questBlock.place).then((result) => {
+        return Quest.makeRequest('POST', url, JSON.stringify(questBlock.place)).then((result) => {
             console.log('success add new place '+ result);
             const id = JSON.parse(result).place_id;
             questBlock.place.place_id = id;

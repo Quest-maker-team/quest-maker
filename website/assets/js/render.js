@@ -204,7 +204,7 @@ export class Render {
             [document.getElementById('place' + movement.place.place_id)]);
         Render.createEndpoint(instance, document.getElementById('body' + movement.block_id),
             {anchor: ['Top', 'Right', 'Left', 'Bottom']}, targetEndpoint);
-        Render.createEndpoint(instance, place, {anchor: ['Bottom', 'Right', 'Left', 'Top']}, sourceEndpoint);
+        Render.createEndpoint(instance, block, {anchor: ['Bottom', 'Right', 'Left', 'Top']}, sourceEndpoint);
 
         return block;
     }

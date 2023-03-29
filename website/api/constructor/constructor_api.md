@@ -81,8 +81,8 @@
     &emsp; 'Wrong block id', 400  
     &emsp; 'Wrong JSON attributes', 400
 
-  - `api/constructor/answer_option/question/\<int:question_id\> POST` - create new answer in question block  
-    &emsp; **:param question_id:** - question id to which the answer is added  
+  - `api/constructor/answer_option/block/\<int:block_id\> POST` - create new answer in question block  
+    &emsp; **:param block_id:** - question id to which the answer is added  
     &emsp; **:request_arg answer_dict:** - answer description in json format:
     ```json
       {
@@ -202,7 +202,7 @@
     &emsp; ('Wrong media id', 400) - failed  
     &emsp; ('Wrong JSON attributes', 400) - failed  
 
-  - `api/constructor/block/\<int:block_id\>/answer/\<int:answer_id\> PUT` - Set question block answer attributes from JSON  
+  - `api/constructor/block/\<int:block_id\>/answer_option/\<int:answer_id\> PUT` - Set question block answer attributes from JSON  
     &emsp; **:param block_id:** - block containing answer  
     &emsp; **:param answer_id:** - answer id  
     &emsp; **:request_arg answer_dict:** - answer description in json format:  
@@ -307,7 +307,7 @@
     &emsp; ('Wrong hint id', 400) - failed   
     &emsp; ('Wrong media id', 400) - failed   
 
-  - `api/constructor/block/\<int:block_id\>/answer/\<int:answer_id\> DELETE` - Remove answer from question block  
+  - `api/constructor/block/\<int:block_id\>/answer_option/\<int:answer_id\> DELETE` - Remove answer from question block  
     &emsp; **:param block_id:** - block containing media  
     &emsp; **:param answer_id:** - answer id  
     &emsp; **:return:** - status message and code:    

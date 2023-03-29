@@ -7,10 +7,11 @@ from .db import get_quest, get_quest_tags, get_quest_rating, get_blocks, \
 
 from uuid import uuid4
 
+import weakref
+from copy import copy
+
 
 class Media:
-    unic_id = 0
-
     class Type:
         IMAGE = 0,
         VIDEO = 1,
@@ -39,12 +40,10 @@ class Media:
                 return None
 
     def __init__(self) -> None:
-        self.id = Media.unic_id
+        self.id = None
         self.media_path = None
         self.media_type_id = None
 
-        Media.unic_id += 1
-        
     def convert_to_dict(self):
         return {"media_id": self.id,
                 "media_path": self.media_path,
@@ -116,23 +115,14 @@ class Block:
             else:
                 return None
     
-    unic_id = 0
-
     def __init__(self):
         self.db_id = None
-        self.id = Block.unic_id
+        self.id = None
         self.position = Position(0., 0.)
         self.media_sources = {}
         self.block_text = ""
-        self.next_block_id = None
+        self.next_block = None
         self.block_type_id = None
-
-        Block.unic_id += 1
-
-        self.delete_callbacks = []
-
-    def on_next_block_delete(self):
-        self.next_block_id = None
 
     def update_from_dict(self, block_info: dict) -> int:
         try:
@@ -175,7 +165,7 @@ class Block:
             "pos_x": self.position.x,
             "pos_y": self.position.y,
             "media_sources": [media.convert_to_dict() for media in self.media_sources],
-            "next_block_id": self.next_block_id
+            "next_block_id": self.next_block().id if self.next_block is not None and self.next_block() is not None else None
         }
     
     def save_to_db(self, quest_id: int):
@@ -185,23 +175,27 @@ class Block:
             media.add_to_db("block_media", "block", self.db_id)
 
     def save_links_in_db(self, blocks: dict):
-        if self.next_block_id != None:
-            set_blocks_link(self.db_id, blocks[self.next_block_id].db_id)
+        if self.next_block is not None and self.next_block() is not None:
+            set_blocks_link(self.db_id, blocks[self.next_block().id].db_id)
+
+    def __getstate__(self):
+        d = copy(self.__dict__)
+        if self.next_block is not None:
+            d["next_block"] = self.next_block()
+        return d
+    
+    def __setstate__(self, d):
+        self.__dict__ = d
+        if self.next_block is not None:
+            self.next_block = weakref.ref(self.next_block)
 
 class Answer:
-    unic_id = 0
-
     def __init__(self) -> None:
-        self.id = Answer.unic_id
+        self.id = None
         self.db_id = None
         self.text = None
         self.points = None
-        self.next_block_id = None
-
-        Answer.unic_id += 1
-
-    def on_next_block_delete(self):
-        self.next_block_id = None
+        self.next_block = None
 
     def update_from_dict(self, answer_info: dict) -> int:
         try:
@@ -217,27 +211,34 @@ class Answer:
             'answer_option_id': self.id,
             'text': self.text,
             'points': self.points,
-            'next_block_id': self.next_block_id if self.next_block_id is not None else None
+            'next_block_id': self.next_block().id if self.next_block is not None and self.next_block() is not None else None
         }
     
     def add_to_db(self, block_id: int):
         self.db_id = add_answer(self.text, self.points, block_id)
 
     def save_links_in_db(self, blocks: dict):
-        if self.next_block_id != None:
-            set_answer_and_block_link(self.db_id, blocks[self.next_block_id].db_id)
+        if self.next_block is not None and self.next_block() is not None:
+            set_answer_and_block_link(self.db_id, blocks[self.next_block().id].db_id)
+
+    def __getstate__(self):
+        d = copy(self.__dict__)
+        if self.next_block is not None:
+            d["next_block"] = self.next_block()
+        return d
+    
+    def __setstate__(self, d):
+        self.__dict__ = d
+        if self.next_block is not None:
+            self.next_block = weakref.ref(self.next_block)
 
 class Hint:
-    unic_id = 0
-
     def __init__(self) -> None:
         self.db_id = None
-        self.id = Hint.unic_id
+        self.id = None
         self.media_sources = {}
         self.hint_text = ""
         self.fine = 0
-
-        Hint.unic_id += 1
 
     def convert_to_dict(self):
         return {"hint_id": self.id,
@@ -275,21 +276,16 @@ class Hint:
             media.add_to_db("hint_media", "hint", self.db_id)
 
 class Place:
-    unic_id = 0
-
     def __init__(self) -> None:
-        self.id = Place.unic_id
+        self.id = None
         self.latitude = None
         self.longitude = None
         self.radius = None
         self.time_open = None
         self.time_close = None
 
-        Place.unic_id += 1
-
     def update_from_dict(self, place_info: dict) -> int:
         try:
-            print(place_info)
             for attr, value in place_info.items():
                 self.__setattr__(attr, value)
         except:
@@ -417,6 +413,14 @@ class Quest:
         self.tags = []
         self.rating = {'one': 0, 'two': 0, 'three': 0, 'four': 0, 'five': 0}
 
+        self.entity_id = {
+                Media.__name__: 0,
+                Block.__name__: 0,
+                Answer.__name__: 0,
+                Hint.__name__: 0,
+                Place.__name__: 0
+            }
+
     def init_from_db(self, id: int):
         quest_info = get_quest(quest_id=id)
         if not quest_info:
@@ -451,15 +455,17 @@ class Quest:
 
         return block
 
+    def update_entity_unic_id(self, entity_name: str) -> None:
+        self.entity_id[entity_name] += 1
+
+    def get_entity_unic_id(self, entity_name: str) -> int:
+        return self.entity_id[entity_name]
+
     def add_block(self, block: Block) -> None:
         self.blocks[block.id] = block
 
     def remove_block_by_id(self, block_id: int) -> bool:
         try:
-            print("sasdasdadads")
-            for callback in self.blocks[block_id].delete_callbacks:
-                print("sads")
-                callback()
             del self.blocks[block_id]
         except:
             return False
@@ -501,15 +507,18 @@ class Quest:
             "pos_y": 320,
             "block_type_name": "start_block"
         })
+        start.id = self.entity_id[Block.__name__]
+        self.entity_id[Block.__name__] += 1
         end = Information()
         end.update_from_dict({
             "pos_x": 800,
             "pos_y": 320,
             "block_type_name": "end_block"
         })
-        end.delete_callbacks.append(start.on_next_block_delete)
+        end.id = self.entity_id[Block.__name__]
+        self.entity_id[Block.__name__] += 1
 
-        start.next_block_id = end.id
+        start.next_block = weakref.ref(end)
 
         self.blocks[start.id] = start
         self.blocks[end.id] = end

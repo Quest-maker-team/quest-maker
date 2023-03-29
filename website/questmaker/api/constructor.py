@@ -5,7 +5,7 @@ from flask_login import current_user, login_required
 from flask import Blueprint, jsonify, request, g, session
 
 import pickle
-
+import weakref
 
 constructor_api = Blueprint('constructor_api', __name__)
 
@@ -90,12 +90,6 @@ def create_quest():
     Create new draft quest and add to container
     :return: json or error message
     """
-    Media.unic_id = 0
-    Block.unic_id = 0
-    Answer.unic_id = 0
-    Hint.unic_id = 0
-    Place.unic_id = 0
-
     quest_dict = request.get_json(force=True)
     quest = Quest()
     if not quest.init_from_dict(quest_dict):
@@ -130,6 +124,9 @@ def create_block():
             block = Information()
         else:
             return 'Wrong JSON attributes', 400
+        
+        block.id = g.container.get_entity_unic_id(Block.__name__)
+        g.container.update_entity_unic_id(Block.__name__)
     except:
         return 'Wrong JSON attributes', 400
 
@@ -161,8 +158,7 @@ def connect_answer_and_block(host_id, answer_id, block_id):
     if not block:
         return 'Wrong block id', 400
     
-    answer.next_block_id = block_id
-    block.delete_callbacks.append(answer.on_next_block_delete)
+    answer.next_block = weakref.ref(block)
     
     return '', 200
     
@@ -182,9 +178,8 @@ def connect_blocks(source_id, target_id):
     if not target_block:
         return 'Wrong target id', 400
     
-    source_block.next_block_id = target_id
+    source_block.next_block = weakref.ref(target_block)
 
-    target_block.delete_callbacks.append(source_block.on_next_block_delete)
     return '', 200
 
 @constructor_api.route('/media/block/<int:block_id>', methods=['POST'])
@@ -196,6 +191,9 @@ def create_block_media(block_id):
     media_dict = request.get_json(force=True)
 
     media = Media()
+    media.id = g.container.get_entity_unic_id(Media.__name__)
+    g.container.update_entity_unic_id(Media.__name__)
+
     media_id = media.update_from_dict(media_dict)
     if media_id is None:
         return 'Wrong JSON attributes', 400
@@ -205,6 +203,7 @@ def create_block_media(block_id):
         return 'Wrong block id', 400
     
     block.add_media(media)
+
 
     return jsonify({'media_id': media.id})
 
@@ -217,6 +216,9 @@ def create_hint_media(block_id, hint_id):
     media_dict = request.get_json(force=True)
 
     media = Media()
+    media.id = g.container.get_entity_unic_id(Media.__name__)
+    g.container.update_entity_unic_id(Media.__name__)
+
     media_id = media.update_from_dict(media_dict)
     if media_id is None:
         return 'Wrong JSON attributes', 400
@@ -241,6 +243,10 @@ def create_question_answer(block_id):
     """
     ans_dict = request.get_json(force=True)
     answer = Answer()
+
+    answer.id = g.container.get_entity_unic_id(Answer.__name__)
+    g.container.update_entity_unic_id(Answer.__name__)
+
     answer_id = answer.update_from_dict(ans_dict)
     if answer_id is None:
         return 'Wrong JSON attributes', 400
@@ -262,6 +268,8 @@ def create_hint(block_id):
     hint_dict = request.get_json(force=True)
 
     hint = Hint()
+    hint.id = g.container.get_entity_unic_id(Hint.__name__)
+    g.container.update_entity_unic_id(Hint.__name__)
 
     hint_id = hint.update_from_dict(hint_dict)
     if hint_id is None:
@@ -282,8 +290,9 @@ def create_place(block_id):
     :return: json with hint id or error message
     """
     place_dict = request.get_json(force=True)
-    
     place = Place()
+    place.id = g.container.get_entity_unic_id(Place.__name__)
+    g.container.update_entity_unic_id(Place.__name__)
 
     place_id = place.update_from_dict(place_dict)
     if place_id is None:
@@ -304,13 +313,8 @@ def update_block(block_id):
     :param block_id: block id in quest
     :return: status code
     """
-
     block_dict = request.get_json(force=True)
-    print("*******************")
-    print(block_dict)
-    print("*******************")
     block = g.container.get_block_by_id(block_id)
-    print(block)
     if not block:
         return 'Wrong block id', 400
     
@@ -437,6 +441,7 @@ def remove_block(block_id):
     :return: status code
     """
     rc = g.container.remove_block_by_id(block_id)
+    print(g.container.convert_to_dict())
     return ('', 200) if rc else ('Wrong block id', 400)
 
 @constructor_api.route('/block/<int:block_id>/media/<int:media_id>', methods=['DELETE'])
@@ -518,7 +523,7 @@ def disconnect_answer_and_block(host_id, answer_id):
     if not answer:
         return 'Wrong answer id', 400
     
-    answer.next_block_id = None
+    answer.next_block = None
     return '', 200
     
 @constructor_api.route('/source_block/<int:source_id>', methods=['PUT'])
@@ -526,14 +531,13 @@ def disconnect_blocks(source_id):
     """
     Unlink two blocks that was created before
     :param source_id: block id in quest
-    :param question_id: block id in quest
     :return: status code
     """
     source_block = g.container.get_block_by_id(source_id)
     if not source_block:
         return 'Wrong source id', 400
     
-    source_block.next_block_id = None
+    source_block.next_block = None
     return '', 200
 
 @constructor_api.route('/save/<int:quest_id>', methods=['POST'])

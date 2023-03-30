@@ -126,8 +126,8 @@ window.onload = () => {
 
 
         instance.bind(INTERCEPT_BEFORE_DROP, (params) => {
-            const sourceIdSplit = params.sourceId.match(/([a-z]*_?[a-z]*)([0-9]*)/);
-            console.log(params)
+            const sourceIdSplit = params.connection.sourceId.match(/([a-z]*_?[a-z]*)([0-9]*)/);
+            //console.log(params)
             if (sourceIdSplit[1] != 'answer_option')
                 Quest.connectBlockAndBlock(sourceIdSplit[2], params.connection.target.parentNode.id);
             else {
@@ -138,7 +138,8 @@ window.onload = () => {
         });
 
         instance.bind(INTERCEPT_BEFORE_START_DETACH, (params) => {
-            const sourceIdSplit = params.sourceId.match(/([a-z]*_?[a-z]*)([0-9]*)/);
+            const sourceIdSplit = params.connection.sourceId.match(/([a-z]*_?[a-z]*)([0-9]*)/);
+            //console.log(params);
             if (sourceIdSplit[1] != 'answer_option')
                 Quest.disconnectBlockAndBlock(sourceIdSplit[2]);
             else{

@@ -81,7 +81,7 @@ DROP TABLE IF EXISTS draft;
 CREATE TABLE draft (
     draft_id SERIAL PRIMARY KEY,
     author_id INTEGER NOT NULL REFERENCES author (author_id) ON DELETE CASCADE,
-    container_path TEXT NOT NULL,
+    container_path BYTEA NOT NULL,
     quest_id INTEGER DEFAULT NULL REFERENCES quest (quest_id) ON DELETE CASCADE
 );
 

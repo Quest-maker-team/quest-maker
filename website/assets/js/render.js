@@ -91,6 +91,7 @@ export class Render {
             }
 
             instance.selectEndpoints({element: document.getElementById('body' + block.id)}).deleteAll();
+            instance.selectEndpoints({element: document.getElementById(block.id)}).deleteAll();
             delete instance.getManagedElements()[block.id];
             block.parentElement.removeChild(block);
             const questBlocks = quest.data.blocks;

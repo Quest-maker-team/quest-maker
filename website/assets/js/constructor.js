@@ -140,7 +140,7 @@ window.onload = () => {
         instance.bind(INTERCEPT_BEFORE_START_DETACH, (params) => {
             const sourceIdSplit = params.sourceId.match(/([a-z]*_?[a-z]*)([0-9]*)/);
             if (sourceIdSplit[1] != 'answer_option')
-                Quest.disconnectBlockAndBlock(params.connection.sourceId);
+                Quest.disconnectBlockAndBlock(sourceIdSplit[2]);
             else{
                 const block_id = document.getElementById(params.sourceId).parentElement.parentElement.id;
                 Quest.disconnectAnswerAndBlock(block_id, sourceIdSplit[2], params.connection.target.parentNode.id);

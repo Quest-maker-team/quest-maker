@@ -121,6 +121,19 @@ export class Render {
         return block;
     }
 
+    static renderMessage(quest, message, instance, sourceEndpoint, targetEndpoint) {
+        const block = Render.renderBlockBase(message, '15rem', 'Сообщение', instance, sourceEndpoint, quest);
+        block.style.borderColor = 'var(--bs-purple)';
+
+        instance.manage(block);
+        Render.addDeleteButton(quest, block, instance);
+        Render.createEndpoint(instance, document.getElementById('body' + message.block_id),
+            {anchor: ['Top', 'Right', 'Left', 'Bottom']}, targetEndpoint);
+        Render.createEndpoint(instance, block, {anchor: ['Bottom', 'Right', 'Left', 'Top']}, sourceEndpoint);
+
+        return block;
+    }
+
     static updateAnswersEndpoints(block, instance) {
         const answerTable = document.getElementById('anstab' + block.block_id);
         for (const ans of answerTable.childNodes) {
@@ -230,6 +243,9 @@ export class Render {
             case 'choice_question':
                 block = Render.renderQuestion(quest, questBlock, 'Вопрос с выбором ответа', instance, sourceEndpoint,
                     targetEndpoint);
+                break;
+            case 'message':
+                block = Render.renderMessage(quest, questBlock, instance, sourceEndpoint, targetEndpoint);
                 break;
             default:
                 break;

@@ -159,7 +159,17 @@ window.onload = () => {
             }
         }, 20000);
         Render.render(quest, instance, sourceEndpoint, targetEndpoint, panzoom);
-
+        
+        document.getElementById('addMesBtn').onclick = () => {
+            const block = createNewBlock('message', 'Новое сообщение', quest);
+            Quest.addBlock(block).then((result) =>{
+                console.log(block);
+                Quest.addBlock(block).then((data)=>{
+                    console.log(data);
+                    Render.renderMessage(quest, block, instance, sourceEndpoint, targetEndpoint);
+                });
+            });
+        };
         document.getElementById('addMBtn').onclick = () => {
             const block = createNewBlock('movement', 'Новое перемещение', quest);
             Quest.addBlock(block).then((result) =>{

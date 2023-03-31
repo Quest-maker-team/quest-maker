@@ -24,6 +24,7 @@ After moderation all users can choose quest to play.
 + [Pavlov Ilya](https://github.com/IlyaP01)
 + [Chevykalov Grigory](https://github.com/gchevykalov)
 + [Shvarts Aleksandr](https://github.com/AleksandrShvartz)
++ [Fayzrakhmanov Arthur](https://github.com/Hembos)
 
 ## Rules for git workflow
 `main` branch is a main project branch. Contains current project version.
@@ -33,8 +34,6 @@ One branch is one issue (there can be agreed exceptions). One commit is one logi
 
 After all necessary commits push changes and open pull request.
 Pull request name contains issue number in the end.
-
-After pull request opening connect it with ZenHub issue. Use [ZenHub extension](https://www.zenhub.com/extension) for GitHub in browser.
 
 ### Branch naming rules
 Branch name consist of lowercase letters words separated by `_`.
@@ -46,15 +45,15 @@ Commit description structure:
 ```
 
 ### Pull request rules
-Web service part must be reviewed by Pavlov Ilya, bot part by Vorotnikov Andrey.
-Pavlov Ilya and Vorotnikov Andrey add their part teammates for review.
-Pavlov Ilya and Vorotnikov Andrey add each other as reviewers on document tasks.
+Web service part must be reviewed by Baev Daniil, bot part by Chevykalov Grigory.
+Baev Daniil and Chevykalov Grigory add their part teammates for review.
+Baev Daniil and Chevykalov Grigory add each other as reviewers on document tasks.
 Other reviewers are optional.
 
 All reviewers must approve changes. After that last reviewer or pull request author can merge it.
 
 #### Naming
-In the end of pull request name must be `#<ZenHub isssue number>`.
+In the end of pull request name must be `#<Isssue number>`.
 
 ## Development tools
 + [**Python 3.8**](https://www.python.org) and later for bot and website backend

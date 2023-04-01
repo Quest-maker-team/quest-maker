@@ -28,11 +28,11 @@ After moderation all users can choose quest to play.
 
 ## Rules for git workflow
 `main` branch is a main project branch. Contains current project version.
-To send updates make own branch and make commits to it.
+To send updates make own branch and make commits to it (now from develop brach).
 
 One branch is one issue (there can be agreed exceptions). One commit is one logical action.
 
-After all necessary commits push changes and open pull request.
+After all necessary commits push changes and open pull request (in develop branch).
 Pull request name contains issue number in the end.
 
 ### Branch naming rules
@@ -41,7 +41,7 @@ Branch name consist of lowercase letters words separated by `_`.
 ### Commit rules
 Commit description structure:
 ```
-<Verb infinitive> {grammatical modifiers for subject} <subject> #<ZenHub issue number>
+<Verb infinitive> {grammatical modifiers for subject} <subject> #<Issue number>
 ```
 
 ### Pull request rules

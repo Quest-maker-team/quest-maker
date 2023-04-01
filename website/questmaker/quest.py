@@ -1,9 +1,7 @@
 from typing import Dict
 from datetime import time
 
-from .db import get_quest, get_quest_tags, get_quest_rating, get_blocks, \
-    check_uuid, add_media, set_quest, get_db, set_tags, set_rating, \
-    set_block, add_hint, add_answer, add_place, set_blocks_link, set_answer_and_block_link
+from .db import *
 
 from uuid import uuid4
 
@@ -67,6 +65,12 @@ class Media:
         
         return self.id
     
+    def update_from_db_by_block(self, media_id: int) -> None:
+        _, self.media_path, self.media_type_id, _ = get_block_media(media_id)
+
+    def update_from_db_by_hint(self, media_id: int) -> None:
+        _, self.media_path, self.media_type_id, _ = get_hint_media(media_id)
+    
 class Position:
     def __init__(self, x: float, y: float):
         self.x = x
@@ -129,6 +133,8 @@ class Block:
             for attr, value in block_info.items():
                 if attr == "pos_x":
                     self.position.x = block_info["pos_x"]
+                elif attr == "block_id":
+                    self.db_id = block_info["block_id"]
                 elif attr == "pos_y":
                     self.position.y = block_info["pos_y"]
                 elif attr == "block_type_name":
@@ -178,6 +184,11 @@ class Block:
         if self.next_block is not None and self.next_block() is not None:
             set_blocks_link(self.db_id, blocks[self.next_block().id].db_id)
 
+    def update_link_from_db(self, blocks_db_id: dict):
+        next_block_id = get_link(self.db_id)[0]
+        if next_block_id is not None:
+            self.next_block = weakref.ref(blocks_db_id[next_block_id])
+
     def __getstate__(self):
         d = copy(self.__dict__)
         if self.next_block is not None:
@@ -220,6 +231,14 @@ class Answer:
     def save_links_in_db(self, blocks: dict):
         if self.next_block is not None and self.next_block() is not None:
             set_answer_and_block_link(self.db_id, blocks[self.next_block().id].db_id)
+
+    def update_from_db(self, answer_id: int) -> None:
+        self.db_id, _, self.text, self.points, _ = get_answer_option(answer_id)
+
+    def update_link_from_db(self, blocks_db_id: dict):
+        next_block_id = get_answer_link(self.db_id)[0]
+        if next_block_id is not None:
+            self.next_block = weakref.ref(blocks_db_id[next_block_id])
 
     def __getstate__(self):
         d = copy(self.__dict__)
@@ -275,6 +294,18 @@ class Hint:
         for media in self.media_sources.values():
             media.add_to_db("hint_media", "hint", self.db_id)
 
+    def update_from_db(self, hint_id: int) -> None:
+        _, _, self.hint_text, self.fine = get_block_hint(hint_id)
+
+        medias_info = get_hint_media_id(hint_id)
+        for media_id in medias_info:
+            media = Media()
+            media.id = self.entity_id[Media.__name__]
+            self.entity_id[Media.__name__] += 1
+            media.update_from_db_by_hint(media_id)
+            self.add_media(media)
+
+
 class Place:
     def __init__(self) -> None:
         self.id = None
@@ -305,6 +336,9 @@ class Place:
     
     def add_to_db(self, block_id: int):
         add_place(self.latitude, self.longitude, self.radius, self.time_open, self.time_close, block_id)
+
+    def update_from_db(self, place_id: int) -> None:
+        _, _, self.latitude, self.longitude, self.radius, self.time_open, self.time_close = get_block_place(place_id)
 
 class Information(Block):
     def __init__(self):
@@ -369,12 +403,16 @@ class Question(BlockWithHint):
     
     def save_to_db(self, quest_id: int):
         super().save_to_db(quest_id)
-        for answer in self.answers.items():
+        for answer in self.answers.values():
             answer.add_to_db(self.db_id)
 
     def save_links_in_db(self, blocks: dict):
-        for answer in self.answers.items():
+        for answer in self.answers.values():
             answer.save_links_in_db(blocks)
+
+    def update_link_from_db(self, blocks_db_id: dict):
+        for answer in self.answers.values():
+            answer.update_link_from_db(blocks_db_id)
 
 class Movement(BlockWithHint):
     def __init__(self):
@@ -439,19 +477,62 @@ class Quest:
         self.rating = get_quest_rating(id)
 
         blocks_info = get_blocks(id)
+        blocks_db_id = {}
         for block_info in blocks_info:
             block = self.__create_block__(block_info)
-            self.blocks.update({block_info["block_id"]: block})
+            self.blocks.update({block.id: block})
+            blocks_db_id[block_info["block_id"]] = block
+
+        for block in self.blocks.values():
+            block.update_link_from_db(blocks_db_id)
 
         return True
 
-    @staticmethod
-    def __create_block__(block_info: dict):
+    def __create_block__(self, block_info: dict) -> Block:
         block = None
-        block_type = block_info["block_type_name"]
+        block_type = Block.Type.get_type_by_name(block_info["block_type_name"])
 
-        if block_type == "start_block":
-            block = Information(block_info["block_id"], )
+        if block_type in [Block.Type.START, Block.Type.END, Block.Type.MESSAGE]:
+            block = Information()
+        elif block_type in [Block.Type.CHOICE, Block.Type.OPEN]:
+            block = Question()
+            answers_info = get_block_answer_option_id(block_info["block_id"])
+            for answer_id in answers_info:
+                answer = Answer()
+                answer.id = self.entity_id[Answer.__name__]
+                self.entity_id[Answer.__name__] += 1
+                answer.update_from_db(answer_id)
+                block.add_answer(answer)
+
+        elif block_type == Block.Type.MOVEMENT:
+            block = Movement()
+            place_id = get_block_place_id(block_info["block_id"])
+            print(block_info["block_id"])
+            place = Place()
+            place.id = self.entity_id[Place.__name__]
+            self.entity_id[Place.__name__] += 1
+            place.update_from_db(place_id)
+            block.add_place(place)
+
+        medias_info = get_block_media_id(block_info["block_id"])
+        for media_id in medias_info:
+            media = Media()
+            media.id = self.entity_id[Media.__name__]
+            self.entity_id[Media.__name__] += 1
+            media.update_from_db_by_block(media_id)
+            block.add_media(media)
+
+        hints_info = get_block_hint_id(block_info["block_id"])
+        for hint_id in hints_info:
+            hint = Hint()
+            hint.id = self.entity_id[Hint.__name__]
+            self.entity_id[Hint.__name__] += 1
+            hint.update_from_db(hint_id)
+            block.add_hint(hint)
+
+        block.id = self.entity_id[Block.__name__]
+        self.entity_id[Block.__name__] += 1
+        block.update_from_dict(block_info)
 
         return block
 

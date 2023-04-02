@@ -364,7 +364,6 @@ def get_quests_from_catalog(title, description, limit, offset, sort_key, order, 
     """
     Select quests for catalog
     """
-    print(title, description)
     query = 'SELECT * FROM quests_catalog '
     params = []
     reg_title = f'%{title}%'
@@ -372,10 +371,10 @@ def get_quests_from_catalog(title, description, limit, offset, sort_key, order, 
     if tags:
         tags_str = ', '.join("'" + tag + "'" for tag in tags)
         query += 'JOIN (SELECT quest_id, COUNT(tag_id) AS tags_matched FROM quest ' \
-                 'JOIN quest_tags USING (quest_id) JOIN tag USING (tag_id) ' \
+                 'JOIN quest_tag USING (quest_id) JOIN tag USING (tag_id) ' \
                  f'WHERE tag_name IN ({tags_str}) ' \
                  'GROUP BY quest_id) AS matched USING (quest_id)' \
-                 'WHERE tags_matched >= %s AND title LIKE %s  AND description LIKE %s '
+                 'WHERE tags_matched >= %s AND title LIKE %s  AND (description LIKE %s OR description IS NULL)'
         params.append(len(tags))
     else:
         query += 'WHERE title LIKE %s  AND (description LIKE %s OR description IS NULL)'

@@ -364,6 +364,7 @@ def get_quests_from_catalog(title, description, limit, offset, sort_key, order, 
     """
     Select quests for catalog
     """
+    print(title, description)
     query = 'SELECT * FROM quests_catalog '
     params = []
     reg_title = f'%{title}%'
@@ -377,7 +378,7 @@ def get_quests_from_catalog(title, description, limit, offset, sort_key, order, 
                  'WHERE tags_matched >= %s AND title LIKE %s  AND description LIKE %s '
         params.append(len(tags))
     else:
-        query += 'WHERE title LIKE %s  AND description LIKE %s '
+        query += 'WHERE title LIKE %s  AND (description LIKE %s OR description IS NULL)'
 
     params.append(reg_title)
     params.append(reg_description)
@@ -403,7 +404,7 @@ def get_quests_from_catalog(title, description, limit, offset, sort_key, order, 
 
     total = len(res)
     print(cursor.query)
-
+    print(total, res)
     return total, res[offset:offset + limit]
 
 def get_quests_num():

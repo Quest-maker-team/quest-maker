@@ -427,7 +427,6 @@ class Movement(BlockWithHint):
         block_dict = super().convert_to_dict()
 
         block_dict["place"] = self.place.convert_to_dict() if self.place != None else None
-
         return block_dict
     
     def save_to_db(self, quest_id: int):

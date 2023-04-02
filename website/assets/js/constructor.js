@@ -71,11 +71,12 @@ function createNewBlock(type, text, quest) {
         lastBlock['hints'] = [];
     }
     if (type == 'movement'){
+        lastBlock['hints'] = [];
         lastBlock['place'] = {
-            //'next_question_id': undefined,
+                'next_question_id': undefined,
                 'latitude': 0,
                 'longitude': 0,
-                //'place_id': undefined,
+                'place_id': undefined,
                 'radius': 0,
                 //'time_open': 'Sun, 12 Aug 2001 09:00:00 GMT',
                 //'time_close': 'Sun, 12 Aug 2001 19:00:00 GMT',

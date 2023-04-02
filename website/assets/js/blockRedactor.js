@@ -276,10 +276,12 @@ export class BlockRedactor {
     }
 
     static updatePlace(question, coords, radius) {
-        question.movements[0].place.coords = coords;
-        question.movements[0].place.radius = radius;
-        Quest.updateEntity('place', question.movements[0].place.place_id, question.block_id, JSON.stringify({
-            coords: coords,
+        question.place.longitude = coords[0];
+        question.place.latitude = coords[1];
+        question.place.radius = radius;
+        Quest.updateEntity('place', question.place.place_id, question.block_id, JSON.stringify({
+            longitude: coords[0],
+            latitude: coords[1],
             radius: radius,
         })).catch((result) => console.log(result));
     }
@@ -441,13 +443,13 @@ export class BlockRedactor {
         const questions = quest.data.questions.filter((question) =>
             question.question_id !== newQuestion.question_id && question.type === 'movement');
         for (const question of questions) {
-            if (typeof(question.place.coords) == 'string') {
-                const s = question.place.coords.split(',');
-                const x = s[0].substring(1);
-                const y = s[1].substring(0, s[1].length - 1);
-                question.place.coords = [parseFloat(x), parseFloat(y)];
+            if (typeof(question.place.latitude) == 'string') {
+                question.place.latitude = parseFloat(question.place.latitude)
             }
-            const placeMark = new ymaps.Placemark(question.place.coords, {
+            if (typeof(question.place.longitude) == 'string') {
+                question.place.longitude = parseFloat(question.place.longitude)
+            }
+            const placeMark = new ymaps.Placemark([question.place.longitude, question.place.latitude], {
                 balloonContentHeader: 'Добавленное место квеста',
                 balloonContentBody:
                     question.text,
@@ -456,7 +458,7 @@ export class BlockRedactor {
                 draggable: false,
             });
             const myCircle = new ymaps.Circle([
-                question.place.coords,
+                [question.place.longitude, question.place.latitude],
                 question.place.radius,
             ], {
                 hintContent: 'Радиус достижимости ' + question.place.radius,
@@ -521,19 +523,18 @@ export class BlockRedactor {
 
 
     static createMovementRedactor(form, question, modal, quest) {
-        if (typeof(question.place.coords)=='string' ) {
-            const s = question.place.coords.split(',');
-            const x = s[0].substring(1);
-            const y = s[1].substring(0, s[1].length-1);
-
-            question.place.coords = [parseFloat(x), parseFloat(y)];
+        if (typeof(question.place.latitude) == 'string') {
+            question.place.latitude = parseFloat(question.place.latitude)
+        }
+        if (typeof(question.place.longitude) == 'string') {
+            question.place.longitude = parseFloat(question.place.longitude)
         }
         BlockRedactor.addTextRedactor(form, 'Перемещение:', question.block_text);
         form.insertAdjacentHTML('beforeend',
             '<hr>' +
             '<div class="col-12 mt-0">' +
                 '<button type="button" class="accordion-button collapsed p-0" data-bs-toggle="collapse" ' +
-                        'data-bs-target="#MHints" style="box-shadow: none !important; ' +
+                        'data-bs-target="#QHints" style="box-shadow: none !important; ' +
                         'background-color: white !important; color: black !important" ' +
                         'id="hintsAccordion">' +
                     '<label for="formControlTextarea" class="form-label mt-0">Подсказки:</label>' +
@@ -545,7 +546,7 @@ export class BlockRedactor {
             '<div class="z-depth-1-half map-container" style="height: 500px" id="map"></div>');
         let myMap;
         const radius = {'value': question.place.radius};
-        const coordinates = {'value': question.place.coords};
+        const coordinates = {'value': [question.place.longitude, question.place.latitude]};
         ymaps.ready(() => {
             const geolocation = ymaps.geolocation;
             let myPosition;
@@ -567,7 +568,7 @@ export class BlockRedactor {
                 });
 
                 if (question.place.radius > 0.0) {
-                    myPosition = question.place.coords;
+                    myPosition = [question.place.longitude, question.place.latitude];
                 }
                 myMap = new ymaps.Map('map', {
                     center: myPosition,

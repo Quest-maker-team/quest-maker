@@ -534,7 +534,7 @@ export class BlockRedactor {
             '<hr>' +
             '<div class="col-12 mt-0">' +
                 '<button type="button" class="accordion-button collapsed p-0" data-bs-toggle="collapse" ' +
-                        'data-bs-target="#QHints" style="box-shadow: none !important; ' +
+                        'data-bs-target="#MHints" style="box-shadow: none !important; ' +
                         'background-color: white !important; color: black !important" ' +
                         'id="hintsAccordion">' +
                     '<label for="formControlTextarea" class="form-label mt-0">Подсказки:</label>' +
@@ -580,10 +580,10 @@ export class BlockRedactor {
                 });
                 BlockRedactor.addMethodsToMap(myMap, question, radius, coordinates);
                 BlockRedactor.addOldPlaces(myMap, quest, question);
-                BlockRedactor.loadHints(question, 'MHints');
+
             });
         });
-
+        BlockRedactor.loadHints(question, 'MHints');
         let id = 0;
         document.getElementById('addHint').onclick = () => {
             BlockRedactor.addHintBox('MHints', 'new', id, '', 0);

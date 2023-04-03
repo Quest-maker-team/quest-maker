@@ -71,11 +71,12 @@ function createNewBlock(type, text, quest) {
         lastBlock['hints'] = [];
     }
     if (type == 'movement'){
+        lastBlock['hints'] = [];
         lastBlock['place'] = {
-            //'next_question_id': undefined,
+                'next_question_id': undefined,
                 'latitude': 0,
                 'longitude': 0,
-                //'place_id': undefined,
+                'place_id': undefined,
                 'radius': 0,
                 //'time_open': 'Sun, 12 Aug 2001 09:00:00 GMT',
                 //'time_close': 'Sun, 12 Aug 2001 19:00:00 GMT',
@@ -143,8 +144,8 @@ window.onload = () => {
             if (sourceIdSplit[1] != 'answer_option')
                 Quest.disconnectBlockAndBlock(sourceIdSplit[2]);
             else{
-                const block_id = document.getElementById(params.sourceId).parentElement.parentElement.id;
-                Quest.disconnectAnswerAndBlock(block_id, sourceIdSplit[2], params.connection.target.parentNode.id);
+                const block_id = document.getElementById(params.connection.sourceId).parentElement.parentElement.id;
+                Quest.disconnectAnswerAndBlock(block_id, sourceIdSplit[2]);
             } 
         });
 

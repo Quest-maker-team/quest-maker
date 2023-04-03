@@ -555,6 +555,7 @@ def save_quest(quest_id):
         return 'This is not your quest', 403
     quest = pickle.loads(bytes(draft['container_path']))
     quest.published = True
+    quest.hidden = False
     quest.save_to_db()
     remove_draft(quest_id)
     if 'draft_id' in session:

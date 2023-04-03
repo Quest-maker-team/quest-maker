@@ -275,11 +275,13 @@ export class BlockRedactor {
         }
     }
 
-    static updatePlace(question, coords, radius) {
-        question.movements[0].place.coords = coords;
-        question.movements[0].place.radius = radius;
-        Quest.updateEntity('place', question.movements[0].place.place_id, question.block_id, JSON.stringify({
-            coords: coords,
+    static updatePlace(movement, coords, radius) {
+        movement.place.longitude = coords[0];
+        movement.place.latitude = coords[1];
+        movement.place.radius = radius;
+        Quest.updateEntity('place', movement.place.place_id, movement.block_id, JSON.stringify({
+            longitude: coords[0],
+            latitude: coords[1],
             radius: radius,
         })).catch((result) => console.log(result));
     }
@@ -437,29 +439,29 @@ export class BlockRedactor {
         };
     }
 
-    static addOldPlaces(myMap, quest, newQuestion) {
-        const questions = quest.data.questions.filter((question) =>
-            question.question_id !== newQuestion.question_id && question.type === 'movement');
-        for (const question of questions) {
-            if (typeof(question.place.coords) == 'string') {
-                const s = question.place.coords.split(',');
-                const x = s[0].substring(1);
-                const y = s[1].substring(0, s[1].length - 1);
-                question.place.coords = [parseFloat(x), parseFloat(y)];
+    static addOldPlaces(myMap, quest, newMovement) {
+        const movements = quest.data.blocks.filter((movement) =>
+            movement.block_id !== newMovement.block_id && movement.block_type_name === 'movement');
+        for (const movement of movements) {
+            if (typeof(movement.place.latitude) == 'string') {
+                movement.place.latitude = parseFloat(movement.place.latitude)
             }
-            const placeMark = new ymaps.Placemark(question.place.coords, {
+            if (typeof(movement.place.longitude) == 'string') {
+                movement.place.longitude = parseFloat(movement.place.longitude)
+            }
+            const placeMark = new ymaps.Placemark([movement.place.longitude, movement.place.latitude], {
                 balloonContentHeader: 'Добавленное место квеста',
                 balloonContentBody:
-                    question.text,
+                    movement.text,
             }, {
                 preset: 'islands#blueDotIconWithCaption',
                 draggable: false,
             });
             const myCircle = new ymaps.Circle([
-                question.place.coords,
-                question.place.radius,
+                [movement.place.longitude, movement.place.latitude],
+                movement.place.radius,
             ], {
-                hintContent: 'Радиус достижимости ' + question.place.radius,
+                hintContent: 'Радиус достижимости ' + movement.place.radius,
             }, {
                 draggable: false,
                 fillColor: '#DB709377',
@@ -472,9 +474,9 @@ export class BlockRedactor {
         }
     }
 
-    static addMethodsToMap(myMap, question, radius, coordinates) {
-        if (question.place.radius>0) {
-            radius.value = question.place.radius;
+    static addMethodsToMap(myMap, movement, radius, coordinates) {
+        if (movement.place.radius>0) {
+            radius.value = movement.place.radius;
         } else {
             coordinates.value = myMap.getCenter();
             radius.value = 25;
@@ -520,15 +522,14 @@ export class BlockRedactor {
 
 
 
-    static createMovementRedactor(form, question, modal, quest) {
-        if (typeof(question.place.coords)=='string' ) {
-            const s = question.place.coords.split(',');
-            const x = s[0].substring(1);
-            const y = s[1].substring(0, s[1].length-1);
-
-            question.place.coords = [parseFloat(x), parseFloat(y)];
+    static createMovementRedactor(form, movement, modal, quest) {
+        if (typeof(movement.place.latitude) == 'string') {
+            movement.place.latitude = parseFloat(movement.place.latitude)
         }
-        BlockRedactor.addTextRedactor(form, 'Перемещение:', question.block_text);
+        if (typeof(movement.place.longitude) == 'string') {
+            movement.place.longitude = parseFloat(movement.place.longitude)
+        }
+        BlockRedactor.addTextRedactor(form, 'Перемещение:', movement.block_text);
         form.insertAdjacentHTML('beforeend',
             '<hr>' +
             '<div class="col-12 mt-0">' +
@@ -544,8 +545,8 @@ export class BlockRedactor {
         form.insertAdjacentHTML('beforeend',
             '<div class="z-depth-1-half map-container" style="height: 500px" id="map"></div>');
         let myMap;
-        const radius = {'value': question.place.radius};
-        const coordinates = {'value': question.place.coords};
+        const radius = {'value': movement.place.radius};
+        const coordinates = {'value': [movement.place.longitude, movement.place.latitude]};
         ymaps.ready(() => {
             const geolocation = ymaps.geolocation;
             let myPosition;
@@ -558,7 +559,7 @@ export class BlockRedactor {
                     provider: 'browser',
                     mapStateAutoApply: true,
                 }).then((position) => {
-                    if (position !== undefined && question.place.radius == 0.0) {
+                    if (position !== undefined && movement.place.radius == 0.0) {
                         myPosition = position.geoObjects.position;
                         myMap.setCenter(myPosition);
                         myMap.geoObjects.get(0).setCoordinates(myPosition);
@@ -566,8 +567,8 @@ export class BlockRedactor {
                     }
                 });
 
-                if (question.place.radius > 0.0) {
-                    myPosition = question.place.coords;
+                if (movement.place.radius > 0.0) {
+                    myPosition = [movement.place.longitude, movement.place.latitude];
                 }
                 myMap = new ymaps.Map('map', {
                     center: myPosition,
@@ -577,12 +578,11 @@ export class BlockRedactor {
                     searchControlProvider: 'yandex#search',
 
                 });
-                BlockRedactor.addMethodsToMap(myMap, question, radius, coordinates);
-                BlockRedactor.addOldPlaces(myMap, quest, question);
-                BlockRedactor.loadHints(question, 'MHints');
+                BlockRedactor.addOldPlaces(myMap, quest, movement);
+                BlockRedactor.addMethodsToMap(myMap, movement, radius, coordinates);
             });
         });
-
+        BlockRedactor.loadHints(movement, 'MHints');
         let id = 0;
         document.getElementById('addHint').onclick = () => {
             BlockRedactor.addHintBox('MHints', 'new', id, '', 0);
@@ -594,9 +594,9 @@ export class BlockRedactor {
             if (!(BlockRedactor.validateQuestion() && BlockRedactor.validateHints('hintsAccordion', 'MHints'))) {
                 return false;
             } else {
-                BlockRedactor.updateHints(question);
-                BlockRedactor.updateBlockText(question);
-                BlockRedactor.updatePlace(question, coordinates.value, radius.value);
+                BlockRedactor.updateHints(movement);
+                BlockRedactor.updateBlockText(movement);
+                BlockRedactor.updatePlace(movement, coordinates.value, radius.value);
                 modal.hide();
             }
         };

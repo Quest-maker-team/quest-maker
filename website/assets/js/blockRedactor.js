@@ -127,7 +127,8 @@ export class BlockRedactor {
         let skipPoints = 0;
         let wrongPoints = 0;
 
-        for (const answer of question.answer_options) {
+        for (const answer of question.answers) {
+            console.log(answer);
             if (answer.text === 'skip') {
                 document.getElementById('skip').checked = true;
                 skipActive = true;
@@ -150,18 +151,18 @@ export class BlockRedactor {
         }
     }
 
-    static updateQuestionText(question) {
-        question.text = document.getElementById('formControlTextarea').value;
-        document.getElementById(question.question_id).getElementsByClassName('card-text')[0].textContent =
-            question.text;
-        Quest.updateEntity('question', question.question_id, JSON.stringify({
-            text: question.text,
+    static updateBlockText(questBlock) {
+        questBlock.block_text = document.getElementById('formControlTextarea').value;
+        document.getElementById(questBlock.block_id).getElementsByClassName('card-text')[0].textContent =
+            questBlock.block_text;
+        Quest.updateBlock(questBlock.block_id, JSON.stringify({
+            block_text: questBlock.block_text,
         }));
     }
 
     static updateAnswers(question, instance, sourceEndpoint) {
         const idToDel = [];
-        for (const answer of question.answer_options) {
+        for (const answer of question.answers) {
             if (answer.text !== '' && answer.text !== 'skip') {
                 const elem = document.getElementById('answer_old_' + answer.answer_option_id);
                 if (elem === null) {
@@ -170,7 +171,7 @@ export class BlockRedactor {
                     answer.text = document.getElementById('answerText_old_' + answer.answer_option_id).value;
                     answer.points = document.getElementById('answerPoints_old_' + answer.answer_option_id).value;
                     document.getElementById('answer_option' + answer.answer_option_id).innerText = answer.text;
-                    Quest.updateEntity('answer_option', answer.answer_option_id, JSON.stringify({
+                    Quest.updateEntity('answer_option', answer.answer_option_id, question.block_id, JSON.stringify({
                         points: parseFloat(answer.points),
                         text: answer.text,
                     }));
@@ -181,15 +182,15 @@ export class BlockRedactor {
             const ans = document.getElementById('answer_option' + id);
             Render.deleteElemEndpoint(ans, instance);
             ans.remove();
-            Quest.deleteEntity('answer_option', id);
-            question.answer_options.splice(question.answer_options.findIndex((answer) =>
+            Quest.deleteBlockEntity('answer_option', question.block_id, id);
+            question.answers.splice(question.answers.findIndex((answer) =>
                 answer.answer_option_id == id), 1);
         }
 
         const newAnswers = document.getElementsByName('answerText_new');
         for (const newAnswer of newAnswers) {
             const id = newAnswer.id.split('_')[2];
-            Quest.addEntity('answer_option', JSON.stringify({
+            Quest.addBlockEntity('answer_option', question.block_id, JSON.stringify({
                 points: parseFloat(document.getElementById('answerPoints_new_' + id).value),
                 text: newAnswer.value,
             })).then((response) => {
@@ -198,30 +199,30 @@ export class BlockRedactor {
                     points: parseFloat(document.getElementById('answerPoints_new_' + id).value),
                     text: newAnswer.value,
                 };
-                question.answer_options.push(answer);
+                question.answers.push(answer);
                 Render.renderAnswer(answer, question, instance, sourceEndpoint);
-                Quest.connect('question', 'answer_option', question.question_id, answer.answer_option_id);
             });
         }
     }
 
     static updateSpecial(checkboxId, id, question, instance, text, sourceEndpoint) {
-        const specialId = question.answer_options.findIndex((answer) => answer.text === text);
+        console.log(question);
+        const specialId = question.answers.findIndex((answer) => answer.text === text);
         if (specialId !== -1 && document.getElementById(checkboxId).checked) {
-            const answer = question.answer_options[specialId];
+            const answer = question.answers[specialId];
             answer.points = document.getElementById('answerPoints' + id).value;
-            Quest.updateEntity('answer_option', answer.answer_option_id, JSON.stringify({
+            Quest.updateEntity('answer_option', answer.answer_option_id, question.block_id, JSON.stringify({
                 points: parseFloat(answer.points),
                 text: answer.text,
             })).then((response) => console.log(response));
         } else if (specialId !== -1 && !document.getElementById(checkboxId).checked) {
-            const ans = document.getElementById('answer_option' + question.answer_options[specialId].answer_option_id);
+            const ans = document.getElementById('answer_option' + question.answers[specialId].answer_option_id);
             Render.deleteElemEndpoint(ans, instance);
             ans.remove();
-            Quest.deleteEntity('answer_option', question.answer_options[specialId].answer_option_id);
-            question.answer_options.splice(specialId, 1);
+            Quest.deleteBlockEntity('answer_option', question.block_id, question.answers[specialId].answer_option_id);
+            question.answers.splice(specialId, 1);
         } else if (specialId === -1 && document.getElementById(checkboxId).checked) {
-            Quest.addEntity('answer_option', JSON.stringify({
+            Quest.addBlockEntity('answer_option', question.block_id, JSON.stringify({
                 points: parseFloat(document.getElementById('answerPoints' + id).value),
                 text: text,
             })).then((response) => {
@@ -230,9 +231,8 @@ export class BlockRedactor {
                     points: parseFloat(document.getElementById('answerPoints' + id).value),
                     text: text,
                 };
-                question.answer_options.push(answer);
+                question.answers.push(answer);
                 Render.renderAnswer(answer, question, instance, sourceEndpoint, true);
-                Quest.connect('question', 'answer_option', question.question_id, answer.answer_option_id);
             });
         }
     }
@@ -246,14 +246,14 @@ export class BlockRedactor {
             } else {
                 hint.hint_text = document.getElementById('hintText_old_' + hint.hint_id).value;
                 hint.fine = document.getElementById('hintFine_old_' + hint.hint_id).value;
-                Quest.updateEntity('hint', hint.hint_id, JSON.stringify({
+                Quest.updateEntity('hint', hint.hint_id, question.block_id, JSON.stringify({
                     fine: parseFloat(hint.fine),
-                    text: hint.hint_text,
+                    hint_text: hint.hint_text,
                 }));
             }
         }
         for (const id of idToDel) {
-            Quest.deleteEntity('hint', id);
+            Quest.deleteBlockEntity('hint', question.block_id, id);
             question.hints.splice(question.hints.findIndex((hint) =>
                 hint.hint_id == id), 1);
         }
@@ -261,9 +261,9 @@ export class BlockRedactor {
         const newHints = document.getElementsByName('hintText_new');
         for (const newHint of newHints) {
             const id = newHint.id.split('_')[2];
-            Quest.addEntity('hint', JSON.stringify({
+            Quest.addBlockEntity('hint', question.block_id, JSON.stringify({
                 fine: parseFloat(document.getElementById('hintFine_new_' + id).value),
-                text: newHint.value,
+                hint_text: newHint.value,
             })).then((response) => {
                 const hint = {
                     hint_id: JSON.parse(response).hint_id,
@@ -271,16 +271,17 @@ export class BlockRedactor {
                     hint_text: newHint.value,
                 };
                 question.hints.push(hint);
-                Quest.connect('question', 'hint', question.question_id, hint.hint_id);
             });
         }
     }
 
-    static updatePlace(question, coords, radius) {
-        question.movements[0].place.coords = coords;
-        question.movements[0].place.radius = radius;
-        Quest.updateEntity('place', question.movements[0].place.place_id, JSON.stringify({
-            coords: coords,
+    static updatePlace(movement, coords, radius) {
+        movement.place.longitude = coords[0];
+        movement.place.latitude = coords[1];
+        movement.place.radius = radius;
+        Quest.updateEntity('place', movement.place.place_id, movement.block_id, JSON.stringify({
+            longitude: coords[0],
+            latitude: coords[1],
             radius: radius,
         })).catch((result) => console.log(result));
     }
@@ -349,11 +350,11 @@ export class BlockRedactor {
         BlockRedactor.updateSpecial('wrong', 'wrongbx', question, instance, '', sourceEndpoint);
         BlockRedactor.updateAnswers(question, instance, sourceEndpoint);
         BlockRedactor.updateHints(question);
-        BlockRedactor.updateQuestionText(question);
+        BlockRedactor.updateBlockText(question);
     }
 
     static createQuestionRedactor(form, question, instance, sourceEndpoint, modal) {
-        BlockRedactor.addTextRedactor(form, 'Вопрос:', question.text);
+        BlockRedactor.addTextRedactor(form, 'Вопрос:', question.block_text);
         form.insertAdjacentHTML('beforeend',
             '<hr>' +
             '<div class="col-12 mt-0">' +
@@ -438,29 +439,29 @@ export class BlockRedactor {
         };
     }
 
-    static addOldPlaces(myMap, quest, newQuestion) {
-        const questions = quest.data.questions.filter((question) =>
-            question.question_id !== newQuestion.question_id && question.type === 'movement');
-        for (const question of questions) {
-            if (typeof(question.movements[0].place.coords) == 'string') {
-                const s = question.movements[0].place.coords.split(',');
-                const x = s[0].substring(1);
-                const y = s[1].substring(0, s[1].length - 1);
-                question.movements[0].place.coords = [parseFloat(x), parseFloat(y)];
+    static addOldPlaces(myMap, quest, newMovement) {
+        const movements = quest.data.blocks.filter((movement) =>
+            movement.block_id !== newMovement.block_id && movement.block_type_name === 'movement');
+        for (const movement of movements) {
+            if (typeof(movement.place.latitude) == 'string') {
+                movement.place.latitude = parseFloat(movement.place.latitude)
             }
-            const placeMark = new ymaps.Placemark(question.movements[0].place.coords, {
+            if (typeof(movement.place.longitude) == 'string') {
+                movement.place.longitude = parseFloat(movement.place.longitude)
+            }
+            const placeMark = new ymaps.Placemark([movement.place.longitude, movement.place.latitude], {
                 balloonContentHeader: 'Добавленное место квеста',
                 balloonContentBody:
-                    question.text,
+                    movement.text,
             }, {
                 preset: 'islands#blueDotIconWithCaption',
                 draggable: false,
             });
             const myCircle = new ymaps.Circle([
-                question.movements[0].place.coords,
-                question.movements[0].place.radius,
+                [movement.place.longitude, movement.place.latitude],
+                movement.place.radius,
             ], {
-                hintContent: 'Радиус достижимости ' + question.movements[0].place.radius,
+                hintContent: 'Радиус достижимости ' + movement.place.radius,
             }, {
                 draggable: false,
                 fillColor: '#DB709377',
@@ -473,9 +474,9 @@ export class BlockRedactor {
         }
     }
 
-    static addMethodsToMap(myMap, question, radius, coordinates) {
-        if (question.movements[0].place.radius>0) {
-            radius.value = question.movements[0].place.radius;
+    static addMethodsToMap(myMap, movement, radius, coordinates) {
+        if (movement.place.radius>0) {
+            radius.value = movement.place.radius;
         } else {
             coordinates.value = myMap.getCenter();
             radius.value = 25;
@@ -519,15 +520,16 @@ export class BlockRedactor {
         myMap.geoObjects.get(myMap.geoObjects.indexOf(myCircle)).balloon.open();
     }
 
-    static createMovementRedactor(form, question, modal, quest) {
-        if (typeof(question.movements[0].place.coords)=='string' ) {
-            const s = question.movements[0].place.coords.split(',');
-            const x = s[0].substring(1);
-            const y = s[1].substring(0, s[1].length-1);
 
-            question.movements[0].place.coords = [parseFloat(x), parseFloat(y)];
+
+    static createMovementRedactor(form, movement, modal, quest) {
+        if (typeof(movement.place.latitude) == 'string') {
+            movement.place.latitude = parseFloat(movement.place.latitude)
         }
-        BlockRedactor.addTextRedactor(form, 'Перемещение:', question.text);
+        if (typeof(movement.place.longitude) == 'string') {
+            movement.place.longitude = parseFloat(movement.place.longitude)
+        }
+        BlockRedactor.addTextRedactor(form, 'Перемещение:', movement.block_text);
         form.insertAdjacentHTML('beforeend',
             '<hr>' +
             '<div class="col-12 mt-0">' +
@@ -543,8 +545,8 @@ export class BlockRedactor {
         form.insertAdjacentHTML('beforeend',
             '<div class="z-depth-1-half map-container" style="height: 500px" id="map"></div>');
         let myMap;
-        const radius = {'value': question.movements[0].place.radius};
-        const coordinates = {'value': question.movements[0].place.coords};
+        const radius = {'value': movement.place.radius};
+        const coordinates = {'value': [movement.place.longitude, movement.place.latitude]};
         ymaps.ready(() => {
             const geolocation = ymaps.geolocation;
             let myPosition;
@@ -557,7 +559,7 @@ export class BlockRedactor {
                     provider: 'browser',
                     mapStateAutoApply: true,
                 }).then((position) => {
-                    if (position !== undefined && question.movements[0].place.radius == 0.0) {
+                    if (position !== undefined && movement.place.radius == 0.0) {
                         myPosition = position.geoObjects.position;
                         myMap.setCenter(myPosition);
                         myMap.geoObjects.get(0).setCoordinates(myPosition);
@@ -565,8 +567,8 @@ export class BlockRedactor {
                     }
                 });
 
-                if (question.movements[0].place.radius > 0.0) {
-                    myPosition = question.movements[0].place.coords;
+                if (movement.place.radius > 0.0) {
+                    myPosition = [movement.place.longitude, movement.place.latitude];
                 }
                 myMap = new ymaps.Map('map', {
                     center: myPosition,
@@ -576,12 +578,11 @@ export class BlockRedactor {
                     searchControlProvider: 'yandex#search',
 
                 });
-                BlockRedactor.addMethodsToMap(myMap, question, radius, coordinates);
-                BlockRedactor.addOldPlaces(myMap, quest, question);
-                BlockRedactor.loadHints(question, 'MHints');
+                BlockRedactor.addOldPlaces(myMap, quest, movement);
+                BlockRedactor.addMethodsToMap(myMap, movement, radius, coordinates);
             });
         });
-
+        BlockRedactor.loadHints(movement, 'MHints');
         let id = 0;
         document.getElementById('addHint').onclick = () => {
             BlockRedactor.addHintBox('MHints', 'new', id, '', 0);
@@ -593,31 +594,31 @@ export class BlockRedactor {
             if (!(BlockRedactor.validateQuestion() && BlockRedactor.validateHints('hintsAccordion', 'MHints'))) {
                 return false;
             } else {
-                BlockRedactor.updateHints(question);
-                BlockRedactor.updateQuestionText(question);
-                BlockRedactor.updatePlace(question, coordinates.value, radius.value);
+                BlockRedactor.updateHints(movement);
+                BlockRedactor.updateBlockText(movement);
+                BlockRedactor.updatePlace(movement, coordinates.value, radius.value);
                 modal.hide();
             }
         };
     }
 
-    static createStartRedactor(form, question, modal) {
-        this.addTextRedactor(form, 'Приветственное сообщение:', question.text);
+    static createStartRedactor(form, questBlock, modal) {
+        this.addTextRedactor(form, 'Приветственное сообщение:', questBlock.block_text);
         document.getElementById('update').onclick = () => {
-            BlockRedactor.updateQuestionText(question);
+            BlockRedactor.updateBlockText(questBlock);
             modal.hide();
         };
     }
 
-    static createFinishRedactor(form, question, modal) {
-        this.addTextRedactor(form, 'Прощальное сообщение:', question.text);
+    static createFinishRedactor(form, questBlock, modal) {
+        this.addTextRedactor(form, 'Прощальное сообщение:', questBlock.block_text);
         document.getElementById('update').onclick = () => {
-            BlockRedactor.updateQuestionText(question);
+            BlockRedactor.updateBlockText(questBlock);
             modal.hide();
         };
     }
 
-    static showRedactor(question, instance, sourceEndpoint, quest) {
+    static showRedactor(questBlock, instance, sourceEndpoint, quest) {
         const modal = new bootstrap.Modal(document.getElementById('redactor'));
         const form = document.getElementById('redactorForm');
         form.innerHTML = '';
@@ -625,8 +626,8 @@ export class BlockRedactor {
         if (buttons !== null) {
             buttons.remove();
         }
-        switch (question.type) {
-        case 'start':
+        switch (questBlock.block_type_name) {
+        case 'start_block':
             document.getElementById('content').insertAdjacentHTML('beforeend',
                 '<div class="modal-footer" id="modalButtons">' +
                     '<button type="button" class="btn btn-secondary" style="margin-right: 0.25em" ' +
@@ -634,9 +635,9 @@ export class BlockRedactor {
                     '<button type="button" class="btn btn-primary" id="update">Сохранить</button>' +
                 '</div>'
             );
-            BlockRedactor.createStartRedactor(form, question, modal);
+            BlockRedactor.createStartRedactor(form, questBlock, modal);
             break;
-        case 'end':
+        case 'end_block':
             document.getElementById('content').insertAdjacentHTML('beforeend',
                 '<div class="modal-footer" id="modalButtons">' +
                     '<button type="button" class="btn btn-secondary" style="margin-right: 0.25em" ' +
@@ -644,10 +645,10 @@ export class BlockRedactor {
                     '<button type="button" class="btn btn-primary" id="update">Сохранить</button>' +
                 '</div>'
             );
-            BlockRedactor.createFinishRedactor(form, question, modal);
+            BlockRedactor.createFinishRedactor(form, questBlock, modal);
             break;
-        case 'open':
-        case 'choice':
+        case 'open_question':
+        case 'choice_question':
             document.getElementById('content').insertAdjacentHTML('beforeend',
                 '<div class="modal-footer justify-content-between" id="modalButtons">' +
                     '<div>' +
@@ -665,7 +666,7 @@ export class BlockRedactor {
                     '<div>' +
                 '</div>'
             );
-            BlockRedactor.createQuestionRedactor(form, question, instance, sourceEndpoint, modal);
+            BlockRedactor.createQuestionRedactor(form, questBlock, instance, sourceEndpoint, modal);
             break;
         case 'movement':
             document.getElementById('content').insertAdjacentHTML('beforeend',
@@ -680,7 +681,7 @@ export class BlockRedactor {
                     '<div>' +
                 '</div>'
             );
-            BlockRedactor.createMovementRedactor(form, question, modal, quest);
+            BlockRedactor.createMovementRedactor(form, questBlock, modal, quest);
             break;
         default:
             break;
@@ -766,7 +767,7 @@ export class QuestRedactor {
                 passwordInput.className = 'form-control is-invalid';
                 return;
             }
-            Quest.updateEntity('quest', quest.data.quest_id, JSON.stringify({
+            Quest.updateQuest(JSON.stringify({
                 title: document.getElementById('questTitle').value,
                 description: document.getElementById('questDescription').value,
                 tags: tags,

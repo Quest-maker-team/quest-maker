@@ -8,6 +8,11 @@ export class Quest {
     }
 
     static makeRequest(method, url, data) {
+        console.log("/////////////////")
+        console.log(method)
+        console.log(url)
+        console.log(data)
+        console.log("/////////////////")
         return new Promise(function(resolve, reject) {
             const xmlhttp = new XMLHttpRequest();
             xmlhttp.open(method, url);
@@ -23,7 +28,7 @@ export class Quest {
                     }
                 }
             };
-
+            console.log(data);
             if (data !== undefined) {
                 xmlhttp.send(data);
             } else {
@@ -52,19 +57,49 @@ export class Quest {
         return Quest.makeRequest('POST', url, data);
     }
 
-    static updateEntity(type, id, data) {
-        const url = 'api/constructor/' + type + '/' + id;
+    static addBlockEntity(type, block_id, data) {
+        const url = 'api/constructor/' + type + '/block/' + block_id;
+        return Quest.makeRequest('POST', url, data);
+    }
+
+    static updateBlock(id, data){
+        const url = 'api/constructor/block/' + id;
         return Quest.makeRequest('PUT', url, data);
     }
 
-    static connect(type1, type2, id1, id2) {
-        const url = 'api/constructor/' + type1 + '/' + id1 + '/' + type2 + '/' + id2;
+    static updateQuest(data){
+        const url = 'api/constructor/quest';
+        return Quest.makeRequest('PUT', url, data);
+    }
+
+    static updateEntity(type, id, block_id, data) {
+        const url = 'api/constructor/block/' + block_id + '/' + type + '/' + id;
+        return Quest.makeRequest('PUT', url, data);
+    }
+
+    static connectBlockAndBlock(sourceId, targetId) {
+        const url = 'api/constructor/source_block/' + sourceId + '/target_block/' + targetId;
         return Quest.makeRequest('PUT', url);
     }
 
-    static disconnect(type1, type2, id1) {
-        const url = 'api/constructor/' + type1 + '/' + id1 + '/' + type2;
-        return Quest.makeRequest('DELETE', url);
+    static connectAnswerAndBlock(hostId, answerId, blockId) {
+        const url = 'api/constructor/answer_host/' + hostId + '/answer_id/' + answerId + '/block/' + blockId
+        return Quest.makeRequest('PUT', url);
+    }
+
+    static disconnectBlockAndBlock(sourceId) {
+        const url = 'api/constructor/source_block/' + sourceId;
+        return Quest.makeRequest('PUT', url);
+    }
+
+    static disconnectAnswerAndBlock(hostId, answerId) {
+        const url = 'api/constructor/answer_host/' + hostId + '/answer_id/' + answerId
+        return Quest.makeRequest('PUT', url);
+    }
+
+    static deleteBlockEntity(type, block_id, id, data) {
+        const url = 'api/constructor/block/' + block_id + '/' + type + '/' + id;
+        return Quest.makeRequest('DELETE', url, data);
     }
 
     static deleteEntity(type, id) {
@@ -72,41 +107,41 @@ export class Quest {
         return Quest.makeRequest('DELETE', url);
     }
 
-
     static save(id) {
         const url = 'api/constructor/save/' + id;
         return Quest.makeRequest('POST', url);
     }
 
-    static addNewPlace(place, question) {
-        const url = 'api/constructor/place';
-        return Quest.makeRequest('POST', url, place).then((result) => {
+    static addPlace(questBlock) {
+        const url = 'api/constructor/place/movement_block/' + questBlock.block_id;
+        console.log(questBlock.place)
+        return Quest.makeRequest('POST', url, JSON.stringify(questBlock.place)).then((result) => {
             console.log('success add new place '+ result);
             const id = JSON.parse(result).place_id;
-            question.movements[0].place.place_id = id;
+            questBlock.place.place_id = id;
             console.log('id = '+ id);
             return id;
         });
     }
 
-    static addQuestion(question) {
-        return Quest.makeRequest('POST', 'api/constructor/question', JSON.stringify({
-            type: question.type,
-            text: '',
-            pos_x: 0,
-            pos_y: 0,
+    static addBlock(questBlock) {
+        return Quest.makeRequest('POST', 'api/constructor/block', JSON.stringify({
+            block_type_name: questBlock.block_type_name,
+            block_text: questBlock.block_text,
+            pos_x: questBlock.pos_x,
+            pos_y: questBlock.pos_y,
         })).then((result) => {
-            console.log('success add new question '+ result);
-            const id = JSON.parse(result).question_id;
-            question.question_id = id;
+            console.log('success add new block '+ result);
+            const id = JSON.parse(result).block_id;
+            questBlock.block_id = id;
             console.log('id = '+ id);
             return id;
         }, (error) => {
-            console.log('failed add new question');
+            console.log('failed add new block');
         });
     }
 
-    static addMovement(move) {
+    /*static addMovement(move) {
         return Quest.makeRequest('POST', 'api/constructor/movement', JSON.stringify({})).then((result) => {
             console.log('success add new movement ' + result);
             const id = JSON.parse(result).movement_id;
@@ -116,5 +151,5 @@ export class Quest {
         }, (error) => {
             console.log('failed add new movement');
         });
-    }
+    }*/
 }

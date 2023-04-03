@@ -60,7 +60,7 @@ def load_test_db_command():
     with current_app.open_resource('tests/excursion.sql') as f:
         with get_db(), get_db().cursor() as cursor:
             cursor.execute(f.read().decode('utf8'))
-            cursor.execute('SELECT * FROM quests')
+            cursor.execute('SELECT * FROM quest')
             click.echo(cursor.fetchall())
     click.echo('Test database loaded')
 
@@ -231,7 +231,7 @@ def get_blocks(quest_id):
     :return: dictionary with q_type_name instead of q_type_id
     """
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-        cursor.execute('SELECT block_id, block_text, block_type_name, pos_x, pos_y, next_block_id FROM questions '
+        cursor.execute('SELECT block_id, block_text, block_type_name, pos_x, pos_y, next_block_id FROM block '
                        'JOIN block_type USING (block_type_id) '
                        'WHERE quest_id = %s', (quest_id,))
         return cursor.fetchall()
@@ -371,13 +371,13 @@ def get_quests_from_catalog(title, description, limit, offset, sort_key, order, 
     if tags:
         tags_str = ', '.join("'" + tag + "'" for tag in tags)
         query += 'JOIN (SELECT quest_id, COUNT(tag_id) AS tags_matched FROM quest ' \
-                 'JOIN quest_tags USING (quest_id) JOIN tag USING (tag_id) ' \
+                 'JOIN quest_tag USING (quest_id) JOIN tag USING (tag_id) ' \
                  f'WHERE tag_name IN ({tags_str}) ' \
                  'GROUP BY quest_id) AS matched USING (quest_id)' \
-                 'WHERE tags_matched >= %s AND title LIKE %s  AND description LIKE %s '
+                 'WHERE tags_matched >= %s AND title LIKE %s  AND (description LIKE %s OR description IS NULL)'
         params.append(len(tags))
     else:
-        query += 'WHERE title LIKE %s  AND description LIKE %s '
+        query += 'WHERE title LIKE %s  AND (description LIKE %s OR description IS NULL)'
 
     params.append(reg_title)
     params.append(reg_description)
@@ -403,7 +403,7 @@ def get_quests_from_catalog(title, description, limit, offset, sort_key, order, 
 
     total = len(res)
     print(cursor.query)
-
+    print(total, res)
     return total, res[offset:offset + limit]
 
 def get_quests_num():
@@ -416,7 +416,7 @@ def check_uuid(uuid):
     Return True if uuid is free else False
     """
     with get_db().cursor() as cursor:
-        cursor.execute('SELECT quest_id FROM quests WHERE keyword = %s', (uuid,))
+        cursor.execute('SELECT quest_id FROM quest WHERE keyword = %s', (uuid,))
         return not cursor.fetchone()
     
 def add_media(table_name: str, 
@@ -449,7 +449,7 @@ def add_place(latitude: float,
               block_id: int) -> bool:
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute(f'INSERT INTO place (block_id, latitude, longitude, radius, time_open, time_close) '
-                       'VALUES (%s, %s, %s)',
+                       'VALUES (%s, %s, %s, %s, %s, %s)',
                        (block_id, latitude, longitude, radius, time_open, time_close))
         
     return True
@@ -526,7 +526,7 @@ def set_block(block, quest_id):
     with get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('INSERT INTO block ( quest_id, block_text, block_type_id, pos_x, pos_y) '
                        'VALUES ( %s, %s, %s, %s, %s) RETURNING block_id',
-                       (quest_id, block.text, block.block_type_id, block.position.x, block.position.y))
+                       (quest_id, block.block_text, block.block_type_id, block.position.x, block.position.y))
         block.db_id = cursor.fetchone()['block_id']
     return True
 
@@ -537,3 +537,99 @@ def set_blocks_link(source_id: int, target_id: int):
 def set_answer_and_block_link(answer_id: int, block_id: int):
     with get_db(), get_db().cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         cursor.execute('UPDATE answer_option SET next_block_id = %s WHERE option_id = %s', (block_id, answer_id))
+
+def get_block_media_id(block_id: int):
+    """
+    Return all media by block id
+    """
+    with get_db().cursor() as cursor:
+        cursor.execute("SELECT media_id FROM block_media WHERE block_id = %s", (block_id, ))
+        return cursor.fetchall()
+    
+def get_block_media(block_id: int):
+    """
+    Return all media by block id
+    """
+    with get_db().cursor() as cursor:
+        cursor.execute("SELECT * FROM block_media WHERE block_id = %s", (block_id, ))
+        return cursor.fetchone()
+    
+def get_block_answer_option_id(block_id: int):
+    """
+    Return all answers by block id
+    """
+    with get_db().cursor() as cursor:
+        cursor.execute("SELECT option_id FROM answer_option WHERE block_id = %s", (block_id, ))
+        return cursor.fetchall()
+    
+def get_answer_option(answer_id: int):
+    """
+    Return all answers by block id
+    """
+    with get_db().cursor() as cursor:
+        cursor.execute("SELECT * FROM answer_option WHERE option_id = %s", (answer_id, ))
+        return cursor.fetchone()
+    
+def get_block_place_id(block_id: int):
+    """
+    Return place id by block id
+    """
+    with get_db().cursor() as cursor:
+        cursor.execute("SELECT place_id FROM place WHERE block_id = %s", (block_id, ))
+        return cursor.fetchone()
+    
+def get_block_place(place_id: int):
+    """
+    Return place by place id
+    """
+    with get_db().cursor() as cursor:
+        cursor.execute("SELECT * FROM place WHERE place_id = %s", (place_id, ))
+        return cursor.fetchone()
+    
+def get_block_hint_id(block_id: int):
+    """
+    Return hint id by block id
+    """
+    with get_db().cursor() as cursor:
+        cursor.execute("SELECT hint_id FROM hint WHERE block_id = %s", (block_id, ))
+        return cursor.fetchall()
+    
+def get_block_hint(hint_id: int):
+    """
+    Return hint by hint id
+    """
+    with get_db().cursor() as cursor:
+        cursor.execute("SELECT * FROM hint WHERE hint_id = %s", (hint_id, ))
+        return cursor.fetchone()
+    
+def get_hint_media_id(hint_id: int):
+    """
+    Return all media by hint id
+    """
+    with get_db().cursor() as cursor:
+        cursor.execute("SELECT media_id FROM hint_media WHERE hint_id = %s", (hint_id, ))
+        return cursor.fetchall()
+    
+def get_hint_media(hint_id: int):
+    """
+    Return media by hint id
+    """
+    with get_db().cursor() as cursor:
+        cursor.execute("SELECT * FROM hint_media WHERE hint_id = %s", (hint_id, ))
+        return cursor.fetchone()
+    
+def get_link(block_id: int):
+    """
+    Return next block by source block id
+    """
+    with get_db().cursor() as cursor:
+        cursor.execute("SELECT next_block_id FROM block WHERE block_id = %s", (block_id, ))
+        return cursor.fetchone()
+    
+def get_answer_link(answer_id: int):
+    """
+    Return next block by source answer id
+    """
+    with get_db().cursor() as cursor:
+        cursor.execute("SELECT next_block_id FROM answer_option WHERE option_id = %s", (answer_id, ))
+        return cursor.fetchone()

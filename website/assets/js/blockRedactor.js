@@ -618,6 +618,14 @@ export class BlockRedactor {
         };
     }
 
+    static createMessageRedactor(form, questBlock, modal) {
+        this.addTextRedactor(form, 'Сообщение:', questBlock.block_text);
+        document.getElementById('update').onclick = () => {
+            BlockRedactor.updateBlockText(questBlock);
+            modal.hide();
+        };
+    }
+
     static showRedactor(questBlock, instance, sourceEndpoint, quest) {
         const modal = new bootstrap.Modal(document.getElementById('redactor'));
         const form = document.getElementById('redactorForm');
@@ -683,6 +691,15 @@ export class BlockRedactor {
             );
             BlockRedactor.createMovementRedactor(form, questBlock, modal, quest);
             break;
+        case 'message':
+            document.getElementById('content').insertAdjacentHTML('beforeend',
+                '<div class="modal-footer" id="modalButtons">' +
+                    '<button type="button" class="btn btn-secondary" style="margin-right: 0.25em" ' +
+                        'data-bs-dismiss="modal" id="close">Закрыть</button>' +
+                    '<button type="button" class="btn btn-primary" id="update">Сохранить</button>' +
+                '</div>'
+            );
+            BlockRedactor.createMessageRedactor(form, questBlock, modal, quest);
         default:
             break;
         }

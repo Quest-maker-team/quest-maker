@@ -241,8 +241,8 @@ def get_quest_info(quest_id):
     # here name can be None when, for example, the time of the quest activity came out
     if first_point_info is None or name is None:
         return (None, None, '')
-
-    first_point = QuestPoint(first_point_info[0], 'start_block', first_point_info[2], first_point_info[1])
+    
+    first_point = QuestPoint(first_point_info[0], 'start_block', first_point_info[1], first_point_info[2])
 
     first_point.load_next_points()
     first_point.load_files()
@@ -333,6 +333,7 @@ class Quest:
             return (True, "Ошибка в структуре квеста.", [], 0)
         
         if point.type == 'end_block':
+            self.cur_point = point
             return (True, point.msg, point.files, 0)
         elif point.next_points is None:
             return (True, "Ошибка в структуре квеста.", [], 0)
@@ -420,6 +421,8 @@ async def send_files(message: types.Message, caption, files, reply_markup):
     if len(files) == 0:
         if caption != '':
             await message.answer(caption, reply_markup=reply_markup)
+        else:
+            await message.answer('Автор посчитал, что пустое сообщение Вам что-нибудь скажет', reply_markup=reply_markup)
     else:
         try:
             await types.ChatActions.upload_document()
@@ -491,7 +494,7 @@ async def name_quest(message: types.Message, state: FSMContext):
                 'чтобы получить подсказку - /tip, '
                 'чтобы попытаться пропустить точку - /skip.')
 
-            keyboard = ReplyKeyboardRemove()
+            keyboard = create_keyboard(['Дальше'])
             await send_files(message, data['quest'].cur_point.msg, data['quest'].cur_point.files, keyboard)
     else:
         await message.reply('Квест с идентификатором "' + message.text + '" не найден',
@@ -540,7 +543,7 @@ async def password_quest(message: types.Message, state: FSMContext):
                 'чтобы получить подсказку - /tip, '
                 'чтобы попытаться пропустить точку - /skip.')
             
-            keyboard = ReplyKeyboardRemove()
+            keyboard = create_keyboard(['Дальше'])
             await send_files(message, data['quest'].cur_point.msg, data['quest'].cur_point.files, keyboard)
     else:
         await message.reply('Квест с идентификатором "' + quest_name + '" не найден',
@@ -562,7 +565,7 @@ async def load_quest(message: types.Message, state: FSMContext):
                     'чтобы получить подсказку - /tip, '
                     'чтобы попытаться пропустить точку - /skip.')
 
-            keyboard = ReplyKeyboardRemove()
+            keyboard = create_keyboard(['Дальше'])
             await send_files(message, data['quest'].cur_point.msg, data['quest'].cur_point.files, keyboard)
         else:
             if data['quest'].load(message.from_user.id):
@@ -574,7 +577,7 @@ async def load_quest(message: types.Message, state: FSMContext):
                 else:
                     if data['quest'].cur_point.type == "choice_question":
                         keyboard = create_keyboard(edit_options(data['quest'].cur_point.next_points))
-                    elif data['quest'].cur_point.type == "message":
+                    elif data['quest'].cur_point.type == "message" or data['quest'].cur_point.type == "start_block":
                         keyboard = create_keyboard(['Дальше'])
                     else:
                         keyboard = ReplyKeyboardRemove()
@@ -610,10 +613,9 @@ async def tip_handler(message: types.Message, state: FSMContext):
         if 'quest' in data:
             tip = data['quest'].cur_point.get_tip()
             if tip is None:
-                await message.reply('Больше подсказок нет.',
-                    reply_markup=ReplyKeyboardRemove())
+                await message.reply('Больше подсказок нет.')
             else:
-                await send_files(message, tip.msg, tip.files, ReplyKeyboardRemove())
+                await send_files(message, tip.msg, tip.files, None)
                 await message.answer('Штраф за подсказку в баллах: ' + str(tip.fine) + ' .')
                 data['quest'].score -= tip.fine
         else:
@@ -651,6 +653,13 @@ async def skip_handler(message: types.Message, state: FSMContext):
                     if data['quest'].cur_point.type == "choice_question":
                         keyboard = create_keyboard(edit_options(data['quest'].cur_point.next_points))
                         await send_files(message, msg, files, keyboard)
+                    elif data['quest'].cur_point.type == "message":
+                        keyboard = create_keyboard(['Дальше'])
+                        await send_files(message, msg, files, keyboard)
+                    elif data['quest'].cur_point.type == "movement":
+                        await send_files(message, msg, files, create_movement_keyboard(QuestPoint.no_geo_msg))
+                        movement_info = get_place(data['quest'].cur_point.id)
+                        await bot.send_location(message.chat.id, movement_info[0], movement_info[1])
                     else:
                         await send_files(message, msg, files, ReplyKeyboardRemove())
                     if quest_ends == True:
@@ -749,7 +758,7 @@ async def rate_quest(message: types.Message, state: FSMContext):
     """
     rating = get_rating(message.text)
     if rating is None:
-        await message.reply('Неправильная оценка. Воспользуйтесь клавиатурой.')
+        await message.reply('Воспользуйтесь специальной клавиатурой.')
     async with state.proxy() as data:
         update_rating(data['quest'].cur_point.id, rating)
         await message.answer('Спасибо за отзыв.', reply_markup=create_opening_menu_keyboard())

@@ -1,4 +1,3 @@
-from nis import match
 import psycopg2
 from psycopg2.extras import DictCursor
 import datetime
@@ -305,7 +304,7 @@ def get_history(quest_id, telegram_id):
     :return: None in case of failure
     """
     try:
-        return select_one('SELECT is_finished, last_block_id, final_score, complition_time FROM histories '
+        return select_one('SELECT is_finished, last_block_id, final_score, complition_time FROM history '
                           'WHERE quest_id= %s AND telegram_id= %s', (quest_id, telegram_id, ))
     except:
         return None

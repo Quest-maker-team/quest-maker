@@ -31,4 +31,4 @@ class SignupFrom(FlaskForm):
                                 validators=[DataRequired(), EqualTo('psw', message='Пароли не совпадают')],
                                 render_kw={'placeholder': 'Повторите пароль'})
 
-    submit = SubmitField('Зарегестрироваться')
+    submit = SubmitField('Зарегистрироваться')

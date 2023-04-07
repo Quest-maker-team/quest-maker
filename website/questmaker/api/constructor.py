@@ -1,12 +1,11 @@
-from questmaker.quest import Quest, Question, Place, Hint, Answer, Movement, File, update_from_dict
-from questmaker.quest_container import EntityType, QuestContainer
 from questmaker.db import get_draft, update_draft, write_draft, remove_draft, get_draft_for_update
+from questmaker.quest import Quest, Information, Question, Movement, Block, Answer, Media, Hint, Place
 
 from flask_login import current_user, login_required
 from flask import Blueprint, jsonify, request, g, session
 
 import pickle
-
+import weakref
 
 constructor_api = Blueprint('constructor_api', __name__)
 
@@ -17,7 +16,7 @@ def before_request():
     """
     Check auth and load user's container with draft quest
     """
-    author_id = current_user.author['author_id']
+    author_id = current_user.id
     if request.method == 'GET' or \
             (request.method == 'POST' and request.endpoint in ['constructor_api.create_quest',
                                                                'constructor_api.save_quest']):
@@ -28,7 +27,7 @@ def before_request():
             return 'No draft with this id', 400
         if draft['author_id'] != author_id:
             return 'This is not your quest', 403
-        g.container = pickle.loads(bytes(draft['container']))
+        g.container = pickle.loads(bytes(draft['container_path']))
     else:
         return 'You don\'t have loaded draft', 400
 
@@ -58,32 +57,31 @@ def get_quest(quest_id):
     """
     draft = get_draft(quest_id)
     if draft:
-        if draft['author_id'] != current_user.author['author_id']:
+        if draft['author_id'] != current_user.id:
             return 'This is not your quest', 403
-        quest = pickle.loads(bytes(draft['container'])).quest
+        quest = pickle.loads(bytes(draft['container_path']))
+        print(quest.convert_to_dict())
         session['draft_id'] = draft['draft_id']
-        return jsonify(quest.to_dict()) if quest else ('Wrong quest id', 400)
+        return jsonify(quest.convert_to_dict()) if type(quest).__name__ == Quest.__name__ else ('Wrong quest id', 400)
     else:
         return get_quest_from_db(quest_id)
-
-
+    
 def get_quest_from_db(quest_id):
     """
     Load quest from database to constructor
     :param quest_id: quest id in database
     :return: json with quest or error message
     """
-    quest = Quest().from_db(quest_id)
-    if not quest:
+    quest = Quest()
+    
+    if not quest.init_from_db(quest_id):
         return 'Wrong quest id', 400
-    if quest.author_id != current_user.author['author_id']:
+    if quest.author_id != current_user.id:
         return 'This is not your quest', 403
 
-    container = QuestContainer()
-    container.add_quest(quest)
-    draft_id = write_draft(current_user.author['author_id'], pickle.dumps(container), quest_id)
+    draft_id = write_draft(current_user.id, pickle.dumps(quest), quest_id)
     session['draft_id'] = draft_id
-    return jsonify(quest.to_dict())
+    return jsonify(quest.convert_to_dict())
 
 
 @constructor_api.route('/quest', methods=['POST'])
@@ -93,378 +91,454 @@ def create_quest():
     :return: json or error message
     """
     quest_dict = request.get_json(force=True)
-    if not Quest.check_creation_attrs(quest_dict.keys()):
-        return 'Not enough JSON attributes for creating', 400
     quest = Quest()
-    quest.author_id = current_user.author['author_id']
-    rc = quest.create_from_dict(quest_dict)
-    if not rc:
+    if not quest.init_from_dict(quest_dict):
         return 'Wrong JSON attributes', 400
+    quest.author_id = current_user.id
 
-    quest.quest_id = quest.to_db()
-    if quest.quest_id is None:
+    if not quest.save_to_db():
         return 'Internal Server Error', 500
 
-    container = QuestContainer()
-    container.add_quest(quest)
-    draft_id = write_draft(current_user.author['author_id'], pickle.dumps(container), quest.quest_id)
+    draft_id = write_draft(current_user.id, pickle.dumps(quest), quest.id)
     session['draft_id'] = draft_id
-    return jsonify(quest.to_dict())
+    return jsonify(quest.convert_to_dict())
 
+@constructor_api.route('/block', methods=['POST'])
+def create_block():
+    """
+    Create new block and add to quest
+    :return: json with block id or error message
+    """
+    block_dict = request.get_json(force=True)
 
-@constructor_api.route('/question', methods=['POST'])
-def create_question():
-    """
-    Create new question and add to container
-    :return: json with question id or error message
-    """
-    question_dict = request.get_json(force=True)
-    if not Question.check_creation_attrs(question_dict.keys()):
-        return 'Not enough JSON attributes for creating', 400
-    question = Question()
-    rc = update_from_dict(question, question_dict)
-    if not rc:
+    block = None
+    try:
+        block_type_name = block_dict["block_type_name"]
+        block_type_id = Block.Type.get_type_by_name(block_type_name)
+
+        if block_type_id == Block.Type.CHOICE or block_type_id == Block.Type.OPEN:
+            block = Question()
+        elif block_type_id == Block.Type.MOVEMENT:
+            block = Movement()
+        elif block_type_id == Block.Type.MESSAGE or block_type_id == Block.Type.START or block_type_id == Block.Type.END:
+            block = Information()
+        else:
+            return 'Wrong JSON attributes', 400
+        
+        block.id = g.container.get_entity_unic_id(Block.__name__)
+        g.container.update_entity_unic_id(Block.__name__)
+    except:
         return 'Wrong JSON attributes', 400
 
-    question.question_id = g.container.add_entity(question)
-    return jsonify({'question_id': question.question_id})
+    block_id = block.update_from_dict(block_dict)
+    if block_id is None:
+        return 'Wrong JSON attributes', 400
 
-
-@constructor_api.route('/answer_option/<int:answer_id>/question/<int:question_id>', methods=['PUT'])
-def add_question_to_answer(answer_id, question_id):
+    #print(block.convert_to_dict())
+    g.container.add_block(block)
+    return jsonify({'block_id': block_id})
+    
+@constructor_api.route('/answer_host/<int:host_id>/answer_id/<int:answer_id>/block/<int:block_id>', methods=['PUT'])
+def connect_answer_and_block(host_id, answer_id, block_id):
     """
     Link answer and next question that was created before
     :param answer_id: answer id in container
     :param question_id: question id in container
     :return: status code
     """
-    answer = g.container.get_entity(EntityType.ANSWER, answer_id)
+    host_block = g.container.get_block_by_id(host_id)
+    if not host_block or type(host_block) != Question:
+        return 'Wrong host_block id', 400
+    
+    answer = host_block.get_answer_by_id(answer_id)
     if not answer:
         return 'Wrong answer id', 400
-    question = g.container.get_entity(EntityType.QUESTION, question_id)
-    if not question:
-        return 'Wrong question id', 400
-    answer.next_question = question
-    question.parents.append(answer)
+
+    block = g.container.get_block_by_id(block_id)
+    if not block:
+        return 'Wrong block id', 400
+    
+    answer.next_block = weakref.ref(block)
+    
     return '', 200
-
-
-@constructor_api.route('/movement/<int:movement_id>/question/<int:question_id>', methods=['PUT'])
-def add_question_to_movement(movement_id, question_id):
+    
+@constructor_api.route('/source_block/<int:source_id>/target_block/<int:target_id>', methods=['PUT'])
+def connect_blocks(source_id, target_id):
     """
-    Link movement and next question that was created before
-    :param movement_id: movement id in container
-    :param question_id: question id in container
+    Link two blocks that was created before
+    :param source_id: block id in quest
+    :param question_id: block id in quest
     :return: status code
     """
-    movement = g.container.get_entity(EntityType.MOVEMENT, movement_id)
-    if not movement:
-        return 'Wrong movement id', 400
-    question = g.container.get_entity(EntityType.QUESTION, question_id)
-    if not question:
-        return 'Wrong question id', 400
-    movement.next_question = question
-    question.parents.append(movement)
+    source_block = g.container.get_block_by_id(source_id)
+    if not source_block:
+        return 'Wrong source id', 400
+    
+    target_block = g.container.get_block_by_id(target_id)
+    if not target_block:
+        return 'Wrong target id', 400
+    
+    source_block.next_block = weakref.ref(target_block)
+
     return '', 200
 
+@constructor_api.route('/media/block/<int:block_id>', methods=['POST'])
+def create_block_media(block_id):
+    """
+    Create new media and add to block
+    :return: json with media id or error message
+    """
+    media_dict = request.get_json(force=True)
 
-@constructor_api.route('/file', methods=['POST'])
-def create_file():
-    """
-    Create new file and add to container
-    :return: json with file id or error message
-    """
-    file_dict = request.get_json(force=True)
-    if not File.check_creation_attrs(file_dict.keys()):
-        return 'Not enough JSON attributes for creating', 400
-    file = File()
-    rc = update_from_dict(file, file_dict)
-    if not rc:
+    media = Media()
+    media.id = g.container.get_entity_unic_id(Media.__name__)
+    g.container.update_entity_unic_id(Media.__name__)
+
+    media_id = media.update_from_dict(media_dict)
+    if media_id is None:
         return 'Wrong JSON attributes', 400
-    file.file_id = g.container.add_entity(file)
-    return jsonify({'file_id': file.file_id})
+    
+    block = g.container.get_block_by_id(block_id)
+    if not block:
+        return 'Wrong block id', 400
+    
+    block.add_media(media)
 
 
-@constructor_api.route('/<e_type_str>/<int:e_id>/file/<int:file_id>', methods=['PUT'])
-def add_file(e_type_str, e_id, file_id):
+    return jsonify({'media_id': media.id})
+
+@constructor_api.route('/media/block/<int:block_id>/hint/<int:hint_id>', methods=['POST'])
+def create_hint_media(block_id, hint_id):
     """
-    Add file tp entity. File must be created before.
-    :param e_type_str: string name of entity
-    :param e_id: entity id in container
-    :param file_id: file id in container
-    :return: status code
+    Create new media and add to block's hint
+    :return: json with media id or error message
     """
-    file = g.container.get_entity(EntityType.FILE, file_id)
-    if not file:
-        return 'Wrong file id', 400
+    media_dict = request.get_json(force=True)
 
-    e_type = EntityType.from_str(e_type_str)
-    if e_type not in (EntityType.QUEST, EntityType.QUESTION, EntityType.HINT):
-        return 'Bad Request', 400
+    media = Media()
+    media.id = g.container.get_entity_unic_id(Media.__name__)
+    g.container.update_entity_unic_id(Media.__name__)
 
-    entity = g.container.get_entity(e_type, e_id)
-    if not entity:
-        return f'Wrong {e_type_str} id', 400
-    entity.files.append(file)
-    file.parent = g.container.get_entity(e_type, e_id)
-    return '', 200
+    media_id = media.update_from_dict(media_dict)
+    if media_id is None:
+        return 'Wrong JSON attributes', 400
+    
+    block = g.container.get_block_by_id(block_id)
+    if not block or type(block) != Question and type(block) != Movement:
+        return 'Wrong block id', 400
+    
+    hint = block.get_hint_by_id(hint_id)
+    if not hint:
+        return 'Wrong hint id', 400
+    
+    hint.add_media(media)
 
+    return jsonify({'media_id': media_id})
 
-@constructor_api.route('/answer_option', methods=['POST'])
-def create_answer():
+@constructor_api.route('/answer_option/block/<int:block_id>', methods=['POST'])
+def create_question_answer(block_id):
     """
-    Create new answer and add to container
+    Create new question answer and add to question
     :return: json with answer id or error message
     """
     ans_dict = request.get_json(force=True)
-    if not Answer.check_creation_attrs(ans_dict.keys()):
-        return 'Not enough JSON attributes for creating', 400
-    ans = Answer()
-    rc = update_from_dict(ans, ans_dict)
-    if not rc:
+    answer = Answer()
+
+    answer.id = g.container.get_entity_unic_id(Answer.__name__)
+    g.container.update_entity_unic_id(Answer.__name__)
+
+    answer_id = answer.update_from_dict(ans_dict)
+    if answer_id is None:
         return 'Wrong JSON attributes', 400
-    ans.answer_option_id = g.container.add_entity(ans)
-    return jsonify({'answer_option_id': ans.answer_option_id})
+    
+    question = g.container.get_block_by_id(block_id)
+    if not question or type(question) != Question:
+        return 'Wrong block id', 400
 
+    question.add_answer(answer)
 
-@constructor_api.route('/question/<int:question_id>/answer_option/<int:answer_id>', methods=['PUT'])
-def add_answer(question_id, answer_id):
+    return jsonify({'answer_option_id': answer_id})
+
+@constructor_api.route('/hint/block/<int:block_id>', methods=['POST'])
+def create_hint(block_id):
     """
-    Link question and answer that was created before
-    :param question_id: question id in container
-    :param answer_id: answer id in container
-    :return: status code
-    """
-    answer = g.container.get_entity(EntityType.ANSWER, answer_id)
-    if not answer:
-        return 'Wrong answer id', 400
-    question = g.container.get_entity(EntityType.QUESTION, question_id)
-    if not question:
-        return 'Wrong question id', 400
-    question.answers.append(answer)
-    answer.parent = question
-    return '', 200
-
-
-@constructor_api.route('/movement', methods=['POST'])
-def create_movement():
-    """
-    Create new answer and add to container
-    :return: json with answer id or error message
-    """
-    move_dict = request.get_json(force=True)
-    if not Movement.check_creation_attrs(move_dict.keys()):
-        return 'Not enough JSON attributes for creating', 400
-    move = Movement()
-    rc = update_from_dict(move, move_dict)
-    if not rc:
-        return 'Wrong JSON attributes', 400
-    move.movement_id = g.container.add_entity(move)
-    return jsonify({'movement_id': move.movement_id})
-
-
-@constructor_api.route('/question/<int:question_id>/movement/<int:movement_id>', methods=['PUT'])
-def add_movement(question_id, movement_id):
-    """
-    Link question and movement that was created before
-    :param movement_id: movement id in container
-    :param question_id: place id in container
-    :return: status code
-    """
-    movement = g.container.get_entity(EntityType.MOVEMENT, movement_id)
-    if not movement:
-        return 'Wrong movement id', 400
-    question = g.container.get_entity(EntityType.QUESTION, question_id)
-    if not question:
-        return 'Wrong question id', 400
-    question.movements.append(movement)
-    movement.parent = question
-    return '', 200
-
-
-@constructor_api.route('/hint', methods=['POST'])
-def create_hint():
-    """
-    Create new hint and add to container
+    Create new hint and add to block
     :return: json with hint id or error message
     """
     hint_dict = request.get_json(force=True)
-    if not Hint.check_creation_attrs(hint_dict.keys()):
-        return 'Not enough JSON attributes for creating', 400
+
     hint = Hint()
-    rc = update_from_dict(hint, hint_dict)
-    if not rc:
+    hint.id = g.container.get_entity_unic_id(Hint.__name__)
+    g.container.update_entity_unic_id(Hint.__name__)
+
+    hint_id = hint.update_from_dict(hint_dict)
+    if hint_id is None:
         return 'Wrong JSON attributes', 400
-    hint.hint_id = g.container.add_entity(hint)
-    return jsonify({'hint_id': hint.hint_id})
+    
+    block = g.container.get_block_by_id(block_id)
+    if not block or type(block) != Question and type(block) != Movement:
+        return 'Wrong block id', 400
+    
+    block.add_hint(hint)
 
+    return jsonify({'hint_id': hint.id})
 
-@constructor_api.route('/question/<int:question_id>/hint/<int:hint_id>', methods=['PUT'])
-def add_hint(question_id, hint_id):
+@constructor_api.route('/place/movement_block/<int:block_id>', methods=['POST'])
+def create_place(block_id):
     """
-    Link question and hint that was created before
-    :param question_id: question id in container
-    :param hint_id: hint id in container
-    :return: status code
-    """
-    hint = g.container.get_entity(EntityType.HINT, hint_id)
-    if not hint:
-        return 'Wrong hint id', 400
-    question = g.container.get_entity(EntityType.QUESTION, question_id)
-    if not question:
-        return 'Wrong question id', 400
-    question.hints.append(hint)
-    hint.parent = question
-    return '', 200
-
-
-@constructor_api.route('/place', methods=['POST'])
-def create_place():
-    """
-    Create new place and add to container
-    :return: json with place id or error message
+    Create new place and add to movement_block
+    :return: json with hint id or error message
     """
     place_dict = request.get_json(force=True)
-    if not Place.check_creation_attrs(place_dict.keys()):
-        return 'Not enough JSON attributes for creating', 400
     place = Place()
-    rc = update_from_dict(place, place_dict)
-    if not rc:
+    place.id = g.container.get_entity_unic_id(Place.__name__)
+    g.container.update_entity_unic_id(Place.__name__)
+
+    place_id = place.update_from_dict(place_dict)
+    if place_id is None:
         return 'Wrong JSON attributes', 400
-    place.place_id = g.container.add_entity(place)
-    return jsonify({'place_id': place.place_id})
+    
+    block = g.container.get_block_by_id(block_id)
+    if not block or type(block) != Movement:
+        return 'Wrong block id', 400
+    
+    block.add_place(place)
 
+    return jsonify({'place_id': place_id})
 
-@constructor_api.route('/movement/<int:movement_id>/place/<int:place_id>', methods=['PUT'])
-def add_place(movement_id, place_id):
+@constructor_api.route('/block/<int:block_id>', methods=['PUT'])
+def update_block(block_id):
     """
-    Link movement and place that was created before
-    :param movement_id: movement id in container
-    :param place_id: place id in container
+    Set block attributes from JSON
+    :param block_id: block id in quest
     :return: status code
     """
-    place = g.container.get_entity(EntityType.PLACE, place_id)
-    if not place:
-        return 'Wrong place id', 400
-    movement = g.container.get_entity(EntityType.MOVEMENT, movement_id)
-    if not movement:
-        return 'Wrong movement id', 400
-    movement.place = place
-    place.parent = movement
-    return '', 200
+    block_dict = request.get_json(force=True)
+    block = g.container.get_block_by_id(block_id)
+    if not block:
+        return 'Wrong block id', 400
+    
+    rc = block.update_from_dict(block_dict)
+    #print(block.convert_to_dict())
+    return ('', 200) if rc is not None else ('Wrong JSON attributes', 400)
 
-
-@constructor_api.route('/<e_type_str>/<int:e_id>', methods=['PUT'])
-def update_entity(e_type_str, e_id):
+@constructor_api.route('/block/<int:block_id>/media/<int:media_id>', methods=['PUT'])
+def update_block_media(block_id, media_id):
     """
-    Set entity attributes from JSON
-    :param e_type_str: string name of entity
-    :param e_id: entity id in container
+    Set block media attributes from JSON
+    :param block_id: block id in quest
+    :param media_id: media id in block
     :return: status code
     """
-    e_dict = request.get_json(force=True)
-    e_type = EntityType.from_str(e_type_str)
-    if e_type is None:
-        return 'Bad Request', 400
-    rc = update_from_dict(g.container.get_entity(e_type, e_id), e_dict)
-    return ('', 200) if rc else ('Wrong JSON attributes', 400)
+    media_dict = request.get_json(force=True)
+    block = g.container.get_block_by_id(block_id)
+    if not block:
+        return 'Wrong block id', 400
+    
+    media = block.get_media_by_id(media_id)
+    if not media:
+        return 'Wrong media id', 400
+    rc = media.update_from_dict(media_dict)
+    return ('', 200) if rc is not None else ('Wrong JSON attributes', 400)
 
-
-@constructor_api.route('/<e_type_str>/<int:e_id>', methods=['DELETE'])
-def remove_entity(e_type_str, e_id):
+@constructor_api.route('/block/<int:block_id>/hint/<int:hint_id>/media/<int:media_id>', methods=['PUT'])
+def update_hint_media(block_id, hint_id, media_id):
     """
-    Remove entity from quest graph
-    :param e_type_str: string name of entity
-    :param e_id: entity id in container
+    Set block media attributes from JSON
+    :param block_id: block id in quest
+    :param hint_id: hint id in block
+    :param media_id: media id in hint
     :return: status code
     """
-    e_type = EntityType.from_str(e_type_str)
-    if e_type is None or e_type == EntityType.QUEST:
-        return 'Bad Request', 400
+    media_dict = request.get_json(force=True)
+    block = g.container.get_block_by_id(block_id)
+    if not block or type(block) != Question and type(block) != Movement:
+        return 'Wrong block id', 400
+    
+    hint = block.get_hint_by_id(hint_id)
+    if not hint:
+        return 'Wrong media id', 400
+    
+    media = hint.get_media_by_id(media_id)
+    if not media:
+        return 'Wrong media id', 400
+    
+    rc = media.update_from_dict(media_dict)
+    return ('', 200) if rc is not None else ('Wrong JSON attributes', 400)
 
-    g.container.remove_entity(e_type, e_id)
-    return '', 200
-
-
-@constructor_api.route('/answer_option/<int:answer_id>/question', methods=['DELETE'])
-def remove_answer_question_link(answer_id):
+@constructor_api.route('/block/<int:block_id>/answer_option/<int:answer_id>', methods=['PUT'])
+def update_block_answer(block_id, answer_id):
     """
-    Disconnect answer and next question
-    :param answer_id: answer id in container
+    Set block answer attributes from JSON
+    :param block_id: block id in quest
+    :param answer_id: answer id in block
     :return: status code
     """
-    answer = g.container.get_entity(EntityType.ANSWER, answer_id)
+    answer_dict = request.get_json(force=True)
+    block = g.container.get_block_by_id(block_id)
+    if not block or type(block) != Question:
+        return 'Wrong block id', 400
+    
+    answer = block.get_answer_by_id(answer_id)
     if not answer:
         return 'Wrong answer id', 400
-    if answer.next_question:
-        answer.next_question.parents.remove(answer)
-        answer.next_question = None
-        return '', 200
-    else:
-        return 'No link', 400
+    rc = answer.update_from_dict(answer_dict)
+    return ('', 200) if rc is not None else ('Wrong JSON attributes', 400)
 
-
-@constructor_api.route('/movement/<int:movement_id>/question', methods=['DELETE'])
-def remove_movement_question_link(movement_id):
+@constructor_api.route('/block/<int:block_id>/hint/<int:hint_id>', methods=['PUT'])
+def update_block_hint(block_id, hint_id):
     """
-    Disconnect movement and next question
-    :param movement_id: movement id in container
+    Set hint attributes from JSON
+    :param block_id: block id in quest
+    :param hint_id: hint id in block
     :return: status code
     """
-    movement = g.container.get_entity(EntityType.MOVEMENT, movement_id)
-    if not movement:
-        return 'Wrong movement id', 400
-    if movement.next_question:
-        movement.next_question.parents.remove(movement)
-        movement.next_question = None
-        return '', 200
-    else:
-        return 'No link', 400
+    hint_dict = request.get_json(force=True)
+    block = g.container.get_block_by_id(block_id)
+    if not block or type(block) != Question and type(block) != Movement:
+        return 'Wrong block id', 400
+    
+    hint = block.get_hint_by_id(hint_id)
+    if not hint:
+        return 'Wrong media id', 400
+    rc = hint.update_from_dict(hint_dict)
+    return ('', 200) if rc is not None else ('Wrong JSON attributes', 400)
 
-
-@constructor_api.route('/question/<int:question_id>/movement/<int:movement_id>', methods=['DELETE'])
-def remove_question_movement_link(question_id, movement_id):
+@constructor_api.route('/block/<int:block_id>/place/<int:place_id>', methods=['PUT'])
+def update_block_place(block_id, place_id):
     """
-    Disconnect question and movement of this question
-    :param question_id: question id in container
-    :param movement_id: movement id in container
+    Set block place attributes from JSON
+    :param block_id: block id in quest
+    :param place_id: place id in block
     :return: status code
     """
-    question = g.container.get_entity(EntityType.QUESTION, question_id)
-    if not question:
-        return 'Wrong question id', 400
-    movement = g.container.get_entity(EntityType.MOVEMENT, movement_id)
-    if not movement:
-        return 'Wrong movement id', 400
-    if movement in question.movements:
-        question.movements.remove(movement)
-        movement.parent = None
-        return '', 200
-    else:
-        return 'No link', 400
+    place_dict = request.get_json(force=True)
+    block = g.container.get_block_by_id(block_id)
+    if not block or type(block) != Movement:
+        return 'Wrong block id', 400
+    
+    place = block.place
+    if not place or place.id != place_id:
+        return 'Wrong place id', 400
+    rc = place.update_from_dict(place_dict)
+    return ('', 200) if rc is not None else ('Wrong JSON attributes', 400)
 
-
-@constructor_api.route('/question/<int:question_id>/answer_option/<int:answer_id>', methods=['DELETE'])
-def remove_question_answer_link(question_id, answer_id):
+@constructor_api.route('/quest', methods=['PUT'])
+def update_quest():
     """
-    Disconnect question and answer to this question
-    :param question_id: question id in container
+    Set quest attributes from JSON
+    :return: status code
+    """
+    quest_dict = request.get_json(force=True)
+    rc = g.container.update_from_dict(quest_dict)
+    return ('', 200) if rc is not None else ('Wrong JSON attributes', 400)
+
+@constructor_api.route('/block/<int:block_id>', methods=['DELETE'])
+def remove_block(block_id):
+    """
+    Remove block from quest graph
+    :param block_id: block id in quest
+    :return: status code
+    """
+    rc = g.container.remove_block_by_id(block_id)
+    print(g.container.convert_to_dict())
+    return ('', 200) if rc else ('Wrong block id', 400)
+
+@constructor_api.route('/block/<int:block_id>/media/<int:media_id>', methods=['DELETE'])
+def remove_block_media(block_id, media_id):
+    """
+    Remove media from block
+    :param block_id: block id in quest
+    :param media_id: media id in quest
+    :return: status code
+    """
+    block = g.container.get_block_by_id(block_id)
+    if not block:
+        return 'Wrong block id', 400
+    rc = block.remove_media(media_id)
+    return ('', 200) if rc else ('Wrong media id', 400)
+
+@constructor_api.route('/block/<int:block_id>/hint/<int:hint_id>/media/<int:media_id>', methods=['DELETE'])
+def remove_hint_media(block_id, hint_id, media_id):
+    """
+    Remove media from hint
+    :param block_id: block id in quest
+    :param hint_id: hint id in block
+    :param media_id: media id in quest
+    :return: status code
+    """
+    block = g.container.get_block_by_id(block_id)
+    if not block or type(block) != Question and type(block) != Movement:
+        return 'Wrong block id', 400
+    
+    hint = block.get_hint_by_id(hint_id)
+    if not hint:
+        return 'Wrong media id', 400
+    
+    rc = hint.remove_media(media_id)
+    return ('', 200) if rc else ('Wrong media id', 400)
+
+@constructor_api.route('/block/<int:block_id>/answer_option/<int:answer_id>', methods=['DELETE'])
+def remove_block_answer(block_id, answer_id):
+    """
+    Remove answer from block
+    :param block_id: block id in quest
+    :param answer_id: answer id in quest
+    :return: status code
+    """
+    block = g.container.get_block_by_id(block_id)
+    if not block or type(block) != Question:
+        return 'Wrong block id', 400
+    rc = block.remove_answer(answer_id)
+    return ('', 200) if rc else ('Wrong media id', 400)
+
+@constructor_api.route('/block/<int:block_id>/hint/<int:hint_id>', methods=['DELETE'])
+def remove_hint(block_id, hint_id):
+    """
+    Remove hint from block
+    :param block_id: block id in quest
+    :param hint_id: hint id in block
+    :return: status code
+    """
+    block = g.container.get_block_by_id(block_id)
+    if not block or type(block) != Question and type(block) != Movement:
+        return 'Wrong block id', 400
+    
+    rc = block.remove_hint(hint_id)
+    return ('', 200) if rc else ('Wrong media id', 400)
+
+@constructor_api.route('/answer_host/<int:host_id>/answer_id/<int:answer_id>', methods=['PUT'])
+def disconnect_answer_and_block(host_id, answer_id):
+    """
+    Unlink answer and next question that was created before
+    :param host_id: host block id in container
     :param answer_id: answer id in container
     :return: status code
     """
-    question = g.container.get_entity(EntityType.QUESTION, question_id)
-    if not question:
-        return 'Wrong question id', 400
-    answer = g.container.get_entity(EntityType.ANSWER, answer_id)
+    host_block = g.container.get_block_by_id(host_id)
+    if not host_block or type(host_block) != Question:
+        return 'Wrong host_block id', 400
+    
+    answer = host_block.get_answer_by_id(answer_id)
     if not answer:
-        return 'Wrong movement id', 400
-    if answer in question.answers:
-        question.answers.remove(answer)
-        answer.parent = None
-        return '', 200
-    else:
-        return 'No link', 400
-
+        return 'Wrong answer id', 400
+    
+    answer.next_block = None
+    return '', 200
+    
+@constructor_api.route('/source_block/<int:source_id>', methods=['PUT'])
+def disconnect_blocks(source_id):
+    """
+    Unlink two blocks that was created before
+    :param source_id: block id in quest
+    :return: status code
+    """
+    source_block = g.container.get_block_by_id(source_id)
+    if not source_block:
+        return 'Wrong source id', 400
+    
+    source_block.next_block = None
+    return '', 200
 
 @constructor_api.route('/save/<int:quest_id>', methods=['POST'])
 def save_quest(quest_id):
@@ -473,15 +547,16 @@ def save_quest(quest_id):
     :param quest_id: quest id in quests and drafts
     :return: status code
     """
-    author_id = current_user.author['author_id']
+    author_id = current_user.id
     draft = get_draft(quest_id)
     if not draft:
         return 'No quest with this id', 400
     if draft['author_id'] != author_id:
         return 'This is not your quest', 403
-    container = pickle.loads(bytes(draft['container']))
-    container.quest.published = True
-    container.quest.to_db()
+    quest = pickle.loads(bytes(draft['container_path']))
+    quest.published = True
+    quest.hidden = False
+    quest.save_to_db()
     remove_draft(quest_id)
     if 'draft_id' in session:
         session.pop('draft_id')

@@ -199,7 +199,7 @@ class QuestPoint:
             elif '' in self.next_points: # universal wrong answer
                 pass
             else:
-                return (0, None)
+                return (1, None)
             point_info = self.next_points[name]
             if point_info[1] is None:
                 return (0, None)
@@ -216,7 +216,7 @@ class QuestPoint:
                     if dist > movement_info[2]:
                         return (0, None)
                 elif point_name != QuestPoint.no_geo_msg:
-                    return (0, None)
+                    return (1, None)
                 if not check_time(movement_info[3], movement_info[4]):
                     return (0, None)
             except:
@@ -324,14 +324,19 @@ class Quest:
 
         (score_to_add, point) = self.cur_point.get_next(message, latitude, longitude)
         if self.cur_point.type == 'movement' and point is None:
-            if score_to_add != None:
+            if score_to_add == 0:
                 return (False, "Неверное место или время.", [], 0)
+            elif score_to_add == 1:
+                return (False, "Воспользуйтесь специальной клавиатурой.", [], 0)
             else:
                 return (True, "Ошибка в структуре квеста.", [], 0)
-        self.score += score_to_add
-        if point is None:
+
+        if point is None and score_to_add == 0:
             return (True, "Ошибка в структуре квеста.", [], 0)
+        elif point is None and score_to_add == 1:
+            return (False, "Попробуйте еще раз.", [], 0)
         
+        self.score += score_to_add
         if point.type == 'end_block':
             self.cur_point = point
             return (True, point.msg, point.files, 0)
@@ -710,7 +715,8 @@ async def point_proc(message: types.Message, state: FSMContext, latitude, longit
                 data['quest'].save(message.from_user.id, True)
             await message.answer('Квест "' + data['quest'].name + '" закончен. '
                                  'Количество баллов: ' + str(data['quest'].score) + ".",
-                                  reply_markup=create_rating_keyboard())
+                                  reply_markup=ReplyKeyboardRemove())
+            await message.answer('Оцените квест =)', reply_markup=create_rating_keyboard())
             await QuestStates.rating.set()
 
 

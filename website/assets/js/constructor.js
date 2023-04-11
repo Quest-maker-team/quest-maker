@@ -92,9 +92,6 @@ window.onload = () => {
     const query = window.location.href.split('?')[1];
     const queryParams = query.split('&');
     load(queryParams[0].split('=')[1], queryParams[1].split('=')[1]).then((quest) => {
-        /* document.getElementById("save").onclick = () => {
-            Quest.save(24).then(() => console.log("save"));
-        }*/
 
         // panzoom init
         const panzoom = Panzoom(containerElement, {
@@ -165,10 +162,7 @@ window.onload = () => {
             const block = createNewBlock('message', 'Новое сообщение', quest);
             Quest.addBlock(block).then((result) =>{
                 console.log(block);
-                Quest.addBlock(block).then((data)=>{
-                    console.log(data);
-                    Render.renderMessage(quest, block, instance, sourceEndpoint, targetEndpoint);
-                });
+                Render.renderMessage(quest, block, instance, sourceEndpoint, targetEndpoint);
             });
         };
         document.getElementById('addMBtn').onclick = () => {
@@ -217,7 +211,7 @@ window.onload = () => {
         };
         
         document.getElementById('finishBtn').onclick = () => {
-            const block = createNewBlock('end_block', '', quest);
+            const block = createNewBlock('end_block', 'Конец квеста', quest);
             Quest.addBlock(block).then((data) => {
                 Render.renderFinish(quest, block, instance, targetEndpoint);
             });

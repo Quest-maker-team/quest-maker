@@ -45,7 +45,7 @@ export class Quest {
 
     static makeNewQuest() {
         return Quest.makeRequest('POST', 'api/constructor/quest', JSON.stringify({
-            title: '',
+            title: 'Новый квест',
             hidden: true,
         })).then((response) => {
             return JSON.parse(response);

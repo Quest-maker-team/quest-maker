@@ -165,10 +165,7 @@ window.onload = () => {
             const block = createNewBlock('message', 'Новое сообщение', quest);
             Quest.addBlock(block).then((result) =>{
                 console.log(block);
-                Quest.addBlock(block).then((data)=>{
-                    console.log(data);
-                    Render.renderMessage(quest, block, instance, sourceEndpoint, targetEndpoint);
-                });
+                Render.renderMessage(quest, block, instance, sourceEndpoint, targetEndpoint);
             });
         };
         document.getElementById('addMBtn').onclick = () => {

@@ -334,7 +334,10 @@ class Quest:
         if point is None and score_to_add == 0:
             return (True, "Ошибка в структуре квеста.", [], 0)
         elif point is None and score_to_add == 1:
-            return (False, "Попробуйте еще раз.", [], 0)
+            if point.type == 'open_question':
+                return (False, "Попробуйте еще раз.", [], 0)
+            else:
+                return (False, "Выберите вариант на специальной клавиатуре.", [], 0)
         
         self.score += score_to_add
         if point.type == 'end_block':

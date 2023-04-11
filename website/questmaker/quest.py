@@ -585,7 +585,8 @@ class Quest:
         start.update_from_dict({
             "pos_x": 500,
             "pos_y": 320,
-            "block_type_name": "start_block"
+            "block_type_name": "start_block",
+            "block_text": "Начало квеста"
         })
         start.id = self.entity_id[Block.__name__]
         self.entity_id[Block.__name__] += 1
@@ -593,7 +594,8 @@ class Quest:
         end.update_from_dict({
             "pos_x": 800,
             "pos_y": 320,
-            "block_type_name": "end_block"
+            "block_type_name": "end_block",
+            "block_text": "Конец квеста"
         })
         end.id = self.entity_id[Block.__name__]
         self.entity_id[Block.__name__] += 1

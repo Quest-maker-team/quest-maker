@@ -92,9 +92,6 @@ window.onload = () => {
     const query = window.location.href.split('?')[1];
     const queryParams = query.split('&');
     load(queryParams[0].split('=')[1], queryParams[1].split('=')[1]).then((quest) => {
-        /* document.getElementById("save").onclick = () => {
-            Quest.save(24).then(() => console.log("save"));
-        }*/
 
         // panzoom init
         const panzoom = Panzoom(containerElement, {
@@ -214,7 +211,7 @@ window.onload = () => {
         };
         
         document.getElementById('finishBtn').onclick = () => {
-            const block = createNewBlock('end_block', '', quest);
+            const block = createNewBlock('end_block', 'Конец квеста', quest);
             Quest.addBlock(block).then((data) => {
                 Render.renderFinish(quest, block, instance, targetEndpoint);
             });

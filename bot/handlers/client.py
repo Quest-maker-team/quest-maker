@@ -318,12 +318,14 @@ class Quest:
         """
         if self.cur_point is None:
             return (True, "Ошибка в структуре квеста.", [], 0)
+        
+        t = self.cur_point.type
 
         if not check_time_limits(self.time_start, self.time_limits):
             return (False, "Время активности квеста закончилось.", [], 0)
 
         (score_to_add, point) = self.cur_point.get_next(message, latitude, longitude)
-        if self.cur_point.type == 'movement' and point is None:
+        if t == 'movement' and point is None:
             if score_to_add == 0:
                 return (False, "Неверное место или время.", [], 0)
             elif score_to_add == 1:
@@ -334,7 +336,7 @@ class Quest:
         if point is None and score_to_add == 0:
             return (True, "Ошибка в структуре квеста.", [], 0)
         elif point is None and score_to_add == 1:
-            if point.type == 'open_question':
+            if t == 'open_question':
                 return (False, "Попробуйте еще раз.", [], 0)
             else:
                 return (False, "Выберите вариант на специальной клавиатуре.", [], 0)

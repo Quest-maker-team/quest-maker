@@ -133,7 +133,7 @@ export class BlockRedactor {
                 document.getElementById('skip').checked = true;
                 skipActive = true;
                 skipPoints = answer.points;
-            } else if (answer.text === '') {
+            } else if (answer.text === '' && question.block_type_name === 'open_question') {
                 document.getElementById('wrong').checked = true;
                 wrongActive = true;
                 wrongPoints = answer.points;
@@ -142,7 +142,8 @@ export class BlockRedactor {
             }
         }
         BlockRedactor.addSpecialBox('skipChbx', skipPoints, 'skipbx', 'skip', !skipActive);
-        BlockRedactor.addSpecialBox('wrongChbx', wrongPoints, 'wrongbx', 'Любой другой ответ', !wrongActive);
+        if (question.block_type_name === 'open_question')
+            BlockRedactor.addSpecialBox('wrongChbx', wrongPoints, 'wrongbx', 'Любой другой ответ', !wrongActive);
     }
 
     static loadHints(question, elementId) {
@@ -347,7 +348,8 @@ export class BlockRedactor {
 
     static updateQuestion(question, instance, sourceEndpoint) {
         BlockRedactor.updateSpecial('skip', 'skipbx', question, instance, 'skip', sourceEndpoint);
-        BlockRedactor.updateSpecial('wrong', 'wrongbx', question, instance, '', sourceEndpoint);
+        if (question.block_type_name === 'open_question')
+            BlockRedactor.updateSpecial('wrong', 'wrongbx', question, instance, '', sourceEndpoint);
         BlockRedactor.updateAnswers(question, instance, sourceEndpoint);
         BlockRedactor.updateHints(question);
         BlockRedactor.updateBlockText(question);
@@ -393,14 +395,21 @@ export class BlockRedactor {
                         'Добавить возможность пропустить вопрос' +
                     '</label>' +
                 '</div>' +
+            '</div>'
+        );
+        if (question.block_type_name === 'open_question'){
+            document.getElementById('special').insertAdjacentHTML('beforeend',
                 '<div class="form-check pb-1" id="wrongChbx">' +
                     '<input class="form-check-input" type="checkbox" id="wrong">' +
                     '<label class="form-check-label" for="wrong">' +
                         'Добавить действие в случае неправильного ответа' +
                     '</label>' +
-                '</div>' +
-            '</div>'
-        );
+                '</div>'
+            );
+            document.getElementById('wrong').onchange = () => {
+                document.getElementById('wrongbx').hidden = !document.getElementById('wrongbx').hidden;
+            };
+        }
 
         BlockRedactor.loadAnswers(question, instance);
         BlockRedactor.loadHints(question, 'QHints');
@@ -408,9 +417,7 @@ export class BlockRedactor {
         document.getElementById('skip').onchange = () => {
             document.getElementById('skipbx').hidden = !document.getElementById('skipbx').hidden;
         };
-        document.getElementById('wrong').onchange = () => {
-            document.getElementById('wrongbx').hidden = !document.getElementById('wrongbx').hidden;
-        };
+        
         let ansId = 0;
         document.getElementById('addAnswer').onclick = () => {
             BlockRedactor.addAnswerBox('QAnswers', true, ansId, '', 0);

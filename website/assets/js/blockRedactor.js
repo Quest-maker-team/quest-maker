@@ -13,7 +13,7 @@ export class BlockRedactor {
                 text +
             '</textarea>' +
             '<div class="invalid-feedback">' +
-                'Не используйте пустую строку в качестве вопроса. ' +
+                'Не используйте пустую строку. ' +
             '</div>'
         );
     }
@@ -605,24 +605,36 @@ export class BlockRedactor {
     static createStartRedactor(form, questBlock, modal) {
         this.addTextRedactor(form, 'Приветственное сообщение:', questBlock.block_text);
         document.getElementById('update').onclick = () => {
-            BlockRedactor.updateBlockText(questBlock);
-            modal.hide();
+            if (!(BlockRedactor.validateQuestion())) {
+                return false;
+            } else {
+                BlockRedactor.updateBlockText(questBlock);
+                modal.hide();
+            }
         };
     }
 
     static createFinishRedactor(form, questBlock, modal) {
         this.addTextRedactor(form, 'Прощальное сообщение:', questBlock.block_text);
         document.getElementById('update').onclick = () => {
-            BlockRedactor.updateBlockText(questBlock);
-            modal.hide();
+            if (!(BlockRedactor.validateQuestion())) {
+                return false;
+            } else {
+                BlockRedactor.updateBlockText(questBlock);
+                modal.hide();
+            }
         };
     }
 
     static createMessageRedactor(form, questBlock, modal) {
         this.addTextRedactor(form, 'Сообщение:', questBlock.block_text);
         document.getElementById('update').onclick = () => {
-            BlockRedactor.updateBlockText(questBlock);
-            modal.hide();
+            if (!(BlockRedactor.validateQuestion())) {
+                return false;
+            } else {
+                BlockRedactor.updateBlockText(questBlock);
+                modal.hide();
+            }
         };
     }
 

@@ -52,17 +52,17 @@ def check_time(open_time, close_time):
     :return True if we are in the specified interval
     :return False otherwise
     """
-    now = datetime.datetime.now().time()
+    now = datetime.datetime.now().timetz()
     open = True
     not_close = True
 
     if open_time != None:
-        open = now > open_time.time()
+        open = now > open_time.timetz()
     if close_time != None:
-        not_close = now < close_time.time()
+        not_close = now < close_time.timetz()
     if open_time != None and close_time != None:
         # 22:00 - 2:00, for example
-        if open_time.time() > close_time.time():
+        if open_time.timetz() > close_time.timetz():
             return open or not_close
         else:
             return open and not_close
@@ -81,11 +81,11 @@ def check_time_limits(time_start, time_limits):
         return True
     
     if time_limits[1] != None:
-        if time_limits[1] < datetime.datetime.now() - time_start:
+        if time_limits[1] < datetime.datetime.now().astimezone() - time_start:
             return False
 
     if time_limits[0] != None:
-        if datetime.datetime.now() > time_limits[0]:
+        if datetime.datetime.now().astimezone() > time_limits[0]:
             return False
 
     return True
@@ -97,15 +97,17 @@ class QuestPoint:
 
     """Quest point representation type.
     """
-    def __init__(self, id, type, msg):
+    def __init__(self, id, type, msg, next_id):
         """Constructor.
         :param self: instance
         :param id: point id
         :param msg: point message
+        :param next_id: next point id
         """
         self.id = id
         self.type = type
         self.msg = msg
+        self.next_point_id = next_id
         self.next_points = None
         self.tips = []
         self.files = []
@@ -115,27 +117,33 @@ class QuestPoint:
         """Load next points.
         :param self: instance
         """
-        points_info = get_answer_options(self.id)
-        if points_info is None:
-            return
-        if len(points_info) == 0:
-            return
+        if self.type == 'open_question' or self.type == 'choice_question':
+            points_info = get_answer_options(self.id)
+            if points_info is None:
+                return
+            if len(points_info) == 0:
+                return
 
-        try:
-            self.next_points = {}
-            for i in range(len(points_info)):
-                if points_info[i][2] is None:
-                    point = None
-                else:
-                    question_info = get_question_by_id(points_info[i][2])
-                    point = QuestPoint(question_info[0], question_info[2], question_info[1])
-                if "open" == self.type:
-                    points_info[i][0] = points_info[i][0].lower()
-                self.next_points[points_info[i][0]] = (points_info[i][1], point)
-        except:
-            #delete all the options, because for example, an error when loading the correct answer will
-            #greatly distort the meaning
-            self.next_points = None
+            try:
+                self.next_points = {}
+                for i in range(len(points_info)):
+                    if points_info[i][2] is None:
+                        point = None
+                    else:
+                        block_info = get_block_by_id(points_info[i][2])
+                        point = QuestPoint(block_info[0], block_info[2], block_info[1], block_info[3])
+                    if 'open_question' == self.type:
+                        points_info[i][0] = points_info[i][0].lower()
+                    self.next_points[points_info[i][0]] = (points_info[i][1], point)
+            except:
+                self.next_points = None
+        else:
+            try:
+                if self.next_point_id is not None:
+                    block_info = get_block_by_id(self.next_point_id)
+                    self.next_points = QuestPoint(block_info[0], block_info[2], block_info[1], block_info[3])
+            except:
+                pass
 
 
     def load_tips(self):
@@ -154,7 +162,7 @@ class QuestPoint:
         """Load point files.
         :param self: instance
         """
-        res = get_question_files(self.id)
+        res = get_block_files(self.id)
         if res != None:
             self.files = res
 
@@ -172,7 +180,7 @@ class QuestPoint:
         return res
 
 
-    def get_next(self, point_name, latitude=None, longitude=None):
+    def get_next(self, point_name=None, latitude=None, longitude=None):
         """Get next point.
         :param self: instance
         :param point_name: answer for next point
@@ -182,68 +190,64 @@ class QuestPoint:
         :return None if there is no such answer
         :return (None, None) in case of movement failure
         """
-        if self.type == "open":
+        if self.type == 'open_question':
             point_name = point_name.lower()
-        if self.type == "open" or self.type == "choice":
+        if self.type == 'open_question' or self.type == 'choice_question':
             name = ''
             if point_name in self.next_points:
                 name = point_name
             elif '' in self.next_points: # universal wrong answer
                 pass
             else:
-                return (0, None)
+                return (1, None)
             point_info = self.next_points[name]
             if point_info[1] is None:
-                return (point_info[0], None)
+                return (0, None)
             else:
                 point_info[1].load_next_points()
                 point_info[1].load_tips()
                 point_info[1].load_files()
                 return (point_info[0], point_info[1])
-        # movement
-        try:
-            movement_info = get_movement(self.id)
-            if latitude is not None and longitude is not None:
-                dist = geopy.distance.geodesic((float(movement_info[1]), float(movement_info[2])), (latitude, longitude)).m
-                if dist > movement_info[2]:
+        elif self.type == 'movement':
+            try:
+                movement_info = get_place(self.id)
+                if latitude is not None and longitude is not None:
+                    dist = geopy.distance.geodesic((float(movement_info[0]), float(movement_info[1])), (latitude, longitude)).m
+                    if dist > movement_info[2]:
+                        return (0, None)
+                elif point_name != QuestPoint.no_geo_msg:
+                    return (1, None)
+                if not check_time(movement_info[3], movement_info[4]):
                     return (0, None)
-            elif point_name != QuestPoint.no_geo_msg:
-                return (0, None)
-            if not check_time(movement_info[4], movement_info[5]):
-                return (0, None)
-            question_info = get_question_by_id(movement_info[0])
-            point = QuestPoint(question_info[0], question_info[2], question_info[1])
-            point.load_next_points()
-            point.load_tips()
-            point.load_files()
-            return (0, point)
-        except:
-            return (None, None)
+            except:
+                return (None, None)
+        if self.next_points is not None:
+            self.next_points.load_next_points()
+            self.next_points.load_tips()
+            self.next_points.load_files()
+            return (0, self.next_points)
+        else:
+            return (0, None)
         
 
 def get_quest_info(quest_id):
     """Get quest info.
-    :param quest_id: quest id
-    :return start message, first point and title
-    :return (None, '', None, '') in case of failure
+    :param quest_id: quest keyword
+    :return quest id, first point and title
+    :return (None, None, '') in case of failure
     """
     id, name = get_quest_title(quest_id)
-    start_msg, first_point_info = get_first_question(id)
+    first_point_info = get_start_block(id)
     # here name can be None when, for example, the time of the quest activity came out
     if first_point_info is None or name is None:
-        return (None, '', None, '')
-
-    first_point = QuestPoint(first_point_info[0], first_point_info[2], first_point_info[1])
+        return (None, None, '')
+    
+    first_point = QuestPoint(first_point_info[0], 'start_block', first_point_info[1], first_point_info[2])
 
     first_point.load_next_points()
-    first_point.load_tips()
     first_point.load_files()
 
-    # since it will not be possible to send an empty message
-    if start_msg == '':
-        start_msg += 'Доборо пожаловать на квест "' + name + '"'
-
-    return id, start_msg, first_point, name
+    return id, first_point, name
 
 
 class Quest:
@@ -252,12 +256,13 @@ class Quest:
     def __init__(self, quest_id):
         """Constructor.
         :param self: instance
-        :param quest_id: quest id
+        :param quest_id: quest keyword
         """
         self.score = 0
-        self.quest_id, self.start_msg, self.cur_point, self.name = get_quest_info(quest_id)
+        self.quest_id, self.cur_point, self.name = get_quest_info(quest_id)
         self.time_limits = get_quest_time_info(self.quest_id)
-        self.time_start = datetime.datetime.now()
+        self.time_start = datetime.datetime.now().astimezone()
+        self.complition_time = datetime.timedelta()
 
 
     def save(self, telegram_id, is_finished):
@@ -266,12 +271,12 @@ class Quest:
         :param telegram_id: user id
         :param is_finished: quest status, is true if it is completed to the end
         """
-        last_question_id = None
+        last_block_id = None
         if not is_finished:
             if self.time_limits[1] is None:
-                if datetime.datetime.now() < self.time_limits[0]:
-                    last_question_id = self.cur_point.id
-        save_history(self.quest_id, telegram_id, is_finished, last_question_id, self.score)
+                last_block_id = self.cur_point.id
+        self.complition_time += datetime.datetime.now().astimezone() - self.time_start
+        save_history(self.quest_id, telegram_id, is_finished, last_block_id, self.score, self.time_start, self.complition_time)
 
 
     def load(self, telegram_id):
@@ -287,21 +292,22 @@ class Quest:
         if info[0] or (info[1] is None):
             return False
         
-        point_info = get_question_by_id(info[1])
+        point_info = get_block_by_id(info[1])
         if point_info is None:
             return False
 
-        point = QuestPoint(point_info[0], point_info[2], point_info[1])
+        point = QuestPoint(point_info[0], point_info[2], point_info[1], point_info[3])
         point.load_next_points()
         point.load_tips()
         point.load_files()
         self.cur_point = point
         self.score = info[2]
+        self.complition_time = info[3]
 
         return True
 
 
-    def next_point(self, message, latitude=None, longitude=None):
+    def next_point(self, message=None, latitude=None, longitude=None):
         """Go to next point.
         :param self: instance
         :param message: message from user
@@ -312,23 +318,34 @@ class Quest:
         """
         if self.cur_point is None:
             return (True, "Ошибка в структуре квеста.", [], 0)
+        
+        t = self.cur_point.type
 
         if not check_time_limits(self.time_start, self.time_limits):
-            return (True, "Время активности квеста закончилось.", [], 0)
+            return (False, "Время активности квеста закончилось.", [], 0)
 
         (score_to_add, point) = self.cur_point.get_next(message, latitude, longitude)
-        if self.cur_point.type == 'movement' and point is None:
-            if score_to_add != None:
+        if t == 'movement' and point is None:
+            if score_to_add == 0:
                 return (False, "Неверное место или время.", [], 0)
+            elif score_to_add == 1:
+                return (False, "Воспользуйтесь специальной клавиатурой.", [], 0)
             else:
                 return (True, "Ошибка в структуре квеста.", [], 0)
-        self.score += score_to_add
-        if point is None:
-            return (False, "Неправильный ответ.", [], 0)
+
+        if point is None and score_to_add == 0:
+            return (True, "Ошибка в структуре квеста.", [], 0)
+        elif point is None and score_to_add == 1:
+            if t == 'open_question':
+                return (False, "Попробуйте еще раз.", [], 0)
+            else:
+                return (False, "Выберите вариант на специальной клавиатуре.", [], 0)
         
-        if point.type == 'end':
+        self.score += score_to_add
+        if point.type == 'end_block':
+            self.cur_point = point
             return (True, point.msg, point.files, 0)
-        elif (point.type == 'open' or point.type == 'choice') and point.next_points is None:
+        elif point.next_points is None:
             return (True, "Ошибка в структуре квеста.", [], 0)
         
         self.cur_point = point
@@ -391,15 +408,15 @@ def make_media_groups(files):
     if len(image) != 0 or len(video) != 0:
         media = types.MediaGroup()
         for i in image:
-            media.attach_photo(i[0])
+            media.attach_photo(types.InputFile(i[0]))
         for v in video:
-            media.attach_video(v[0])
+            media.attach_video(types.InputFile(v[0]))
         groups.append(media)
 
     if len(audio) != 0:
         media_a = types.MediaGroup()
         for a in audio:
-            media_a.attach_audio(a[0])
+            media_a.attach_audio(types.InputFile(a[0]))
         groups.append(media_a)
 
     return groups
@@ -414,6 +431,8 @@ async def send_files(message: types.Message, caption, files, reply_markup):
     if len(files) == 0:
         if caption != '':
             await message.answer(caption, reply_markup=reply_markup)
+        else:
+            await message.answer('Автор посчитал, что пустое сообщение Вам что-нибудь скажет', reply_markup=reply_markup)
     else:
         try:
             await types.ChatActions.upload_document()
@@ -427,7 +446,7 @@ async def send_files(message: types.Message, caption, files, reply_markup):
             await message.answer(caption, reply_markup=reply_markup)
         else:
             #if only a file, but you need to change the keyboard (it won't send an empty line)
-            await message.answer('↑', reply_markup=reply_markup)
+            await message.answer('Ознакомьтесь с медиа данными', reply_markup=reply_markup)
 
 
 def edit_options(options):
@@ -484,19 +503,9 @@ async def name_quest(message: types.Message, state: FSMContext):
                 'чтобы получить количество баллов - /score, '
                 'чтобы получить подсказку - /tip, '
                 'чтобы попытаться пропустить точку - /skip.')
-            await message.answer(data['quest'].start_msg)
 
-            if data['quest'].cur_point.type == "choice":
-                keyboard = create_keyboard(edit_options(data['quest'].cur_point.next_points))
-            else:
-                keyboard = ReplyKeyboardRemove()
+            keyboard = create_keyboard(['Дальше'])
             await send_files(message, data['quest'].cur_point.msg, data['quest'].cur_point.files, keyboard)
-            if data['quest'].cur_point.type == "end": # who knows if this will happen
-                data['quest'].save(message.from_user.id, True)
-                await message.answer('Квест "' + data['quest'].name + '" закончен. '
-                                     'Количество баллов: ' + str(data['quest'].score) + ".",
-                                     reply_markup=create_rating_keyboard())
-                await QuestStates.rating.set()
     else:
         await message.reply('Квест с идентификатором "' + message.text + '" не найден',
             reply_markup=create_opening_menu_keyboard())
@@ -543,19 +552,9 @@ async def password_quest(message: types.Message, state: FSMContext):
                 'чтобы получить количество баллов - /score, '
                 'чтобы получить подсказку - /tip, '
                 'чтобы попытаться пропустить точку - /skip.')
-            await message.answer(data['quest'].start_msg)
-
-            if data['quest'].cur_point.type == "choice":
-                keyboard = create_keyboard(edit_options(data['quest'].cur_point.next_points))
-            else:
-                keyboard = ReplyKeyboardRemove()
+            
+            keyboard = create_keyboard(['Дальше'])
             await send_files(message, data['quest'].cur_point.msg, data['quest'].cur_point.files, keyboard)
-            if data['quest'].cur_point.type == "end": # who knows if this will happen
-                data['quest'].save(message.from_user.id, True)
-                await message.answer('Квест "' + data['quest'].name + '" закончен. '
-                                     'Количество баллов: ' + str(data['quest'].score) + ".",
-                                     reply_markup=create_rating_keyboard())
-                await QuestStates.rating.set()
     else:
         await message.reply('Квест с идентификатором "' + quest_name + '" не найден',
             reply_markup=create_opening_menu_keyboard())
@@ -575,27 +574,24 @@ async def load_quest(message: types.Message, state: FSMContext):
                     'чтобы получить количество баллов - /score, '
                     'чтобы получить подсказку - /tip, '
                     'чтобы попытаться пропустить точку - /skip.')
-            await message.answer(data['quest'].start_msg)
 
-            if data['quest'].cur_point.type == "choice":
-                keyboard = create_keyboard(edit_options(data['quest'].cur_point.next_points))
-            else:
-                keyboard = ReplyKeyboardRemove()
+            keyboard = create_keyboard(['Дальше'])
             await send_files(message, data['quest'].cur_point.msg, data['quest'].cur_point.files, keyboard)
-            if data['quest'].cur_point.type == "end": # who knows if this will happen
-                data['quest'].save(message.from_user.id, True)
-                await message.answer('Квест "' + data['quest'].name + '" закончен. '
-                                     'Количество баллов: ' + str(data['quest'].score) + ".",
-                                     reply_markup=create_rating_keyboard())
-                await QuestStates.rating.set()
         else:
             if data['quest'].load(message.from_user.id):
                 await QuestStates.next()
-                if data['quest'].cur_point.type == "choice":
-                    keyboard = create_keyboard(edit_options(data['quest'].cur_point.next_points))
+                if data['quest'].cur_point.type == "movement":
+                    await send_files(message, data['quest'].cur_point.msg, data['quest'].cur_point.files, create_movement_keyboard(QuestPoint.no_geo_msg))
+                    movement_info = get_place(data['quest'].cur_point.id)
+                    await bot.send_location(message.chat.id, movement_info[0], movement_info[1])
                 else:
-                    keyboard = ReplyKeyboardRemove()
-                await send_files(message, data['quest'].cur_point.msg, data['quest'].cur_point.files, keyboard)
+                    if data['quest'].cur_point.type == "choice_question":
+                        keyboard = create_keyboard(edit_options(data['quest'].cur_point.next_points))
+                    elif data['quest'].cur_point.type == "message" or data['quest'].cur_point.type == "start_block":
+                        keyboard = create_keyboard(['Дальше'])
+                    else:
+                        keyboard = ReplyKeyboardRemove()
+                    await send_files(message, data['quest'].cur_point.msg, data['quest'].cur_point.files, keyboard)
             else:
                 await message.answer('Не удалось возобновить прохождение.',
                     reply_markup=create_opening_menu_keyboard())
@@ -627,10 +623,9 @@ async def tip_handler(message: types.Message, state: FSMContext):
         if 'quest' in data:
             tip = data['quest'].cur_point.get_tip()
             if tip is None:
-                await message.reply('Больше подсказок нет.',
-                    reply_markup=ReplyKeyboardRemove())
+                await message.reply('Больше подсказок нет.')
             else:
-                await send_files(message, tip.msg, tip.files, ReplyKeyboardRemove())
+                await send_files(message, tip.msg, tip.files, None)
                 await message.answer('Штраф за подсказку в баллах: ' + str(tip.fine) + ' .')
                 data['quest'].score -= tip.fine
         else:
@@ -656,7 +651,7 @@ async def skip_handler(message: types.Message, state: FSMContext):
     """
     async with state.proxy() as data:
         if 'quest' in data:
-            if data['quest'].cur_point.type == "open" or data['quest'].cur_point.type == "choice":
+            if data['quest'].cur_point.type == "open_question" or data['quest'].cur_point.type == "choice_question":
                 if 'skip' in data['quest'].cur_point.next_points:
                     score = data['quest'].score
                     (quest_ends, msg, files, id) = data['quest'].next_point('skip')
@@ -665,9 +660,16 @@ async def skip_handler(message: types.Message, state: FSMContext):
                         await message.answer('Получены баллы: ' + str(score_delta) + '. ')
                     elif score_delta < 0:
                         await message.answer('Отняты баллы: ' + str(-score_delta) + '. ')
-                    if data['quest'].cur_point.type == "choice":
+                    if data['quest'].cur_point.type == "choice_question":
                         keyboard = create_keyboard(edit_options(data['quest'].cur_point.next_points))
                         await send_files(message, msg, files, keyboard)
+                    elif data['quest'].cur_point.type == "message":
+                        keyboard = create_keyboard(['Дальше'])
+                        await send_files(message, msg, files, keyboard)
+                    elif data['quest'].cur_point.type == "movement":
+                        await send_files(message, msg, files, create_movement_keyboard(QuestPoint.no_geo_msg))
+                        movement_info = get_place(data['quest'].cur_point.id)
+                        await bot.send_location(message.chat.id, movement_info[0], movement_info[1])
                     else:
                         await send_files(message, msg, files, ReplyKeyboardRemove())
                     if quest_ends == True:
@@ -699,13 +701,16 @@ async def point_proc(message: types.Message, state: FSMContext, latitude, longit
             await message.answer('Получены баллы: ' + str(score_delta) + '. ')
         elif score_delta < 0:
             await message.answer('Отняты баллы: ' + str(-score_delta) + '. ')
-        if data['quest'].cur_point.type == "choice":
+        if data['quest'].cur_point.type == "choice_question":
             keyboard = create_keyboard(edit_options(data['quest'].cur_point.next_points))
+            await send_files(message, msg, files, keyboard)
+        elif data['quest'].cur_point.type == "message":
+            keyboard = create_keyboard(['Дальше'])
             await send_files(message, msg, files, keyboard)
         elif data['quest'].cur_point.type == "movement":
             await send_files(message, msg, files, create_movement_keyboard(QuestPoint.no_geo_msg))
-            movement_info = get_movement(data['quest'].cur_point.id)
-            await bot.send_location(message.chat.id, movement_info[1], movement_info[2])
+            movement_info = get_place(data['quest'].cur_point.id)
+            await bot.send_location(message.chat.id, movement_info[0], movement_info[1])
         else:
             await send_files(message, msg, files, ReplyKeyboardRemove())
         if quest_ends == True:
@@ -715,7 +720,8 @@ async def point_proc(message: types.Message, state: FSMContext, latitude, longit
                 data['quest'].save(message.from_user.id, True)
             await message.answer('Квест "' + data['quest'].name + '" закончен. '
                                  'Количество баллов: ' + str(data['quest'].score) + ".",
-                                  reply_markup=create_rating_keyboard())
+                                  reply_markup=ReplyKeyboardRemove())
+            await message.answer('Оцените квест =)', reply_markup=create_rating_keyboard())
             await QuestStates.rating.set()
 
 
@@ -753,7 +759,7 @@ async def cmd_help(message: types.Message, state: FSMContext):
                                  'чтобы получить подсказку - /tip, '
                                  'чтобы попытаться пропустить точку - /skip.')
         else:
-            await message.answer('Выберите квест.')
+            await message.answer('Выберите квест командой /quest.')
 
 
 async def rate_quest(message: types.Message, state: FSMContext):
@@ -763,7 +769,7 @@ async def rate_quest(message: types.Message, state: FSMContext):
     """
     rating = get_rating(message.text)
     if rating is None:
-        await message.reply('Неправильная оценка. Воспользуйтесь клавиатурой.')
+        await message.reply('Воспользуйтесь специальной клавиатурой.')
     async with state.proxy() as data:
         update_rating(data['quest'].cur_point.id, rating)
         await message.answer('Спасибо за отзыв.', reply_markup=create_opening_menu_keyboard())

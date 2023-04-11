@@ -15,10 +15,10 @@ from aiogram.contrib.middlewares.logging import LoggingMiddleware
 storage=MemoryStorage()
 
 TG_BOT_TOKEN = os.environ['TG_BOT_TOKEN']
-WEBHOOK_HOST = os.environ['WEBHOOK_HOST']  # Domain name or IP addres which your bot is located.
-WEBHOOK_PATH = f"/webhook/{TG_BOT_TOKEN}"  # Part of URL
+#WEBHOOK_HOST = os.environ['WEBHOOK_HOST']  # Domain name or IP addres which your bot is located.
+#WEBHOOK_PATH = f"/webhook/{TG_BOT_TOKEN}"  # Part of URL
 
-WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}"
+#WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}"
 
 # Web app settings:
 #   Use LAN address to listen webhooks

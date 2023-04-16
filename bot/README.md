@@ -18,6 +18,11 @@ Inside `venv` virtual environment:
 ```
 pip install -r requirements.txt        # installing environments
 export TG_BOT_TOKEN=<bot token value>  # exporting bot token
+export DB_NAME=<db name>               # DB_NAME=questmaker
+export DB_USER=<db user name>          # DB_USER=postgres
+export DB_PASSWORD=<db user password>  # DB_PASSWORD=postgres
+export DB_HOST=<host>                  # DB_HOST=localhost
+export DB_PORT=<port>                  # DB_PORT=5432 if the database is configured according to the [guide](../docs/db_guide.md).
 python3 bot.py                         # running bot
 deactivate                             # deactivating enveronment
 ```
@@ -25,15 +30,3 @@ deactivate                             # deactivating enveronment
 We use PostgreSQL. See docs for more information:
 + [description](../docs/db_description.md);
 + [guide](../docs/db_guide.md).
-### Create config file
-* In `QuestMaker/bot` create file `db_config.ini`.
-* File must contain following:
-  ```
-  [DB]
-  NAME = 'questmaker'
-  USER = 'postgres'
-  PASSWORD = 'postgres'
-  HOST = 'localhost'
-  PORT = '5432'
-  ```
-  if the database is configured according to the [guide](../docs/db_guide.md).

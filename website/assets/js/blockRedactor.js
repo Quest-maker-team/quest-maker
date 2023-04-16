@@ -13,7 +13,7 @@ export class BlockRedactor {
                 text +
             '</textarea>' +
             '<div class="invalid-feedback">' +
-                'Не используйте пустую строку в качестве вопроса. ' +
+                'Не используйте пустую строку. ' +
             '</div>'
         );
     }
@@ -133,7 +133,7 @@ export class BlockRedactor {
                 document.getElementById('skip').checked = true;
                 skipActive = true;
                 skipPoints = answer.points;
-            } else if (answer.text === '') {
+            } else if (answer.text === '' && question.block_type_name === 'open_question') {
                 document.getElementById('wrong').checked = true;
                 wrongActive = true;
                 wrongPoints = answer.points;
@@ -142,7 +142,8 @@ export class BlockRedactor {
             }
         }
         BlockRedactor.addSpecialBox('skipChbx', skipPoints, 'skipbx', 'skip', !skipActive);
-        BlockRedactor.addSpecialBox('wrongChbx', wrongPoints, 'wrongbx', 'Любой другой ответ', !wrongActive);
+        if (question.block_type_name === 'open_question')
+            BlockRedactor.addSpecialBox('wrongChbx', wrongPoints, 'wrongbx', 'Любой другой ответ', !wrongActive);
     }
 
     static loadHints(question, elementId) {
@@ -276,12 +277,12 @@ export class BlockRedactor {
     }
 
     static updatePlace(movement, coords, radius) {
-        movement.place.longitude = coords[0];
-        movement.place.latitude = coords[1];
+        movement.place.longitude = coords[1];
+        movement.place.latitude = coords[0];
         movement.place.radius = radius;
         Quest.updateEntity('place', movement.place.place_id, movement.block_id, JSON.stringify({
-            longitude: coords[0],
-            latitude: coords[1],
+            longitude: coords[1],
+            latitude: coords[0],
             radius: radius,
         })).catch((result) => console.log(result));
     }
@@ -347,7 +348,8 @@ export class BlockRedactor {
 
     static updateQuestion(question, instance, sourceEndpoint) {
         BlockRedactor.updateSpecial('skip', 'skipbx', question, instance, 'skip', sourceEndpoint);
-        BlockRedactor.updateSpecial('wrong', 'wrongbx', question, instance, '', sourceEndpoint);
+        if (question.block_type_name === 'open_question')
+            BlockRedactor.updateSpecial('wrong', 'wrongbx', question, instance, '', sourceEndpoint);
         BlockRedactor.updateAnswers(question, instance, sourceEndpoint);
         BlockRedactor.updateHints(question);
         BlockRedactor.updateBlockText(question);
@@ -393,14 +395,21 @@ export class BlockRedactor {
                         'Добавить возможность пропустить вопрос' +
                     '</label>' +
                 '</div>' +
+            '</div>'
+        );
+        if (question.block_type_name === 'open_question'){
+            document.getElementById('special').insertAdjacentHTML('beforeend',
                 '<div class="form-check pb-1" id="wrongChbx">' +
                     '<input class="form-check-input" type="checkbox" id="wrong">' +
                     '<label class="form-check-label" for="wrong">' +
                         'Добавить действие в случае неправильного ответа' +
                     '</label>' +
-                '</div>' +
-            '</div>'
-        );
+                '</div>'
+            );
+            document.getElementById('wrong').onchange = () => {
+                document.getElementById('wrongbx').hidden = !document.getElementById('wrongbx').hidden;
+            };
+        }
 
         BlockRedactor.loadAnswers(question, instance);
         BlockRedactor.loadHints(question, 'QHints');
@@ -408,9 +417,7 @@ export class BlockRedactor {
         document.getElementById('skip').onchange = () => {
             document.getElementById('skipbx').hidden = !document.getElementById('skipbx').hidden;
         };
-        document.getElementById('wrong').onchange = () => {
-            document.getElementById('wrongbx').hidden = !document.getElementById('wrongbx').hidden;
-        };
+        
         let ansId = 0;
         document.getElementById('addAnswer').onclick = () => {
             BlockRedactor.addAnswerBox('QAnswers', true, ansId, '', 0);
@@ -449,7 +456,7 @@ export class BlockRedactor {
             if (typeof(movement.place.longitude) == 'string') {
                 movement.place.longitude = parseFloat(movement.place.longitude)
             }
-            const placeMark = new ymaps.Placemark([movement.place.longitude, movement.place.latitude], {
+            const placeMark = new ymaps.Placemark([movement.place.latitude, movement.place.longitude], {
                 balloonContentHeader: 'Добавленное место квеста',
                 balloonContentBody:
                     movement.text,
@@ -458,7 +465,7 @@ export class BlockRedactor {
                 draggable: false,
             });
             const myCircle = new ymaps.Circle([
-                [movement.place.longitude, movement.place.latitude],
+                [movement.place.latitude, movement.place.longitude],
                 movement.place.radius,
             ], {
                 hintContent: 'Радиус достижимости ' + movement.place.radius,
@@ -546,7 +553,7 @@ export class BlockRedactor {
             '<div class="z-depth-1-half map-container" style="height: 500px" id="map"></div>');
         let myMap;
         const radius = {'value': movement.place.radius};
-        const coordinates = {'value': [movement.place.longitude, movement.place.latitude]};
+        const coordinates = {'value': [movement.place.latitude, movement.place.longitude]};
         ymaps.ready(() => {
             const geolocation = ymaps.geolocation;
             let myPosition;
@@ -568,7 +575,7 @@ export class BlockRedactor {
                 });
 
                 if (movement.place.radius > 0.0) {
-                    myPosition = [movement.place.longitude, movement.place.latitude];
+                    myPosition = [movement.place.latitude, movement.place.longitude];
                 }
                 myMap = new ymaps.Map('map', {
                     center: myPosition,
@@ -605,24 +612,36 @@ export class BlockRedactor {
     static createStartRedactor(form, questBlock, modal) {
         this.addTextRedactor(form, 'Приветственное сообщение:', questBlock.block_text);
         document.getElementById('update').onclick = () => {
-            BlockRedactor.updateBlockText(questBlock);
-            modal.hide();
+            if (!(BlockRedactor.validateQuestion())) {
+                return false;
+            } else {
+                BlockRedactor.updateBlockText(questBlock);
+                modal.hide();
+            }
         };
     }
 
     static createFinishRedactor(form, questBlock, modal) {
         this.addTextRedactor(form, 'Прощальное сообщение:', questBlock.block_text);
         document.getElementById('update').onclick = () => {
-            BlockRedactor.updateBlockText(questBlock);
-            modal.hide();
+            if (!(BlockRedactor.validateQuestion())) {
+                return false;
+            } else {
+                BlockRedactor.updateBlockText(questBlock);
+                modal.hide();
+            }
         };
     }
 
     static createMessageRedactor(form, questBlock, modal) {
         this.addTextRedactor(form, 'Сообщение:', questBlock.block_text);
         document.getElementById('update').onclick = () => {
-            BlockRedactor.updateBlockText(questBlock);
-            modal.hide();
+            if (!(BlockRedactor.validateQuestion())) {
+                return false;
+            } else {
+                BlockRedactor.updateBlockText(questBlock);
+                modal.hide();
+            }
         };
     }
 

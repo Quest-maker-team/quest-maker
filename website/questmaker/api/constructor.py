@@ -554,6 +554,10 @@ def save_quest(quest_id):
     if draft['author_id'] != author_id:
         return 'This is not your quest', 403
     quest = pickle.loads(bytes(draft['container_path']))
+    if not quest.check_reachability_all_blocks():
+        return ('Not all blocks can be reached from the start', 400)
+    if not quest.end_reachability_check():
+        return ('Not all blocks reach the end', 400)
     quest.published = True
     quest.hidden = False
     quest.save_to_db()

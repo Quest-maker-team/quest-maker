@@ -662,6 +662,8 @@ class Quest:
                         is_added = True
                         if answer.next_block().id not in visited:
                             q.appendleft(answer.next_block().id)
+                    else:
+                        return False
             else:
                 if self.blocks[cur_block_id].next_block is not None and self.blocks[cur_block_id].next_block() is not None:
                     is_added = True

@@ -6,7 +6,8 @@ from .db import *
 from uuid import uuid4
 
 import weakref
-from copy import copy
+from copy import copy, deepcopy
+from collections import deque
 
 
 class Media:
@@ -637,3 +638,75 @@ class Quest:
             get_db().commit()
         
         return True
+    
+    def check_reachability_all_blocks(self):
+        start_block = None
+
+        for block in self.blocks.values():
+            if block.block_type_id == Block.Type.START:
+                start_block = block
+                break
+
+        visited = []
+        q = deque([start_block.id])
+
+        while len(q) != 0:
+            cur_block_id = q.popleft()
+            visited.append(cur_block_id)
+
+            is_added = False
+            if self.blocks[cur_block_id].block_type_id == Block.Type.OPEN or self.blocks[cur_block_id].block_type_id == Block.Type.CHOICE:
+                
+                for answer in self.blocks[cur_block_id].answers.values():
+                    if answer.next_block is not None and answer.next_block() is not None:
+                        is_added = True
+                        if answer.next_block().id not in visited:
+                            q.appendleft(answer.next_block().id)
+                    else:
+                        return False
+            else:
+                if self.blocks[cur_block_id].next_block is not None and self.blocks[cur_block_id].next_block() is not None:
+                    is_added = True
+                    if self.blocks[cur_block_id].next_block().id not in visited:
+                        q.appendleft(self.blocks[cur_block_id].next_block().id)
+
+            if not is_added and self.blocks[cur_block_id].block_type_id != Block.Type.END:
+                return False
+    
+        for block_id in self.blocks.keys():
+            if block_id not in visited:
+                return False
+            
+        return True
+
+    def end_reachability_check(self):
+        for block in self.blocks.values():
+            visited = []
+            q = deque([block.id])
+
+            while len(q) != 0:
+                cur_block_id = q.popleft()
+                visited.append(cur_block_id)
+
+                is_added = False
+                if self.blocks[cur_block_id].block_type_id == Block.Type.OPEN or self.blocks[cur_block_id].block_type_id == Block.Type.CHOICE:
+                    
+                    for answer in self.blocks[cur_block_id].answers.values():
+                        if answer.next_block is not None and answer.next_block() is not None:
+                            is_added = True
+                            if answer.next_block().id not in visited:
+                                q.appendleft(answer.next_block().id)
+                else:
+                    if self.blocks[cur_block_id].next_block is not None and self.blocks[cur_block_id].next_block() is not None:
+                        is_added = True
+                        if self.blocks[cur_block_id].next_block().id not in visited:
+                            q.appendleft(self.blocks[cur_block_id].next_block().id)
+
+                if not is_added or len(q) == 0:
+                    if self.blocks[cur_block_id].block_type_id != Block.Type.END:
+                        return False
+                    else:
+                        break
+
+        return True
+    
